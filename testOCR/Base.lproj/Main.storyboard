@@ -18,8 +18,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Instructions" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ioZ-IL-wk5">
-                                <rect key="frame" x="37.5" y="14" width="300" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ioZ-IL-wk5">
+                                <rect key="frame" x="70" y="14" width="300" height="21"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="300" id="JQM-Ea-7jC"/>
                                     <constraint firstAttribute="height" constant="21" id="P1w-WN-ekg"/>
@@ -44,13 +44,16 @@
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <viewLayoutGuide key="safeArea" id="ABc-K3-htw"/>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7l9-H4-46L">
-                                <rect key="frame" x="5" y="14" width="30" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7l9-H4-46L">
+                                <rect key="frame" x="5" y="5" width="60" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="30" id="D9N-yx-ZGS"/>
+                                    <constraint firstAttribute="width" constant="60" id="D9N-yx-ZGS"/>
                                     <constraint firstAttribute="height" constant="30" id="lXm-2d-t4C"/>
                                 </constraints>
-                                <state key="normal" title="T"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                <state key="normal" title="TestOCR">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
                                 <connections>
                                     <action selector="testSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="c0Z-fv-KtT"/>
                                 </connections>
@@ -185,7 +188,6 @@
                                 </state>
                                 <connections>
                                     <action selector="addFieldSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8h6-VJ-gmb"/>
-                                    <action selector="testSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="kT1-Cz-HN1"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ejW-Oz-qIc">
@@ -205,7 +207,6 @@
                         </subviews>
                         <color key="backgroundColor" white="0.95210255872483218" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="ioZ-IL-wk5" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="5JJ-kG-OOd"/>
                             <constraint firstItem="l5g-RH-K3c" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="7Fr-IC-m1K"/>
                             <constraint firstItem="RBk-xE-Koq" firstAttribute="top" secondItem="ioZ-IL-wk5" secondAttribute="bottom" constant="3" id="7Li-Gy-XGx"/>
                             <constraint firstItem="l5g-RH-K3c" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Axi-VC-nJD"/>
@@ -226,7 +227,8 @@
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="Vja-od-GMR" secondAttribute="bottom" constant="12" id="hNR-MM-Qr4"/>
                             <constraint firstItem="Vja-od-GMR" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="17" id="j1U-WZ-h3m"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ZGC-aM-zdM" secondAttribute="bottom" constant="12" id="k7o-zp-mDt"/>
-                            <constraint firstItem="ioZ-IL-wk5" firstAttribute="leading" secondItem="7l9-H4-46L" secondAttribute="trailing" constant="2.5" id="ts8-6y-WIu"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ioZ-IL-wk5" secondAttribute="trailing" constant="5" id="rHw-Fl-r8D"/>
+                            <constraint firstItem="ioZ-IL-wk5" firstAttribute="leading" secondItem="7l9-H4-46L" secondAttribute="trailing" constant="5" id="ts8-6y-WIu"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ylF-9f-W4B" secondAttribute="trailing" constant="17" id="u88-52-mtH"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ylF-9f-W4B" secondAttribute="bottom" constant="59" id="zZ3-gp-Ue3"/>
                         </constraints>
@@ -235,6 +237,7 @@
                     <connections>
                         <outlet property="LHArrowView" destination="NBT-2s-gLs" id="5WH-Nx-fde"/>
                         <outlet property="RHArrowView" destination="ylF-9f-W4B" id="Nq5-nh-ilY"/>
+                        <outlet property="addFieldButton" destination="ZGC-aM-zdM" id="cRc-aq-ghX"/>
                         <outlet property="inputImage" destination="RBk-xE-Koq" id="Od4-3Q-Ufp"/>
                         <outlet property="instructionsLabel" destination="ioZ-IL-wk5" id="188-P5-KAt"/>
                         <outlet property="overlayView" destination="SIK-df-PeH" id="EZN-ec-Yrf"/>

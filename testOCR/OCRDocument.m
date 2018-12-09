@@ -1,4 +1,10 @@
 //
+//    ___   ____ ____  ____                                        _
+//   / _ \ / ___|  _ \|  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_
+//  | | | | |   | |_) | | | |/ _ \ / __| | | | '_ ` _ \ / _ \ '_ \| __|
+//  | |_| | |___|  _ <| |_| | (_) | (__| |_| | | | | | |  __/ | | | |_
+//   \___/ \____|_| \_\____/ \___/ \___|\__,_|_| |_| |_|\___|_| |_|\__|
+//
 //  OCRDocument.m
 //  testOCR
 //
@@ -19,9 +25,19 @@
         allWords             = [[NSMutableArray alloc] init];
         headerNames          = [[NSMutableArray alloc] init];
         columnStringData     = [[NSMutableArray alloc] init];
+        ignoreList           = [[NSMutableArray alloc] init];
+        useIgnoreList        = FALSE;
         srand((unsigned int)time(NULL));
     }
     return self;
+}
+
+//=============(OCRDocument)=====================================================
+-(void) addColumnStringData : (NSMutableArray*)stringArray
+{
+    int clen = (int)stringArray.count; //Keep track of longest column...
+    if (clen > _longestColumn) _longestColumn = clen;
+    [columnStringData addObject:stringArray];
 }
 
 //=============(OCRDocument)=====================================================
@@ -31,33 +47,18 @@
     _longestColumn = 0;
 }
 
-//=============(OCRDocument)=====================================================
--(void) addColumnStringData : (NSMutableArray*)stringArray
-{
-    int clen = (int)stringArray.count;
-    if (clen > _longestColumn) _longestColumn = clen;
-    [columnStringData addObject:stringArray];
-}
-//=============(OCRDocument)=====================================================
--(void)setJSON : (NSString *)json
-{
-//    rawJSON = json;
-}
-
 
 //=============OCRDocument=====================================================
 // Assumes r is in document coords, exhaustive search.
 //  are words' origin at top left or bottom left?
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr
 {
-    int xi,yi,xs,ys,index;
-    xs = (int)rr.size.width;
-    ys = (int)rr.size.height;
-    xi = (int)rr.origin.x;
+    int xi,yi,x2,y2,index;
+    xi = (int)rr.origin.x;  //Get bounding box limits...
     yi = (int)rr.origin.y;
-    int x2 = xi + xs;
-    int y2 = yi + ys;
-    NSMutableArray *aout = [[NSMutableArray alloc] init];
+    x2 = xi + (int)rr.size.width;
+    y2 = yi + (int)rr.size.height;
+    NSMutableArray *aout = [[NSMutableArray alloc] init]; //Results go here
     index = 0;
     for (OCRWord *ow  in allWords)
     {
@@ -65,60 +66,29 @@
         int y = (int)ow.top.intValue;
         if (x >= xi && x <= x2 && y >= yi && y <= y2) //Hit!
         {
-            [aout addObject:[NSNumber numberWithInt:index]];
+            NSNumber *n = [NSNumber numberWithInt:index];
+            // There is a list of words to ignore in ignore boxes...
+            if (!useIgnoreList || ([ignoreList indexOfObject:n] == NSNotFound))
+            {
+                [aout addObject:n]; // OK? add to result
+            }
         }
         index++;
-    } //end for loop
+    } //end for ow
     return aout;
 } //end findAllWordsInRect
 
+
 //=============(OCRTemplate)=====================================================
-// Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
--(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs
+-(void) addIgnoreBoxItems  : (CGRect )rr
 {
-    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
-    rr.origin.y += (_docRect.origin.y);
-    
-    //NSLog(@" ColRect %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
-    NSMutableArray *a = [self findAllWordsInRect:rr];
-    int ii=0;
-    for ( NSNumber *n in a)
-    {
-        OCRWord *ow = [allWords objectAtIndex:n.longValue];
-        //NSLog(@" colWord[%d] %@ xy %d,%d",ii,ow.wordtext,ow.left.intValue,ow.top.intValue);
-        ii++;
-    }
-    NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
-    int aindex = 0;
-    int ypos   = rr.origin.y;
-    int yc     = (int)rowYs.count;
-    for (int i=0;i<yc;i++)
-    {
-        NSNumber *ny = rowYs[i];
-        int thisY = ny.intValue - glyphHeight/2; //Fudge by half glyph height
-        int nextY = rr.origin.y + rr.size.height;
-        if (i < yc-1)
-        {
-            NSNumber *nyy = rowYs[i+1];
-            nextY = nyy.intValue - 1;
-        }
-        //NSLog(@" yc %d topy %d boty %d",i,thisY,nextY);
-        //Assemble a string now
-        NSString *s = @"";
-        for ( NSNumber *n in a)
-        {
-            OCRWord *ow = [allWords objectAtIndex:n.longValue];
-            int owy = ow.top.intValue;
-            if (owy >= thisY && owy < nextY)
-            {
-                s = [s stringByAppendingString:[NSString stringWithFormat:@"%@ ",ow.wordtext]];
-            }
-        }
-        //NSLog(@"  ...nextColumnWord: %@  ", s);
-        [resultStrings addObject:s];
-    }
-    return resultStrings;
-} //end getColumnStrings
+    useIgnoreList = FALSE;
+    rr.origin.x +=_docRect.origin.x;
+    rr.origin.y +=_docRect.origin.y;
+    NSMutableArray *ir = [self findAllWordsInRect:rr];
+    [ignoreList addObjectsFromArray:ir];
+    useIgnoreList = TRUE;
+} //end addIgnoreBoxItems
 
 //=============(OCRTemplate)=====================================================
 // Look at some random words, get average height thereof
@@ -136,19 +106,73 @@
     glyphHeight = sum / count;
 } //end getAverageGlyphHeight
 
-/*-----------------------------------------------------------*/
-/*-----------------------------------------------------------*/
-double drand(double lo_range,double hi_range )
+
+//=============(OCRTemplate)=====================================================
+// Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
+-(NSArray*)  getHeaderNames
 {
-    int rand_int;
-    double tempd,outd;
+    return headerNames;
+} //end getHeaderNames
+
+
+//=============(OCRTemplate)=====================================================
+// Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
+-(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs
+{
+    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
+    rr.origin.y += (_docRect.origin.y);
     
-    rand_int = rand();
-    tempd = (double)rand_int/(double)RAND_MAX;  /* 0.0 <--> 1.0*/
+    //NSLog(@" ColRect %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
+    NSMutableArray *a = [self findAllWordsInRect:rr];
+    NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
+    int yc = (int)rowYs.count;
+    for (int i=0;i<yc;i++)
+    {
+        NSNumber *ny = rowYs[i];
+        int thisY = ny.intValue - glyphHeight/2; //Fudge by half glyph height
+        int nextY = rr.origin.y + rr.size.height;
+        if (i < yc-1)
+        {
+            NSNumber *nyy = rowYs[i+1];
+            nextY = nyy.intValue - 1;
+        }
+        //NSLog(@" yc %d topy %d boty %d",i,thisY,nextY);
+        //Assemble a string now from this column item, may be multiline
+        NSString *s = @"";
+        for ( NSNumber *n in a)
+        {
+            OCRWord *ow = [allWords objectAtIndex:n.longValue];
+            int owy = ow.top.intValue;
+            if (owy >= thisY && owy < nextY) //Word within row bounds?
+            {
+                s = [s stringByAppendingString:[NSString stringWithFormat:@"%@ ",ow.wordtext]];
+            }
+        }
+        //NSLog(@"  ...nextColumnWord: %@  ", s);
+        [resultStrings addObject:s];
+    }
+    return resultStrings;
+} //end getColumnStrings
+
+//=============(OCRTemplate)=====================================================
+-(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr
+{
+    NSMutableArray *yP = [[NSMutableArray alloc] init];
+    //Get all content within this rect, assume one item per line!
+    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
+    rr.origin.y += _docRect.origin.y;
+    NSMutableArray *a = [self findAllWordsInRect:rr];
+    //NSLog(@" gcYPs %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
     
-    outd = (double)(lo_range + (hi_range-lo_range)*tempd);
-    return(outd);
-}   //end drand
+    for (NSNumber* n  in a)
+    {
+        OCRWord *ow = [allWords objectAtIndex:n.longValue];
+        //NSLog(@" ow is %@ , add yp %d",ow.wordtext,ow.top.intValue);
+        [yP addObject:ow.top];
+    }
+    return yP;
+    
+}
 
 //=============(OCRTemplate)=====================================================
 // Assumes 2D column array fully populated....
@@ -184,7 +208,7 @@ double drand(double lo_range,double hi_range )
         if (y2 > maxy) maxy = y2;
     } //end for loop
     _docRect = CGRectMake(minx, miny, maxx-minx, maxy-miny);
-    NSLog(@" doc lims (%d,%d) to (%d,%d)",minx, miny, maxx , maxy );
+    //NSLog(@" doc lims (%d,%d) to (%d,%d)",minx, miny, maxx , maxy );
     return _docRect;
 } //end getDocRect
 
@@ -259,6 +283,78 @@ double drand(double lo_range,double hi_range )
 
 
 //=============(OCRTemplate)=====================================================
+// Given array of field numbers, looks for date-like strings...
+-(NSDate *) findDateInArrayOfFields : (NSArray*)aof
+{    
+    for (NSNumber* n in aof)
+    {
+        NSString *testText = [self getNthWord:n];
+        if ([testText containsString:@"/"]) //Is this good enough?
+        {
+            return [self parseDateFromString:testText];
+        }
+    }
+    return nil;
+} //end findDateInArrayOfFields
+
+
+//=============(OCRTemplate)=====================================================
+// Given array of field numbers, finds first string which is a legit integer...
+-(int) findIntInArrayOfFields : (NSArray*)aof
+{
+    int foundInt = 0;
+    for (NSNumber* n in aof)
+    {
+        NSString *testText = [self getNthWord:n];
+        testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
+        if ([self isStringAnInteger:testText] )
+            foundInt = [testText intValue];
+    }
+    return foundInt;
+} //end findIntInArrayOfFields
+
+//=============(OCRTemplate)=====================================================
+// Given array of field numbers, finds first string which is a legit integer...
+-(float) findPriceInArrayOfFields : (NSArray*)aof
+{
+    float foundFloat = 0.0f;
+    for (NSNumber* n in aof)
+    {
+        NSString *testText = [self getNthWord:n];
+        testText = [testText stringByReplacingOccurrencesOfString:@"$" withString:@""]; //No dollars please
+        testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
+        if ([self isStringAPrice:testText] )
+            foundFloat = testText.floatValue;
+    }
+    return foundFloat;
+} //end findIntInArrayOfFields
+
+
+//=============(OCRTemplate)=====================================================
+-(NSString *) findTopStringInArrayOfFields : (NSArray*)aof
+{
+    //First make sure we get top field...
+    NSNumber* topn;
+    int minx = 999999;
+    int miny = 999999;
+    for (NSNumber* n in aof)
+    {
+        int xoff = [self getNthXCoord:n].intValue; // Get word's XY coord
+        int yoff = [self getNthYCoord:n].intValue;
+        if (yoff < miny && xoff < minx) //Is it top left item?
+        {
+            minx = xoff; //Store xy position and index
+            miny = yoff;
+            topn = n;
+        }
+    } //end for n
+    return [self getStringStartingAtXY : topn :
+            [NSNumber numberWithInt:minx] : [NSNumber numberWithInt:miny]];
+} //end findTopStringInArrayOfFields
+
+
+//=============(OCRTemplate)=====================================================
+// From stackoverflow...
 -(NSDate*) parseDateFromString : (NSString*) s
 {
     NSError *error = NULL;
@@ -274,22 +370,7 @@ double drand(double lo_range,double hi_range )
             return date;
         }}
     return nil;
-}
-
-//=============(OCRTemplate)=====================================================
-// Given array of field numbers, looks for date-like strings...
--(NSDate *) findDateInArrayOfFields : (NSArray*)aof
-{    
-    for (NSNumber* n in aof)
-    {
-        NSString *testText = [self getNthWord:n];
-        if ([testText containsString:@"/"]) //Is this good enough?
-        {
-            return [self parseDateFromString:testText];
-        }
-    }
-    return nil;
-} //end findDateInArrayOfFields
+} //end parseDateFromString
 
 //=============(OCRTemplate)=====================================================
 // Sets up internal header column names based on passed array of words forming header
@@ -335,81 +416,6 @@ double drand(double lo_range,double hi_range )
 } //end parseHeaderColumns
 
 
-//=============(OCRTemplate)=====================================================
--(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr
-{
-    NSMutableArray *yP = [[NSMutableArray alloc] init];
-    //Get all content within this rect, assume one item per line!
-    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
-    rr.origin.y += _docRect.origin.y;
-    NSMutableArray *a = [self findAllWordsInRect:rr];
-    //NSLog(@" gcYPs %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
-
-    for (NSNumber* n  in a)
-    {
-        OCRWord *ow = [allWords objectAtIndex:n.longValue];
-        //NSLog(@" ow is %@ , add yp %d",ow.wordtext,ow.top.intValue);
-        [yP addObject:ow.top];
-    }
-    return yP;
-
-}
-
-//=============(OCRTemplate)=====================================================
--(NSString *) findTopStringInArrayOfFields : (NSArray*)aof
-{
-    //First make sure we get top field...
-    NSNumber* topn;
-    NSNumber* minx = [NSNumber numberWithInt:999999];
-    NSNumber* miny = [NSNumber numberWithInt:999999];
-    for (NSNumber* n in aof)
-    {
-        NSNumber* xoff = [self getNthXCoord:n];
-        NSNumber* yoff = [self getNthYCoord:n];
-        //NSLog(@" i %d xy %d %d",n.intValue,xoff.intValue,yoff.intValue);
-        if (yoff.intValue < miny.intValue && xoff.intValue < minx.intValue) //Get top left item
-        {
-            //NSLog(@" newmin %d ",n.intValue);
-            minx = xoff; //Store xy position and index
-            miny = yoff;
-            topn = n;
-        }
-    } //end for n
-    return [self getStringStartingAtXY : topn : minx : miny];
-
-} //end findTopStringInArrayOfFields
-
-
-//=============(OCRTemplate)=====================================================
-// Given array of field numbers, finds first string which is a legit integer...
--(int) findIntInArrayOfFields : (NSArray*)aof
-{
-    int foundInt = 0;
-    for (NSNumber* n in aof)
-    {
-        NSString *testText = [self getNthWord:n];
-        testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
-        if ([self isStringAnInteger:testText] )
-            foundInt = [testText intValue];
-    }
-    return foundInt;
-} //end findIntInArrayOfFields
-
-//=============(OCRTemplate)=====================================================
-// Given array of field numbers, finds first string which is a legit integer...
--(float) findPriceInArrayOfFields : (NSArray*)aof
-{
-    float foundFloat = 0.0f;
-    for (NSNumber* n in aof)
-    {
-        NSString *testText = [self getNthWord:n];
-        testText = [testText stringByReplacingOccurrencesOfString:@"$" withString:@""]; //No dollars please
-        testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
-        if ([self isStringAPrice:testText] )
-            foundFloat = testText.floatValue;
-    }
-    return foundFloat;
-} //end findIntInArrayOfFields
 
 //=============OCRDocument=====================================================
 -(void) parseJSONfromDict : (NSDictionary *)d
@@ -425,7 +431,6 @@ double drand(double lo_range,double hi_range )
         NSArray *words = [d valueForKey:@"Words"];
         for (NSDictionary *w in words) //loop over each word
         {
-            //    NSLog(@" w: %@",w);
             OCRWord *ow = [[OCRWord alloc] init];
             [ow packFromDictionary:w];
             //[ow dump];
@@ -434,6 +439,34 @@ double drand(double lo_range,double hi_range )
     }
     [self getAverageGlyphHeight];
     //NSLog(@" overall image wh %d,%d",_width,_height);
+} //end parseJSONfromDict
+
+//=============OCR VC=====================================================
+-(void) setupDocument : (NSString*) ifname : (NSDictionary *)d
+{
+    _scannedImage = [UIImage imageNamed:ifname];
+    _scannedName  = ifname;
+    _width        = _scannedImage.size.width;
+    _height       = _scannedImage.size.height;
+    [self parseJSONfromDict:d];
 }
+
+
+
+/*-----------------------------------------------------------*/
+/*-----------------------------------------------------------*/
+double drand(double lo_range,double hi_range )
+{
+    int rand_int;
+    double tempd,outd;
+    
+    rand_int = rand();
+    tempd = (double)rand_int/(double)RAND_MAX;  /* 0.0 <--> 1.0*/
+    
+    outd = (double)(lo_range + (hi_range-lo_range)*tempd);
+    return(outd);
+}   //end drand
+
+
 
 @end

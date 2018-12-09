@@ -1,4 +1,10 @@
 //
+//    ___   ____ ____  ____                                        _
+//   / _ \ / ___|  _ \|  _ \  ___   ___ _   _ _ __ ___   ___ _ __ | |_
+//  | | | | |   | |_) | | | |/ _ \ / __| | | | '_ ` _ \ / _ \ '_ \| __|
+//  | |_| | |___|  _ <| |_| | (_) | (__| |_| | | | | | |  __/ | | | |_
+//   \___/ \____|_| \_\____/ \___/ \___|\__,_|_| |_| |_|\___|_| |_|\__|
+//
 //  OCRDocument.h
 //  testOCR
 //
@@ -22,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray *headerNames;
     NSMutableArray *columnStringData; //Array of Arrays...
     int glyphHeight;
+    NSMutableArray *ignoreList;
+    BOOL useIgnoreList;
 }
 @property (nonatomic , strong) UIImage* scannedImage;
 @property (nonatomic , strong) NSString* scannedName;
@@ -34,19 +42,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 -(void) clearAllColumnStringData;
 -(void) addColumnStringData : (NSMutableArray*)stringArray;
+-(void) addIgnoreBoxItems  : (CGRect )rr;
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs;
+-(NSArray*)  getHeaderNames;
 -(CGRect) getDocRect;
 -(void) getAverageGlyphHeight;
 -(NSMutableArray *) getRowFromColumnStringData : (int)index;
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr;
--(void)setJSON : (NSString *)json;
 -(void) parseJSONfromDict : (NSDictionary *)d;
 -(int) findIntInArrayOfFields : (NSArray*)aof;
 -(float) findPriceInArrayOfFields : (NSArray*)aof;
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
 -(void) parseHeaderColumns : (NSArray*)aof;
+-(void) setupDocument : (NSString*) ifname : (NSDictionary *)d;
 
 @end
 

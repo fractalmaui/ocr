@@ -1,4 +1,11 @@
 //
+//   _                           _____           _
+//  (_)_ __ ___   __ _  __ _  __|_   _|__   ___ | |___
+//  | | '_ ` _ \ / _` |/ _` |/ _ \| |/ _ \ / _ \| / __|
+//  | | | | | | | (_| | (_| |  __/| | (_) | (_) | \__ \
+//  |_|_| |_| |_|\__,_|\__, |\___||_|\___/ \___/|_|___/
+//                     |___/
+//
 //  imageTools.m
 //  testOCR
 //
@@ -148,7 +155,7 @@
     float fdx = asum;
     float fdy = (float)stride;
     float angle = atan2f(fdy, fdx);
-    float adeg  = 360.0 * (angle / (2 * 3.14159));
+    //float adeg  = 360.0 * (angle / (2 * 3.14159));
     NSLog(@"  dxy %f %f : skew %f",fdx,fdy,angle);
     
 } //end deskew

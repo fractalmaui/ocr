@@ -30,7 +30,7 @@
     od = [[OCRDocument alloc] init];
     ot = [[OCRTemplate alloc] init];
     arrowStepSize = 5;
-    editing = FALSE;
+    editing = adjusting = FALSE;
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
     return self;
@@ -66,13 +66,63 @@
     [self refreshOCRBoxes];
     if (selectBox == nil) //Add selection box...
     {
-        selectBox = [[UIView alloc] initWithFrame:CGRectMake(pageRect.origin.x, pageRect.origin.y, 100, 100)];
+        selectDocRect = CGRectMake(0, 0, 100, 100); //
+        selectBox = [[UIView alloc] initWithFrame:[self documentToScreenRect:selectDocRect]];
         selectBox.backgroundColor = [UIColor colorWithRed:0.5 green:0.0 blue:0.0 alpha:0.5];
         [_selectOverlayView addSubview:selectBox];
         selectBox.hidden = TRUE;
 
     }
 }
+
+//=============OCR VC=====================================================
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    dragging = YES;
+//    CGPoint center;
+//    int i,tx,ty,xoff,yoff,xytoler;
+    UITouch *touch  = [[event allTouches] anyObject];
+    touchLocation   = [touch locationInView:_inputImage];
+    touchX          = touchLocation.x;
+    touchY          = touchLocation.y;
+    touchDocX = [self screenToDocumentX : touchX ];
+    touchDocY = [self screenToDocumentY : touchY ];
+    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+    int docYoff = od.docRect.origin.y;
+    touchDocX+=docXoff;
+    touchDocY+=docYoff;
+    NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
+    adjustSelect = [ot hitField:touchDocX :touchDocY];
+    NSLog(@" ... hit %d",adjustSelect); //asdf
+    if (adjustSelect != -1)
+    {
+        [self promptForAdjust:self];
+    }
+}
+
+//=============OCR VC=====================================================
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    UITouch *touch = [[event allTouches] anyObject];
+    touchLocation = [touch locationInView:_inputImage];
+    //int   xi,yi;
+    touchX = touchLocation.x;
+    touchY = touchLocation.y;
+    touchDocX = [self screenToDocumentX : touchX ];
+    touchDocY = [self screenToDocumentY : touchY ];
+    
+    NSLog(@" touchMoved xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
+    int hitIndex = [ot hitField:touchDocX :touchDocY];
+    NSLog(@" ... hit %d",hitIndex);
+
+}
+
+//==========createVC=========================================================================
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    dragging = NO;
+    NSLog(@" touchEnded");
+} //end touchesEnded
 
 
 //=============OCR VC=====================================================
@@ -92,14 +142,22 @@
         rr.origin.y += docYoff;
         int xi = [self documentToScreenX:rr.origin.x];
         int yi = [self documentToScreenY:rr.origin.y];
-        int xs = (int)((float)rr.size.width  / docXConv);
-        int ys = (int)((float)rr.size.height / docYConv);
+        int xs = (int)((double)rr.size.width  / docXConv);
+        int ys = (int)((double)rr.size.height / docYConv);
         UIView *v =  [[UIView alloc] initWithFrame:CGRectMake(xi, yi, xs, ys)];
         NSString *fieldName = [ot getBoxFieldName : i];
         if ([fieldName isEqualToString:INVOICE_IGNORE_FIELD])
-            v.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.0 alpha:0.6]; //Yellowish
+            v.backgroundColor = [UIColor colorWithRed:0.8 green:0.9 blue:0.0 alpha:0.6]; //Yellowish
+        else if (
+                 [fieldName isEqualToString:INVOICE_NUMBER_FIELD] ||
+                 [fieldName isEqualToString:INVOICE_DATE_FIELD] ||
+                 [fieldName isEqualToString:INVOICE_CUSTOMER_FIELD] ||
+                 [fieldName isEqualToString:INVOICE_HEADER_FIELD] ||
+                 [fieldName isEqualToString:INVOICE_TOTAL_FIELD]
+                 )
+            v.backgroundColor = [UIColor colorWithRed:0.0 green:0.8 blue:0.8 alpha:0.6];  //Cyan
         else
-            v.backgroundColor = [UIColor colorWithRed:0.6 green:0.6 blue:0.6 alpha:0.6];  //Grey
+            v.backgroundColor = [UIColor colorWithRed:0.7 green:0.7 blue:0.7 alpha:0.6];  //Grey
         [_overlayView addSubview:v];
     }
 } //end refreshOCRBoxes
@@ -108,28 +166,18 @@
 -(void) testit
 {
     NSLog(@" Load stubbed OCR data...");
+    NSDictionary *d = [self readTxtToJSON:@"beef"];
     supplierName = @"Hawaii Beef Producers";
     selectFname  = @"hawaiiBeefInvoice.jpg";
-    UIImage *i   = [UIImage imageNamed:selectFname];
-    NSDictionary *d = [self readTxtToJSON:@"beef"];
-    od.scannedImage = [UIImage imageNamed:selectFname];
-    od.scannedName  = selectFname;
-    od.width        = i.size.width;
-    od.height       = i.size.height;
-    //Screen -> Document conversion
-    CGRect r = _inputImage.frame;
-    int xi,yi,xs,ys;
-    xi = r.origin.x;
-    yi = r.origin.y;
-    xs = r.size.width;
-    ys = r.size.height;
-    docXConv = (float)od.width  / (float)xs;
-    docYConv = (float)od.height / (float)ys;
-
-    [od parseJSONfromDict:d];
+    [od setupDocument : selectFname : d];
     docRect = [od getDocRect]; //Get min/max limits of printed text
+    CGRect r = _inputImage.frame;
+    //Screen -> Document conversion
+    docXConv = (double)od.width  / (double)r.size.width;
+    docYConv = (double)od.height / (double)r.size.height;
 
 }
+
 
 
 //=============OCR VC=====================================================
@@ -137,6 +185,17 @@
 - (void)applyTemplate
 {
     [ot clearHeaders];
+    //First add any boxes of content to ignore...
+    for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
+    {
+        NSString* fieldName = [ot getBoxFieldName:i];
+        if ([fieldName isEqualToString:INVOICE_IGNORE_FIELD])
+        {
+            CGRect rr = [ot getBoxRect:i]; //In document coords!
+            [od addIgnoreBoxItems:rr];
+        }
+    }
+
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
         CGRect rr = [ot getBoxRect:i]; //In document coords!
@@ -168,6 +227,8 @@
             else if ([fieldName isEqualToString:INVOICE_HEADER_FIELD]) //Header is SPECIAL!
             {
                 [od parseHeaderColumns : a];
+                columnHeaders = [od getHeaderNames];
+                NSLog(@" headers %@",columnHeaders);
             }
             else if ([fieldName isEqualToString:INVOICE_TOTAL_FIELD]) //Looking for a number?
             {
@@ -179,12 +240,7 @@
         if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD]) //Columns must be resorted from L->R...
         {
             [ot addHeaderColumnToSortedArray : i];
-//            NSLog(@" customer %@",invoiceCustomer);
         }
-        
-
-//        NSLog(@" found a %@",a);
-//        for (OCRWord*ow in a) [ow dump];
     }
     //We can only do columns after they are all loaded
     [od clearAllColumnStringData];
@@ -216,8 +272,29 @@
         [rowItems addObject:rowString];
     }
     NSLog(@" invoice rows %@",rowItems);
+    [self dumpResults];
+    
 } //end applyTemplate
 
+//=============OCR VC=====================================================
+-(void) dumpResults
+{
+    NSString *r = @"Invoice Parsed Results\n";
+    r = [r stringByAppendingString:
+         [NSString stringWithFormat: @"Number %d  Date %@\n",invoiceNumber,invoiceDate]];
+    r = [r stringByAppendingString:
+         [NSString stringWithFormat:@"Customer %@  Total %f\n",invoiceCustomer,invoiceTotal]];
+    r = [r stringByAppendingString:
+         [NSString stringWithFormat:@"Columns:%@\n",columnHeaders]];
+    r = [r stringByAppendingString:@"Invoice Rows:\n"];
+    for (NSString *rowi in rowItems)
+    {
+        r = [r stringByAppendingString:[NSString stringWithFormat:@"[%@]\n",rowi]];
+    }
+    NSLog(@"dump[%@]",r);
+    [self alertMessage:@"Invoice Dump" :r];
+
+}
 
 //=============OCR VC=====================================================
 - (void)callOCRSpace : (NSString*)imageName
@@ -256,7 +333,7 @@
         NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&myError];
-        // Handle result
+        // Handle result: load up document and apply template here
         //NSLog(@" annnnd result is %@",result);
     }];
     [task resume];
@@ -352,23 +429,67 @@
     _LHArrowView.hidden = FALSE;
     _RHArrowView.hidden = FALSE;
     _instructionsLabel.text = @"Move/Resize box with arrows";
-    [self moveOrResizeSelectBox : -1000 : -1000 : 0 : 0];
-    editing   = TRUE;
     fieldName = ftype;
+    [self getShortFieldName];
+    editing = TRUE;
+    arrowStepSize = 10;
+    [self moveOrResizeSelectBox : -1000 : -1000 : 0 : 0];
     [self resetSelectBox];
+    // Change bottom button so user knows they can cancel...
+    [_addFieldButton setTitle:@"Cancel" forState:UIControlStateNormal];
 
 } //end addNewField
 
 //=============OCR VC=====================================================
+-(void) adjustField
+{
+    _LHArrowView.hidden = FALSE;
+    _RHArrowView.hidden = FALSE;
+    _instructionsLabel.text = @"Adjust box with arrows";
+    fieldName = [ot getBoxFieldName:adjustSelect]; //asdf
+    [self getShortFieldName];
+    adjusting = TRUE;
+    arrowStepSize = 1;
+    CGRect rr = [ot getBoxRect:adjustSelect];
+    [ot dumpBox:adjustSelect];
+    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+    int docYoff = od.docRect.origin.y;
+    rr.origin.x += docXoff;
+    rr.origin.y += docYoff;
+    int xi = [self documentToScreenX:rr.origin.x];
+    int yi = [self documentToScreenY:rr.origin.y];
+    int xs = (int)((double)rr.size.width  / docXConv);
+    int ys = (int)((double)rr.size.height / docYConv);
+    selectBox.frame =  CGRectMake(xi, yi, xs, ys);
+    selectBox.hidden = FALSE;
+    // Change bottom button so user knows they can cancel...
+    [_addFieldButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    
+
+}
+
+//=============OCR VC=====================================================
+// Internal stuff...
+-(void) getShortFieldName
+{
+    fieldNameShort = @"Number";
+    if ([fieldName isEqualToString:INVOICE_DATE_FIELD])       fieldNameShort = @"Date";
+    if ([fieldName isEqualToString:INVOICE_CUSTOMER_FIELD])   fieldNameShort = @"Cust";
+    if ([fieldName isEqualToString:INVOICE_HEADER_FIELD])     fieldNameShort = @"Header";
+    if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD])     fieldNameShort = @"Column";
+    if ([fieldName isEqualToString:INVOICE_IGNORE_FIELD])     fieldNameShort = @"Ignore";
+    if ([fieldName isEqualToString:INVOICE_TOTAL_FIELD])      fieldNameShort = @"Total";
+}
+
+//=============OCR VC=====================================================
 -(void) resetSelectBox
 {
-    CGRect r = _inputImage.frame;
-    int xi,yi,xs,ys;
-    xs = r.size.width/4;
-    ys = r.size.height/8;
-    xi = r.origin.x + r.size.width/2 - xs/2;
-    yi = r.origin.y + r.size.height/2 - ys/2;
-    selectBox.frame = CGRectMake(xi, yi, xs, ys);
+    int xs = od.width/4;
+    int ys = od.height/10;
+    int xi = od.width/2  - xs/2;
+    int yi = od.height/2 - ys/2;
+    selectDocRect   = CGRectMake(xi, yi, xs, ys);
+    selectBox.frame = [self documentToScreenRect:selectDocRect];
     selectBox.hidden = FALSE;
 }
 
@@ -376,7 +497,8 @@
 
 //=============OCR VC=====================================================
 - (IBAction)clearSelect:(id)sender {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Clear All Fields",nil)
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"Clear All Fields: Are you sure?",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     
@@ -397,8 +519,15 @@
 }
 
 //=============OCR VC=====================================================
+// Handles add field OR cancel adding field
 - (IBAction)addFieldSelect:(id)sender {
-    if (editing) return;
+    
+    if (editing || adjusting) //Cancel?
+    {
+        editing = adjusting = FALSE;
+        [self clearScreenAfterEdit];
+        return;
+    }
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Add New Field",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
@@ -450,6 +579,90 @@
 
 } //end addFieldSelect
 
+//=============OCR VC=====================================================
+- (IBAction)promptForAdjust:(id)sender {
+    
+    NSString *title = [NSString stringWithFormat:@"Selected %@\n[%@]",
+                       [ot getBoxFieldName:adjustSelect],[ot getAllTags:adjustSelect]];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(title,nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Adjust Position and Size",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self adjustField];
+                                                          }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Adjust Position and Size",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self adjustField];
+                                                          }];
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self promptForNewTagToAdd:self];
+          
+                                                           }];
+    UIAlertAction *fourthAction;
+    if ([ot getTagCount:adjustSelect] > 0)
+        fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Clear Tags",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self->ot clearTags:self->adjustSelect];
+                                                              [self->ot saveTemplatesToDisk];
+                                                          }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    //DHS 3/13: Add owner's ability to delete puzzle
+    [alert addAction:firstAction];
+    [alert addAction:secondAction];
+    [alert addAction:thirdAction];
+    if ([ot getTagCount:adjustSelect] > 0) [alert addAction:fourthAction];
+    [alert addAction:cancelAction];
+
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end promptForAdjust
+
+//=============OCR VC=====================================================
+- (IBAction)promptForNewTagToAdd:(id)sender {
+    NSArray*actions = [[NSArray alloc] initWithObjects:
+                       TOP_TAG_TYPE,BOTTOM_TAG_TYPE,LEFT_TAG_TYPE,RIGHT_TAG_TYPE,
+                       TOPMOST_TAG_TYPE,BOTTOMMOST_TAG_TYPE,LEFTMOST_TAG_TYPE,RIGHTMOST_TAG_TYPE,
+                       ABOVE_TAG_TYPE,BELOW_TAG_TYPE,LEFTOF_TAG_TYPE,RIGHTOF_TAG_TYPE,
+                       HCENTER_TAG_TYPE,HALIGN_TAG_TYPE,VCENTER_TAG_TYPE,VALIGN_TAG_TYPE , nil];
+    NSArray *actionNames = [[NSArray alloc] initWithObjects:
+                            @"Top",@"Bottom",@"Left",@"Right",
+                            @"Topmost",@"Bottommost",@"Leftmost",@"Rightmost",
+                            @"Above",@"Below",@"Leftof",@"Rightof",
+                            @"HCenter",@"VCenter",@"HAlign",@"VAlign",nil];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select A Tag",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    int index=0;
+    for (NSString *aname in actionNames)
+    {
+        UIAlertAction *nextAction = [UIAlertAction actionWithTitle:NSLocalizedString(aname,nil)
+                                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                  [self addTag:[actions objectAtIndex:index]];
+                                                              }];
+        [alert addAction:nextAction];
+        index++;
+    }
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    [alert addAction:cancelAction];
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end promptForInvoiceNumberFormat
+
+//=============OCR VC=====================================================
+-(void) addTag : (NSString*)tag
+{
+    NSLog(@" addTag %@",tag);
+    [ot addTag:adjustSelect:tag];
+    [ot saveTemplatesToDisk];
+} //end addTag
 
 //=============OCR VC=====================================================
 - (IBAction)promptForInvoiceNumberFormat:(id)sender {
@@ -469,7 +682,7 @@
                                                                [self finishAndAddBox];
                                                            }];
     //DHS 3/13: Add owner's ability to delete puzzle
-    //[alert addAction:firstAction];
+    [alert addAction:firstAction];
     [alert addAction:secondAction];
     
     [self presentViewController:alert animated:YES completion:nil];
@@ -504,7 +717,7 @@
 
 //=============OCR VC=====================================================
 - (IBAction)doneSelect:(id)sender {
-    if (editing)
+    if (editing || adjusting)
     {
         //Hmm let's leave all fields automatic for now, no formatting prompts...
         //if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD])
@@ -518,50 +731,73 @@
             [self finishAndAddBox];
         }
     }
-}
+} //end doneSelect
 
 //=============OCR VC=====================================================
 -(void) finishAndAddBox
 {
-    _LHArrowView.hidden = TRUE;
-    _RHArrowView.hidden = TRUE;
     //NOTE: this rect has to be scaled and offset for varying page sizes
     //  and text offsets!
     CGRect r = [self getDocumentFrameFromSelectBox];
+    if (adjusting) [ot deleteBox:adjustSelect]; //Adjust? Replace box
     [ot addBox : r : fieldName : fieldFormat];
-    editing = FALSE;
+    editing = adjusting = FALSE;
     [ot dump];
-    selectBox.hidden = TRUE;
     [ot saveTemplatesToDisk];
-    [self refreshOCRBoxes];
+    [self clearScreenAfterEdit];
 }
 
+//=============OCR VC=====================================================
+-(void) clearScreenAfterEdit
+{
+    _LHArrowView.hidden     = TRUE;
+    _RHArrowView.hidden     = TRUE;
+    selectBox.hidden        = TRUE;
+    _instructionsLabel.text = @"...";
+    [_addFieldButton setTitle:@"Add Field" forState:UIControlStateNormal];
+    [self refreshOCRBoxes];
+}
 
 //=============OCR VC=====================================================
 -(int) screenToDocumentX : (int) xin
 {
-    return (int)((float)(xin - _inputImage.frame.origin.x) * docXConv);
+    double dx = ((double)xin - _inputImage.frame.origin.x) * docXConv;
+    return (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
 -(int) screenToDocumentY : (int) yin
 {
-    return (int)((float)(yin - _inputImage.frame.origin.y) * docYConv);
+    double dy = ((double)yin - _inputImage.frame.origin.y) * docYConv;
+    return (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
 -(int) documentToScreenX : (int) xin
 {
-    return (int)((float)xin / docXConv) + _inputImage.frame.origin.x;
+    double dx = ((double)xin / docXConv + _inputImage.frame.origin.x);
+    return (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
 -(int) documentToScreenY : (int) yin
 {
-    return (int)((float)yin / docYConv) + _inputImage.frame.origin.y;
+    double dy = ((double)yin / docYConv + _inputImage.frame.origin.y);
+    return (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
 }
 
-
+//=============OCR VC=====================================================
+-(CGRect) documentToScreenRect : (CGRect) docRect
+{
+    int xi,yi,xs,ys;
+    xi = [self documentToScreenX:docRect.origin.x];
+    yi = [self documentToScreenY:docRect.origin.y];
+    double dx = (double)docRect.size.width / docXConv;
+    xs = (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
+    double dy = (double)docRect.size.height / docYConv;
+    ys = (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
+    return CGRectMake(xi, yi, xs, ys);
+} //documentToScreenRect
 
 
 
@@ -578,18 +814,15 @@
     NSLog(@" inxy %d %d",(int)rs.origin.x,(int)rs.origin.y);
     int docx = [self screenToDocumentX : rs.origin.x];
     int docy = [self screenToDocumentY : rs.origin.y];
-    int docw = (int)(float)(rs.size.width  * docXConv);
-    int doch = (int)(float)(rs.size.height * docYConv);
+    int docw = (int)(double)(rs.size.width  * docXConv);
+    int doch = (int)(double)(rs.size.height * docYConv);
     NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
-//    int sx = [self documentToScreenX:docx];
-//    int sy = [self documentToScreenY:docy];
-//    NSLog(@"annnd back to screenxy %d %d",sx,sy);
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
     int docYoff = od.docRect.origin.y;
     docx -= docXoff;
     docy -= docYoff;
     _instructionsLabel.text = [NSString stringWithFormat:
-                               @"docxy %d %d  wh %d %d",docx,docy,docw,doch];
+                               @"%@:XY(%d,%d)WH(%d,%d)",fieldNameShort,docx,docy,docw,doch];
     return CGRectMake(docx, docy, docw, doch);
 }
 

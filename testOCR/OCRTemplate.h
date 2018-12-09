@@ -1,4 +1,11 @@
 //
+//    ___   ____ ____ _____                    _       _
+//   / _ \ / ___|  _ \_   _|__ _ __ ___  _ __ | | __ _| |_ ___
+//  | | | | |   | |_) || |/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \
+//  | |_| | |___|  _ < | |  __/ | | | | | |_) | | (_| | ||  __/
+//   \___/ \____|_| \_\|_|\___|_| |_| |_| .__/|_|\__,_|\__\___|
+//                                      |_|
+//
 //  OCRTemplate.h
 //  testOCR
 //
@@ -20,21 +27,27 @@ NS_ASSUME_NONNULL_BEGIN
     int headerColumnCount;
 }
 
+-(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format;
+-(void) addTag : (int) index : (NSString*)tag;
 -(void) clearFields;
 -(void) clearHeaders;
--(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format;
+-(void) clearTags : (int) index;
+-(void) deleteBox : (int) index;
+-(NSString *) getAllTags :(int) index;
 -(int) getBoxCount;
 -(CGRect) getBoxRect :(int) index;
 -(NSString*) getBoxFieldName :(int) index;
 -(NSString*) getBoxFieldFormat :(int) index;
 -(int) getColumnCount;
 -(CGRect) getColumnByIndex : (int) index;
+-(int)  getTagCount : (int) index;
 -(void) addHeaderColumnToSortedArray : (int) index;
 -(void) dump;
+-(void) dumpBox : (int) index;
 -(void) loadTemplatesFromDisk;
 -(void) saveTemplatesToDisk;
 -(BOOL) gotFieldAlready : (NSString*)fname;
-
+-(int) hitField :(int) tx : (int) ty;
 @end
 
 NS_ASSUME_NONNULL_END
