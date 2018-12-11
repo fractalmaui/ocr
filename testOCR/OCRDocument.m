@@ -422,6 +422,8 @@
 {
     rawJSONDict          = d;
     NSDictionary *pr     = [d valueForKey:@"ParsedResults"];
+    //NSNumber* exitCode   = [d valueForKey:@"OCRExitCode"];
+
     parsedText           = [pr valueForKey:@"ParsedText"]; //Everything lumped together...
     NSDictionary *to     = [pr valueForKey:@"TextOverlay"];
     NSArray *lines       = [[to valueForKey:@"Lines"]objectAtIndex:0]; //array of "Words"

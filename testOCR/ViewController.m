@@ -5,6 +5,8 @@
 //  Created by Dave Scruton on 12/3/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  CSV Columns for Exp Sheet Example.xlsx
+// Category,Month,Item,Quantity, Unit of Measure, Bulk/Individual Pack , Vendor Name, Total Price, Price/UOM , Processed, Local, Invoice Date, Line#
 // Here's more info:
 //   https://ocr.space/ocrapi/confirmation
 //   https://github.com/A9T9/OCR.Space-OCR-API-Code-Snippets/blob/master/ocrapi.m
@@ -13,8 +15,8 @@
 //  needs openCV?
 //  https://www.codeproject.com/Articles/104248/%2fArticles%2f104248%2fDetect-image-skew-angle-and-deskew-image
 //  simple deskew?
-//  Code
-//  https://github.com/A9T9/OCR.Space-OCR-API-Code-Snippets/blob/master/ocrapi.m
+//
+//  In Adjust mode, zoom in??
 #import "ViewController.h"
 
 @interface ViewController ()
@@ -93,7 +95,7 @@
     touchDocY+=docYoff;
     NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
     adjustSelect = [ot hitField:touchDocX :touchDocY];
-    NSLog(@" ... hit %d",adjustSelect); //asdf
+    NSLog(@" ... hit %d",adjustSelect);
     if (adjustSelect != -1)
     {
         [self promptForAdjust:self];
@@ -297,6 +299,7 @@
 }
 
 //=============OCR VC=====================================================
+// Sends a JPG to the OCR server, and receives JSON text data back...
 - (void)callOCRSpace : (NSString*)imageName
 {
     // Create URL request
@@ -308,8 +311,8 @@
     
     NSURLSession *session = [NSURLSession sharedSession];
     
-    // Image file and parameters
-    NSData *imageData = UIImageJPEGRepresentation([UIImage imageNamed:imageName], 0.6);
+    // Image file and parameters, use hi compression quality?
+    NSData *imageData = UIImageJPEGRepresentation([UIImage imageNamed:imageName], 0.8);
     NSDictionary *parametersDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
                                           @"99bb6b410288957", @"apikey",
                                           @"True", @"isOverlayRequired",
@@ -333,6 +336,17 @@
         NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&myError];
+        if (error != nil) //Task came back w/ error?
+        {
+            NSNumber* exitCode     = [result valueForKey:@"OCRExitCode"];
+            NSString* errDesc;
+            switch(exitCode.intValue)
+            {
+                case 2: errDesc = @"OCR only parsed partially";break;
+                case 3: errDesc = @"OCR failed to parse image";break;
+                case 4: errDesc = @"OCR internal error";break;
+            }
+        }
         // Handle result: load up document and apply template here
         //NSLog(@" annnnd result is %@",result);
     }];
@@ -446,7 +460,7 @@
     _LHArrowView.hidden = FALSE;
     _RHArrowView.hidden = FALSE;
     _instructionsLabel.text = @"Adjust box with arrows";
-    fieldName = [ot getBoxFieldName:adjustSelect]; //asdf
+    fieldName = [ot getBoxFieldName:adjustSelect];
     [self getShortFieldName];
     adjusting = TRUE;
     arrowStepSize = 1;
@@ -662,6 +676,7 @@
     NSLog(@" addTag %@",tag);
     [ot addTag:adjustSelect:tag];
     [ot saveTemplatesToDisk];
+    [ot saveToParse:supplierName];
 } //end addTag
 
 //=============OCR VC=====================================================

@@ -14,6 +14,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Parse/Parse.h>
 #import <UIKit/UIKit.h>
 #import "OCRBox.h"
 NS_ASSUME_NONNULL_BEGIN
@@ -26,6 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
     CGRect headerColumns[32]; //Overkill
     int headerColumnCount;
 }
+
+@property (nonatomic , strong) NSString* versionNumber;
+
 
 -(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format;
 -(void) addTag : (int) index : (NSString*)tag;
@@ -46,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) dumpBox : (int) index;
 -(void) loadTemplatesFromDisk;
 -(void) saveTemplatesToDisk;
+-(void) saveToParse : (NSString *)vendorName;
 -(BOOL) gotFieldAlready : (NSString*)fname;
 -(int) hitField :(int) tx : (int) ty;
 @end

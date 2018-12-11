@@ -81,7 +81,6 @@
     BOOL dragging;
     int adjustSelect;
 
-
 }
 
 @property (weak, nonatomic) IBOutlet UIButton *arrowRightSelect;

@@ -28,6 +28,8 @@
         fileLocation  = [documentsDirectory stringByAppendingPathComponent:@"templates.dat"];
         ocrBoxes      = [[NSMutableArray alloc] init];
         [self loadTemplatesFromDisk];
+        _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+
         //[self dump];
     }
     return self;
@@ -335,4 +337,27 @@
     // writeToFile:fileLocation atomically:YES];
     NSLog(@" ...saved templates to %@ [%@]",fileLocation,fileWorkString);
 }
+
+// Saves a new record...
+//=============(OCRTemplate)=====================================================
+-(void) saveToParse : (NSString *)vendorName
+{
+    //NSLog(@" unique User: savetoParse %@ %@ %@ %@",ampUserID,userID,userName,fbID);
+    PFObject *templateRecord = [PFObject objectWithClassName:@"templates"];
+    templateRecord[@"vendor"]        = vendorName;
+    templateRecord[@"packedString"]  = [self packToString];
+    templateRecord[@"versionNumber"] = _versionNumber;
+    [templateRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+        if (succeeded) {
+            NSLog(@" ...OCRTemplate [vendor:%@] saved to parse",vendorName);
+            //[self.delegate didSaveUniqueUserToParse];
+        } else {
+            NSLog(@" ERROR: saving temlate to parse!");
+        }
+    }];
+} //end saveToParse
+
+
+
+
 @end
