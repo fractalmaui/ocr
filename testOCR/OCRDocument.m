@@ -213,6 +213,107 @@
 } //end getDocRect
 
 //=============(OCRTemplate)=====================================================
+-(CGRect) getWordRectByIndex : (int) index
+{
+    if (index < 0 || index >= allWords.count) return CGRectMake(0,0, 0, 0);
+    OCRWord *ow = [allWords objectAtIndex:index];
+    return CGRectMake(ow.left.intValue,  ow.top.intValue,
+                      ow.width.intValue, ow.height.intValue);
+}
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getBLRect
+{
+    int minx,maxy,index,foundit;
+    minx = 99999;
+    maxy = -99999;
+    index   = 0;
+    foundit = -1;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue;
+        int y1 = (int)ow.top.intValue + (int)ow.height.intValue;
+        if (x1 < minx && y1 > maxy) {
+            minx = x1;
+            maxy = y1;
+            foundit = index;
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+} //end getBLRect
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getBRRect
+{
+    int maxx,maxy,index,foundit;
+    maxx = -99999;
+    maxy = -99999;
+    index   = 0;
+    foundit = -1;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue + (int)ow.width.intValue;
+        int y1 = (int)ow.top.intValue  + (int)ow.height.intValue;
+        if (x1 > maxx && y1 > maxy) {
+            maxx = x1;
+            maxy = y1;
+            foundit = index;
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+} //end getBRRect
+
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getTLRect
+{
+    int minx,miny,index,foundit;
+    minx = miny = 99999;
+    index   = 0;
+    foundit = -1;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue;
+        int y1 = (int)ow.top.intValue;
+        // Look for farthest left near the top
+        if (x1 < minx && y1 < _height/10) {
+            minx = x1;
+            miny = y1;
+            foundit = index;
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+} //end getTLRect
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getTRRect
+{
+    int maxx,miny,index,foundit;
+    maxx = -99999;
+    miny = 99999;
+    index   = 0;
+    foundit = -1;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue + (int)ow.width.intValue;
+        int y1 = (int)ow.top.intValue;
+        //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
+        //Look for farthest right near the top!
+        if (x1 > maxx && y1 < _height/10) {
+            //NSLog(@" bing: Top Right");
+            maxx = x1;
+            miny = y1;
+            foundit = index;
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+} //end getTRRect
+
+//=============(OCRTemplate)=====================================================
 -(BOOL) isStringAnInteger : (NSString *)s
 {
     NSCharacterSet *alphaNums = [NSCharacterSet decimalDigitCharacterSet];
@@ -452,6 +553,39 @@
     _height       = _scannedImage.size.height;
     [self parseJSONfromDict:d];
 }
+
+//=============(OCRTemplate)=====================================================
+-(void) computeScaling:(CGRect )tlr : (CGRect )trr
+{
+    [self setScalingRects];
+    tlOriginalRect = tlr;
+    trOriginalRect = trr;
+    
+    double hsizeOrig   = (double)(trOriginalRect.origin.x + trOriginalRect.size.width) -
+                         (double)(tlOriginalRect.origin.x);
+    double hsizeScaled = (double)(trScalingRect.origin.x + trScalingRect.size.width) -
+                         (double)(tlScalingRect.origin.x);
+    if (hsizeOrig == 0) //error!
+    {
+        hScale = vScale = 1.0;
+    }
+    else
+    {
+        hScale = vScale = hsizeScaled / hsizeOrig;
+    }
+    NSLog(@" sizeorig %f scaled %f  hvScale %f",hsizeOrig,hsizeScaled,hScale);
+    
+}
+
+
+//=============(OCRTemplate)=====================================================
+-(void) setScalingRects
+{
+    tlScalingRect = [self getTLRect];
+    trScalingRect = [self getTRRect];
+}
+
+
 
 
 

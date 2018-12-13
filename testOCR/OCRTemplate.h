@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *fileWorkString;
     CGRect headerColumns[32]; //Overkill
     int headerColumnCount;
+    //Comes from templated document (original)
+    CGRect tlDocRect,trDocRect;
+
 }
 
 @property (nonatomic , strong) NSString* versionNumber;
@@ -42,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(CGRect) getBoxRect :(int) index;
 -(NSString*) getBoxFieldName :(int) index;
 -(NSString*) getBoxFieldFormat :(int) index;
+-(CGRect) getTLOriginalRect;
+-(CGRect) getTROriginalRect;
 -(int) getColumnCount;
 -(CGRect) getColumnByIndex : (int) index;
 -(int)  getTagCount : (int) index;
@@ -49,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) dump;
 -(void) dumpBox : (int) index;
 -(void) loadTemplatesFromDisk;
+-(void) setOriginalRects : (CGRect) tlr : (CGRect) trr;
 -(void) saveTemplatesToDisk;
 -(void) saveToParse : (NSString *)vendorName;
 -(BOOL) gotFieldAlready : (NSString*)fname;

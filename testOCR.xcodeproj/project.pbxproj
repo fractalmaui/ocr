@@ -34,6 +34,8 @@
 		722E090121BF50BF00BBD88D /* ParseFacebookUtilsV4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FD21BF50BE00BBD88D /* ParseFacebookUtilsV4.framework */; };
 		722E090221BF50BF00BBD88D /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FE21BF50BE00BBD88D /* Parse.framework */; };
 		722E090321BF50BF00BBD88D /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FF21BF50BF00BBD88D /* ParseUI.framework */; };
+		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
+		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +76,9 @@
 		722E08FD21BF50BE00BBD88D /* ParseFacebookUtilsV4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtilsV4.framework; path = 3rdparty/ParseFacebookUtilsV4.framework; sourceTree = "<group>"; };
 		722E08FE21BF50BE00BBD88D /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = 3rdparty/Parse.framework; sourceTree = "<group>"; };
 		722E08FF21BF50BF00BBD88D /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = 3rdparty/ParseUI.framework; sourceTree = "<group>"; };
+		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
+		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
+		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
 		72E5D31021B6DE4C005AF869 /* txt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -82,6 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */,
 				722E090321BF50BF00BBD88D /* ParseUI.framework in Frameworks */,
 				722E08FB21BF506200BBD88D /* libsqlite3.tbd in Frameworks */,
 				722E08F921BF505B00BBD88D /* CoreAudio.framework in Frameworks */,
@@ -138,6 +144,8 @@
 				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
 				7209609C21B81FDC00D49C63 /* OCRBox.h */,
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
+				729C592A21C1D08900F4C695 /* smartProducts.h */,
+				729C592B21C1D08900F4C695 /* smartProducts.m */,
 			);
 			path = testOCR;
 			sourceTree = "<group>";
@@ -160,6 +168,7 @@
 		722E08F121BF504700BBD88D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				729C592E21C1F62400F4C695 /* MessageUI.framework */,
 				722E08FC21BF50BE00BBD88D /* Bolts.framework */,
 				722E08FE21BF50BE00BBD88D /* Parse.framework */,
 				722E08FD21BF50BE00BBD88D /* ParseFacebookUtilsV4.framework */,
@@ -257,6 +266,7 @@
 				7206008D21B64052000B26DC /* ViewController.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,
 				7206008A21B64052000B26DC /* AppDelegate.m in Sources */,
+				729C592C21C1D08900F4C695 /* smartProducts.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
 				7209608F21B8173200D49C63 /* OCRDocument.m in Sources */,
 			);

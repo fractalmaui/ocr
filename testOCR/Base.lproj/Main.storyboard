@@ -190,6 +190,17 @@
                                     <action selector="addFieldSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="8h6-VJ-gmb"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rmC-8n-QZZ">
+                                <rect key="frame" x="139" y="600" width="97" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="EmU-2s-JB1"/>
+                                    <constraint firstAttribute="width" constant="97" id="QgU-BQ-FZl"/>
+                                </constraints>
+                                <state key="normal" title="TestEmail"/>
+                                <connections>
+                                    <action selector="testEmail:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ejC-Rt-yPI"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ejW-Oz-qIc">
                                 <rect key="frame" x="294" y="625" width="65" height="30"/>
                                 <constraints>
@@ -228,6 +239,8 @@
                             <constraint firstItem="Vja-od-GMR" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="17" id="j1U-WZ-h3m"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ZGC-aM-zdM" secondAttribute="bottom" constant="12" id="k7o-zp-mDt"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ioZ-IL-wk5" secondAttribute="trailing" constant="5" id="rHw-Fl-r8D"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="rmC-8n-QZZ" secondAttribute="bottom" constant="37" id="roU-Rd-E2f"/>
+                            <constraint firstItem="rmC-8n-QZZ" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="sPd-gw-kHP"/>
                             <constraint firstItem="ioZ-IL-wk5" firstAttribute="leading" secondItem="7l9-H4-46L" secondAttribute="trailing" constant="5" id="ts8-6y-WIu"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="ylF-9f-W4B" secondAttribute="trailing" constant="17" id="u88-52-mtH"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="ylF-9f-W4B" secondAttribute="bottom" constant="59" id="zZ3-gp-Ue3"/>

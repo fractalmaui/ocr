@@ -35,6 +35,8 @@
     editing = adjusting = FALSE;
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
+    EXPDump     = [[NSMutableArray alloc] init];
+    smartp      = [[smartProducts alloc] init];
     return self;
 }
 
@@ -172,6 +174,11 @@
     supplierName = @"Hawaii Beef Producers";
     selectFname  = @"hawaiiBeefInvoice.jpg";
     [od setupDocument : selectFname : d];
+    tlRect = [od getTLRect];
+    trRect = [od getTRRect];
+    //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
+    blRect = [od getBLRect];
+    brRect = [od getBRRect];
     docRect = [od getDocRect]; //Get min/max limits of printed text
     CGRect r = _inputImage.frame;
     //Screen -> Document conversion
@@ -187,6 +194,13 @@
 - (void)applyTemplate
 {
     [ot clearHeaders];
+    //Get invoice top left / top right limits from document, will be using
+    // these to scale invoice by:
+    CGRect tlOriginal = [ot getTLOriginalRect];
+    CGRect trOriginal = [ot getTROriginalRect];
+    [od setScalingRects];
+    [od computeScaling : tlOriginal : trOriginal];
+
     //First add any boxes of content to ignore...
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
@@ -214,7 +228,9 @@
             if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD]) //Looking for a number?
             {
                 invoiceNumber = [od findIntInArrayOfFields:a];
-                NSLog(@" invoice# %d",invoiceNumber);
+                //This will have to be more robust
+                invoiceNumberString = [NSString stringWithFormat:@"%d",invoiceNumber];
+                NSLog(@" invoice# %d [%@]",invoiceNumber,invoiceNumberString);
             }
             else if ([fieldName isEqualToString:INVOICE_DATE_FIELD]) //Looking for a date?
             {
@@ -276,7 +292,142 @@
     NSLog(@" invoice rows %@",rowItems);
     [self dumpResults];
     
+    //Let's try getting a form for pam now...
+    [self writeEXPToParse];
 } //end applyTemplate
+
+//=============OCR VC=====================================================
+-(void) writeEXPToParse
+{
+    for (int i=0;i<od.longestColumn;i++)
+    {
+        NSMutableArray *ac = [od getRowFromColumnStringData : i];
+        NSLog(@" ac %@",ac);
+        [smartp clear];
+        [smartp addVendor:supplierName]; //Is this the right string?
+        NSString *productName = ac[2]; //3rd column?
+        [smartp addProductName:productName];
+        [smartp addDate:invoiceDate];
+        [smartp addLineNumber:i+1];
+        [smartp addRawPrice: ac[4]]; //column 5: RH total price
+        [smartp analyze]; //fills out fields -> smartp.latest...
+        if (smartp.analyzeOK) //Only save valid stuff!
+        {
+            //Package up our fields...
+            PFObject *nextEXPRecord = [PFObject objectWithClassName:@"EXPFullTable"];
+            nextEXPRecord[PInv_Category_key]    = smartp.latestCategory;
+            nextEXPRecord[PInv_Month_key]       = smartp.latestShortDateString; //DD-MMM?
+            nextEXPRecord[PInv_Quantity_key]    = ac[0]; //Quantity:first column from invoice table
+            nextEXPRecord[PInv_Item_key]        = ac[1]; //item code:2nd column
+            nextEXPRecord[PInv_UOM_key]         = smartp.latestUOM;
+            nextEXPRecord[PInv_Bulk_or_Individual_key] = smartp.latestBulkOrIndividual;
+            nextEXPRecord[PInv_Vendor_key]      = smartp.latestVendor;
+            nextEXPRecord[PInv_TotalPrice_key]  = smartp.latestTotalPrice;
+            nextEXPRecord[PInv_PricePerUOM_key] = ac[3]; //column 4, next to RH!
+            nextEXPRecord[PInv_Processed_key]   = smartp.latestProcessed;
+            nextEXPRecord[PInv_Local_key]       = smartp.latestLocal;
+            nextEXPRecord[PInv_Date_key]        = smartp.invoiceDate; //ONLY column that ain't a String!
+            nextEXPRecord[PInv_LineNumber_key]  = smartp.latestLineNumber;
+            nextEXPRecord[PInv_InvoiceNumber_key]  = invoiceNumberString;
+
+            [nextEXPRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (succeeded) {
+                    NSLog(@" ...nextEXP: saved to parse %@",self->smartp.latestLineNumber);
+                    //  [self.delegate didSaveUniqueUserToParse];
+                } else {
+                    NSLog(@" ...nextEXP: ERROR: %@",error.localizedDescription);
+                }
+            }]; //end saveinBackground
+
+        } //end analyzeOK
+    } //end for loop
+} //end getEXPForm
+
+
+//=============OCR VC=====================================================
+-(void) loadEXPFromParseAsStrings : (BOOL) dumptoCSV
+{
+    if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    [query orderByAscending:PInv_LineNumber_key];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->EXPDump removeAllObjects];
+            int i     = 0;
+            //int count = (int)objects.count;
+            
+            for( PFObject *pfo in objects)
+            {
+                NSString *quantity = @"";
+                NSString *item     = @"";
+                self->smartp.latestShortDateString = [pfo objectForKey:PInv_Month_key];
+                self->smartp.latestCategory        = [pfo objectForKey:PInv_Category_key];
+                quantity                     = [pfo objectForKey:PInv_Quantity_key];
+                item                         = [pfo objectForKey:PInv_Item_key];
+                self->smartp.latestUOM              = [pfo objectForKey:PInv_UOM_key];
+                self->smartp.latestBulkOrIndividual = [pfo objectForKey:PInv_Bulk_or_Individual_key];
+                self->smartp.latestVendor           = [pfo objectForKey:PInv_Vendor_key];
+                self->smartp.latestTotalPrice       = [pfo objectForKey:PInv_TotalPrice_key];
+                self->smartp.latestPricePerUOM      = [pfo objectForKey:PInv_PricePerUOM_key];
+                self->smartp.latestProcessed        = [pfo objectForKey:PInv_Processed_key];
+                self->smartp.latestLocal            = [pfo objectForKey:PInv_Local_key];
+                self->smartp.latestLineNumber       = [pfo objectForKey:PInv_LineNumber_key];
+                invoiceNumberString                 = [pfo objectForKey:PInv_InvoiceNumber_key];
+                NSString *s = [NSString stringWithFormat:@"%@,",self->smartp.latestCategory];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestShortDateString]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",quantity]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",item]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestUOM]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestBulkOrIndividual]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestVendor]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestTotalPrice]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestPricePerUOM]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestProcessed]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestLocal]];
+                NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
+                [formatter setDateFormat:@"MM/dd/yy"];
+                NSString *sfd = [formatter stringFromDate:[pfo objectForKey:PInv_Date_key]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",sfd]];
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestLineNumber]];
+                //LAST FIELD: note it has a comma after it in final CSV!
+                s = [s stringByAppendingString:
+                     [NSString stringWithFormat:@"%@",self->invoiceNumberString]];
+                [self->EXPDump addObject:s];
+                if (dumptoCSV)
+                {
+                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
+                    //if (i < count-1) //Not at end? add LF
+                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
+                }
+                i++;
+            }
+            NSLog(@" ...loaded EXP OK %@",self->EXPDump);
+        }
+        NSLog(@" annnd csv is %@",self->EXPDumpCSVList);
+        [self mailit: self->EXPDumpCSVList];
+    }];
+} //end loadEXPFromParseAsStrings
+
+//=============OCR VC=====================================================
+// if start is -1, dump all
+-(NSString *) dumpEXPToCSV : (int)start : (int) size
+{
+    NSString *csvout = @"";
+    return csvout;
+    
+}
 
 //=============OCR VC=====================================================
 -(void) dumpResults
@@ -390,6 +541,14 @@
 //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
 }
 
+//======(Hue-Do-Ku allColorPacks)==========================================
+- (IBAction)testEmail:(id)sender
+{
+    
+    [self loadEXPFromParseAsStrings : TRUE];
+    
+}
+
 
 //======(Hue-Do-Ku allColorPacks)==========================================
 // for testing only
@@ -424,6 +583,10 @@
 -(void) clearFields  
 {
     [ot clearFields];
+    // Set limits where text was found at top / left / right,
+    //  used for re-scaling if invoice was shrunk or whatever
+    NSLog(@" clear fields: set template boundaries");
+    [ot setOriginalRects:tlRect :trRect];
     [self refreshOCRBoxes];
 }
 
@@ -930,5 +1093,55 @@
     [alert addAction:yesButton];
     [self presentViewController:alert animated:YES completion:nil];
 } //end alertMessage
+
+//=============OCR VC=====================================================
+//Doesn't work in simulator??? huh??
+-(void) mailit : (NSString *)s
+{
+    if ([MFMailComposeViewController canSendMail])
+    {
+        MFMailComposeViewController *mail = [[MFMailComposeViewController alloc] init];
+        mail.mailComposeDelegate = self;
+        [mail setSubject:@"Test CSV output"];
+        [mail setMessageBody:s isHTML:NO];
+        [mail setToRecipients:@[@"fraktalmaui@gmail.com"]];
+        
+        [self presentViewController:mail animated:YES completion:NULL];
+    }
+    else
+    {
+        NSLog(@"This device cannot send email");
+    }
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+
+//==========FeedVC=========================================================================
+- (void) mailComposeController:(MFMailComposeViewController *)controller    didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    NSLog(@" mailit: didFinishWithResult...");
+    switch (result)
+    {
+        case MFMailComposeResultSent:
+            NSLog(@" mail sent OK");
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            break;
+        default:
+            break;
+    }
+    [controller dismissViewControllerAnimated:YES completion:NULL];
+}
+
+
+
+//=============OCR VC=====================================================
+//- (void)messageComposeViewController:(MFMessageComposeViewController *)controller
+//                 didFinishWithResult:(MessageComposeResult)result
+//{
+//    [self dismissViewControllerAnimated:YES completion:NULL];
+//}
 
 @end

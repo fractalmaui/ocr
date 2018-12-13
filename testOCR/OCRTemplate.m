@@ -17,6 +17,7 @@
 
 @implementation OCRTemplate
 
+#define INVOICE_TOP_LIMITS_LABEL @"INVOICE_TOP_LIMITS"
 //=============(OCRTemplate)=====================================================
 -(instancetype) init
 {
@@ -148,34 +149,56 @@
     return -1;
 }
 
+//=============(OCRTemplate)=====================================================
+// Used to parse incoming template settings
+-(CGRect) getRectFromStringItems : (NSArray*)sitems : (int) ptr
+{
+    int xi,yi,xs,ys;
+    NSString *ss = sitems[ptr++];
+    xi = [ss intValue];
+    if (xi < 0) xi = 0; //Err check: should never occor
+    ss = sitems[ptr++];
+    yi = [ss intValue];
+    if (yi < 0) yi = 0; //Err check: should never occor
+    ss = sitems[ptr++];
+    xs = [ss intValue];
+    ss = sitems[ptr++];
+    ys = [ss intValue];
+    return CGRectMake(xi, yi, xs, ys);
+}
 
 //=============(OCRTemplate)=====================================================
 // assumes string is OK!
 -(void) unpackFromString : (NSString *)s
 {
+    NSLog(@" unpack [%@]",s);
     [ocrBoxes removeAllObjects];
     NSArray *sitems =  [s componentsSeparatedByString:@";"];
     for (NSString *substr in sitems)
     {
         NSArray *titems =  [substr componentsSeparatedByString:@","];
-        if (titems.count >= 6) //Legal only please...
+        if ([titems[0] isEqualToString:INVOICE_TOP_LIMITS_LABEL]) //Look for top limits
+             {
+                 NSLog(@" parse rect...");
+                 int ptr = 1;
+                 CGRect rr1 = [self getRectFromStringItems:titems :ptr];
+                 CGRect rr2 = [self getRectFromStringItems:titems :ptr+4];
+                 if (rr1.size.width > 0) //Only handle valid rects?
+                 {
+                     tlDocRect = rr1;
+                     trDocRect = rr2;
+                 }
+                 NSLog(@"  tl/tr rects %@ to %@",NSStringFromCGRect(rr1),NSStringFromCGRect(rr2));
+             }
+        else if (titems.count >= 6) //Legal only please...
         {
             OCRBox *ob = [[OCRBox alloc] init];
             int ptr = 0;
             ob.fieldName   = titems[ptr++];
             ob.fieldFormat = titems[ptr++];
-            int xi,yi,xs,ys;
-            NSString *ss = titems[ptr++];
-            xi = [ss intValue];
-            if (xi < 0) xi = 0; //Err check: should never occor
-            ss = titems[ptr++];
-            yi = [ss intValue];
-            if (yi < 0) yi = 0; //Err check: should never occor
-            ss = titems[ptr++];
-            xs = [ss intValue];
-            ss = titems[ptr++];
-            ys = [ss intValue];
-            ob.frame = CGRectMake(xi, yi, xs, ys);
+            ob.frame = [self getRectFromStringItems:titems :ptr];
+            NSString *ss;
+            ptr+=4;
             if (titems.count > 6) //Got tags?
             {
                 ss = titems[ptr++];
@@ -211,6 +234,14 @@
 -(NSString *)packToString
 {
     NSString *s = @"";
+    //First pack invoice limits...
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"%@,%d,%d,%d,%d,%d,%d,%d,%d;",
+                                    INVOICE_TOP_LIMITS_LABEL,
+                                    (int)tlDocRect.origin.x,(int)tlDocRect.origin.y,
+                                    (int)tlDocRect.size.width,(int)tlDocRect.size.height,
+                                    (int)trDocRect.origin.x,(int)trDocRect.origin.y,
+                                    (int)trDocRect.size.width,(int)trDocRect.size.height]];
+
     for (OCRBox *ob in ocrBoxes)
     {
         s = [s stringByAppendingString:[NSString stringWithFormat:@"%@,",ob.fieldName]];
@@ -357,6 +388,24 @@
     }];
 } //end saveToParse
 
+//=============(OCRTemplate)=====================================================
+-(void) setOriginalRects : (CGRect) tlr : (CGRect) trr
+{
+    tlDocRect = tlr;
+    trDocRect = trr;
+}
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getTLOriginalRect
+{
+    return tlDocRect;
+}
+
+//=============(OCRTemplate)=====================================================
+-(CGRect) getTROriginalRect
+{
+    return trDocRect;
+}
 
 
 

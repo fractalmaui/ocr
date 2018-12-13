@@ -7,9 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import <MessageUI/MessageUI.h>
 #import "OCRWord.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
+#import "smartProducts.h"
 
 #define DEFAULT_FIELD_FORMAT @"DEFAULT"
 #define VALUE_BELOW_TITLE_FIELD_FORMAT @"VALUE_BELOW_TITLE"
@@ -46,7 +49,23 @@
 #define TOP_TAG_TYPE @"TOP_TAG"
 #define TOP_TAG_TYPE @"TOP_TAG"
 
-@interface ViewController : UIViewController
+#define PInv_Month_key @"Month"
+#define PInv_Category_key @"Category"
+#define PInv_Quantity_key @"Quantity"
+#define PInv_Item_key @"Item"
+#define PInv_UOM_key @"UOM"
+#define PInv_Bulk_or_Individual_key @"Bulk_or_Individual"
+#define PInv_Vendor_key @"Vendor"
+#define PInv_TotalPrice_key @"TotalPrice"
+#define PInv_PricePerUOM_key @"PricePerUOM"
+#define PInv_Processed_key @"Processed"
+#define PInv_Local_key @"Local"
+#define PInv_Date_key @"Date"
+#define PInv_LineNumber_key @"LineNumber"
+#define PInv_InvoiceNumber_key @"InvoiceNumber"
+
+
+@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate>
 {
     NSString *selectFname;
     CFDataRef pixelData;
@@ -70,6 +89,8 @@
     
     //INvoice-specific fields (MOVE TO SEPARATE OBJECT)
     int invoiceNumber;
+    NSString *invoiceNumberString;
+
     NSDate *invoiceDate;
     NSString *invoiceCustomer;
     float invoiceTotal;
@@ -80,7 +101,14 @@
     int touchDocX,touchDocY;
     BOOL dragging;
     int adjustSelect;
+    
+    CGRect tlRect,trRect;  //Absolute document boundary rects for text
+    CGRect blRect,brRect;
 
+    //Move to a processor object?
+    smartProducts *smartp;
+    NSMutableArray *EXPDump;
+    NSString *EXPDumpCSVList;
 }
 
 @property (weak, nonatomic) IBOutlet UIButton *arrowRightSelect;
@@ -89,6 +117,7 @@
 @property (weak, nonatomic) IBOutlet UIView *RHArrowView;
 @property (weak, nonatomic) IBOutlet UIView *selectOverlayView;
 @property (weak, nonatomic) IBOutlet UIButton *addFieldButton;
+- (IBAction)testEmail:(id)sender;
 
 @property (weak, nonatomic) IBOutlet UILabel *instructionsLabel;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;

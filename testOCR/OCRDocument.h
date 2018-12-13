@@ -30,6 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
     int glyphHeight;
     NSMutableArray *ignoreList;
     BOOL useIgnoreList;
+    //Comes from templated original document...
+    CGRect tlOriginalRect, trOriginalRect;
+    //Comes from each newly scanned document
+    CGRect tlScalingRect,trScalingRect;
+    double hScale,vScale; //For document scaling after template is made
 }
 @property (nonatomic , strong) UIImage* scannedImage;
 @property (nonatomic , strong) NSString* scannedName;
@@ -47,6 +52,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs;
 -(NSArray*)  getHeaderNames;
 -(CGRect) getDocRect;
+-(CGRect) getTLRect;
+-(CGRect) getTRRect;
+-(CGRect) getBLRect;
+-(CGRect) getBRRect;
 -(void) getAverageGlyphHeight;
 -(NSMutableArray *) getRowFromColumnStringData : (int)index;
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr;
@@ -57,7 +66,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
 -(void) parseHeaderColumns : (NSArray*)aof;
 -(void) setupDocument : (NSString*) ifname : (NSDictionary *)d;
-
+-(void) computeScaling: (CGRect )tlr : (CGRect )trr;
+-(void) setScalingRects;
 @end
 
 NS_ASSUME_NONNULL_END
