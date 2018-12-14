@@ -71,7 +71,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" tag="102" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GZL-o8-cPy">
+                                    <button opaque="NO" tag="102" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GZL-o8-cPy" userLabel="BButton">
                                         <rect key="frame" x="44" y="88" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrDown.png"/>
@@ -79,7 +79,7 @@
                                             <action selector="arrowDownSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gRy-MK-LpD"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" tag="101" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MSS-b3-XJg">
+                                    <button opaque="NO" tag="101" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MSS-b3-XJg" userLabel="TButton">
                                         <rect key="frame" x="44" y="0.0" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrUp.png"/>
@@ -87,7 +87,15 @@
                                             <action selector="arrowUpSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="AYQ-LL-QBN"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" tag="103" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1nd-n7-jas">
+                                    <button opaque="NO" tag="105" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vvZ-b6-a7v" userLabel="CButton">
+                                        <rect key="frame" x="44" y="44" width="40" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" backgroundImage="ssd_hare.png"/>
+                                        <connections>
+                                            <action selector="arrowCenterSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="88I-pv-ike"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="103" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1nd-n7-jas" userLabel="LButton">
                                         <rect key="frame" x="0.0" y="44" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrLeft.png"/>
@@ -95,7 +103,7 @@
                                             <action selector="arrowLeftSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="RSI-7c-ySE"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" tag="104" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pxj-JI-8QS">
+                                    <button opaque="NO" tag="104" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pxj-JI-8QS" userLabel="RButton">
                                         <rect key="frame" x="88" y="44" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrRight.png"/>
@@ -123,7 +131,7 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hwa-ey-kve">
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hwa-ey-kve" userLabel="BButton">
                                         <rect key="frame" x="44" y="88" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrDown.png"/>
@@ -131,7 +139,7 @@
                                             <action selector="arrowDownSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="9Gh-FJ-Mmd"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MHD-q7-LS3">
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MHD-q7-LS3" userLabel="TButton">
                                         <rect key="frame" x="44" y="0.0" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrUp.png"/>
@@ -139,7 +147,15 @@
                                             <action selector="arrowUpSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vDe-sX-zEb"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y6w-N0-Z0T">
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1z3-KG-hoj" userLabel="CButton">
+                                        <rect key="frame" x="44" y="44" width="40" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" backgroundImage="ssd_hare.png"/>
+                                        <connections>
+                                            <action selector="arrowCenterSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="W6F-6v-kFK"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y6w-N0-Z0T" userLabel="LButton">
                                         <rect key="frame" x="0.0" y="44" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrLeft.png"/>
@@ -147,7 +163,7 @@
                                             <action selector="arrowLeftSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vhp-bR-JoQ"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2tD-gv-H2C">
+                                    <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2tD-gv-H2C" userLabel="RButton">
                                         <rect key="frame" x="88" y="44" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" backgroundImage="arrRight.png"/>
@@ -253,7 +269,9 @@
                         <outlet property="addFieldButton" destination="ZGC-aM-zdM" id="cRc-aq-ghX"/>
                         <outlet property="inputImage" destination="RBk-xE-Koq" id="Od4-3Q-Ufp"/>
                         <outlet property="instructionsLabel" destination="ioZ-IL-wk5" id="188-P5-KAt"/>
+                        <outlet property="lhCenterButton" destination="vvZ-b6-a7v" id="YN1-EF-iWT"/>
                         <outlet property="overlayView" destination="SIK-df-PeH" id="EZN-ec-Yrf"/>
+                        <outlet property="rhCenterButton" destination="1z3-KG-hoj" id="xWV-Oe-XKc"/>
                         <outlet property="selectOverlayView" destination="l5g-RH-K3c" id="V9w-qW-VDv"/>
                     </connections>
                 </viewController>
@@ -268,5 +286,6 @@
         <image name="arrRight.png" width="128" height="128"/>
         <image name="arrUp.png" width="128" height="128"/>
         <image name="hawaiiBeefInvoice.jpg" width="1275" height="1650"/>
+        <image name="ssd_hare.png" width="512" height="512"/>
     </resources>
 </document>

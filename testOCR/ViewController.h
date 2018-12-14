@@ -1,4 +1,10 @@
 //
+//  __     ___                ____            _             _ _
+//  \ \   / (_) _____      __/ ___|___  _ __ | |_ _ __ ___ | | | ___ _ __
+//   \ \ / /| |/ _ \ \ /\ / / |   / _ \| '_ \| __| '__/ _ \| | |/ _ \ '__|
+//    \ V / | |  __/\ V  V /| |__| (_) | | | | |_| | | (_) | | |  __/ |
+//     \_/  |_|\___| \_/\_/  \____\___/|_| |_|\__|_|  \___/|_|_|\___|_|
+//
 //  ViewController.h
 //  testOCR
 //
@@ -12,6 +18,7 @@
 #import "OCRWord.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
+#import "imageTools.h"
 #import "smartProducts.h"
 
 #define DEFAULT_FIELD_FORMAT @"DEFAULT"
@@ -75,15 +82,21 @@
     CGRect selectDocRect;
     CGRect pageRect;
     CGRect docRect;
-    int arrowStepSize;
+    int arrowLHStepSize;
+    int arrowRHStepSize;
     int viewWid,viewHit,viewW2,viewH2;
     BOOL editing;
     BOOL adjusting;
+    BOOL lhArrowsFast;
+    BOOL rhArrowsFast;
     double docXConv,docYConv;
     NSString *supplierName;
     NSString *fieldName;
     NSString *fieldNameShort;
     NSString *fieldFormat;
+    
+    UIImage *fastIcon;
+    UIImage *slowIcon;
     
     NSArray *columnHeaders;
     
@@ -117,7 +130,8 @@
 @property (weak, nonatomic) IBOutlet UIView *RHArrowView;
 @property (weak, nonatomic) IBOutlet UIView *selectOverlayView;
 @property (weak, nonatomic) IBOutlet UIButton *addFieldButton;
-- (IBAction)testEmail:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *lhCenterButton;
+@property (weak, nonatomic) IBOutlet UIButton *rhCenterButton;
 
 @property (weak, nonatomic) IBOutlet UILabel *instructionsLabel;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;
@@ -130,6 +144,8 @@
 - (IBAction)addFieldSelect:(id)sender;
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)arrowRightSelect:(id)sender;
+- (IBAction)arrowCenterSelect:(id)sender;
+- (IBAction)testEmail:(id)sender;
 
 @end
 

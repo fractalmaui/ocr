@@ -1,9 +1,16 @@
 //
+//                            _   ____                _            _
+//   ___ _ __ ___   __ _ _ __| |_|  _ \ _ __ ___   __| |_   _  ___| |_ ___
+//  / __| '_ ` _ \ / _` | '__| __| |_) | '__/ _ \ / _` | | | |/ __| __/ __|
+//  \__ \ | | | | | (_| | |  | |_|  __/| | | (_) | (_| | |_| | (__| |_\__ \
+//  |___/_| |_| |_|\__,_|_|   \__|_|   |_|  \___/ \__,_|\__,_|\___|\__|___/
+//
+//
 //  smartProducts.h
 //  testOCR
 //
 //  Created by Dave Scruton on 12/12/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -27,7 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface smartProducts : NSObject
 {
     //These tables of product listings get loaded from DB
-    NSMutableArray *proteinTable;  //Keywords for now, later may need vendor / product pairs!
     NSString *fullProductName;
     NSString *vendor;
     NSString *rawPrice;
@@ -35,7 +41,13 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL local;
     BOOL bulk;
     int lineNumber;
+    NSArray *beverageNames;
+    NSArray *dairyNames;
+    NSArray *dryGoodsNames;
+    NSArray *miscNames;    
     NSArray *proteinNames;
+    NSArray *produceNames;
+    NSArray *suppliesNames;
     NSDate* invoiceDate;
 }
 //These props get set by analyze for public access...

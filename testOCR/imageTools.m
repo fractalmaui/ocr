@@ -65,6 +65,7 @@
     return i;
 }
 
+
 //=============OCR Tester=====================================================
 -(int) findLHEdge : (int) row
 {
@@ -91,6 +92,120 @@
 }
 
 //=============OCR Tester=====================================================
+// Find 3 dark pixels in a row...
+-(BOOL) isItDark : (const UInt8*) idata : (int) ptr : (int) thresh
+{
+    int r1 = idata[ptr];
+    int r2 = idata[ptr+4];
+    int r3 = idata[ptr+8];
+    //NSLog(@"  rgb[%d] %d,%d,%d,%d",ptr,idata[ptr],idata[ptr+1],idata[ptr+2],idata[ptr+3]);
+    return (r1 < thresh && r2 < thresh && r3 < thresh);
+}
+
+//=============OCR Tester=====================================================
+-(int) scanRowLToR : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
+{
+    for (int i=0;i<wid;i++)
+    {
+        if ([self isItDark : idata : ptr : thresh]) return i; //Return column of hit
+        ptr+=4;
+    }
+    return -1;
+}
+
+//=============OCR Tester=====================================================
+-(int) scanRowLToRLite : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
+{
+    for (int i=0;i<wid;i++)
+    {
+        int r1 = idata[ptr];
+        int r2 = idata[ptr+4];
+        //NSLog(@"  rgb[%d] %d,%d,%d,%d",ptr,idata[ptr],idata[ptr+1],idata[ptr+2],idata[ptr+3]);
+
+        if (r1 < thresh && r2 < thresh) return i; //Return column of hit
+        ptr+=4;
+    }
+    return -1;
+}
+
+
+//=============OCR Tester=====================================================
+-(int) scanRowRToL : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
+{
+    for (int i=0;i<wid;i++)
+    {
+        if ([self isItDark : idata : ptr : thresh]) return i; //Return column of hit
+        ptr-=4;
+    }
+    return -1;
+}
+
+
+
+//=============OCR Tester=====================================================
+-(void) findCorners : (UIImage *)workImage
+{
+    int x1,y1,x2,y2;
+    pixelData = CGDataProviderCopyData(CGImageGetDataProvider(workImage.CGImage));
+    if (pixelData == nil) return;
+    idata = CFDataGetBytePtr(pixelData);
+    iwid = workImage.size.width;
+    ihit = workImage.size.height;
+    //NSLog(@" image wh %d %d",iwid,ihit);
+    //Top left...
+    BOOL found = FALSE;
+    int row,col;
+    int verticalTestLimit = ihit/4;
+    row = col = 0;
+    for (row=0;row<verticalTestLimit && !found;row++) //Go down from top
+    {
+        int ptr = iwid * 4 * row;
+        col = [self scanRowLToR:idata :ptr :iwid/10 : 40];
+        if (col != -1) found = TRUE;
+    }
+    x1 = col;
+    y1 = row;
+    found = FALSE;
+    //NSLog(@"topLeft %d,%d",col,row);
+    //Top right...
+    for (row=0;row<verticalTestLimit && !found;row++) //Go down from top
+    {
+        int ptr = iwid * 4 * (row + 1) - 8; //second to last pixel on row...
+        col = [self scanRowRToL:idata :ptr :iwid/10 : 40];
+        if (col != -1)
+        {
+            col = iwid - col;
+            found = TRUE;
+        }
+    }
+    
+    x2 = col;
+    if (row < x1) x1 = row;
+    //NSLog(@"topRight %d,%d",col,row);
+
+    //Bottom Left...
+    found = FALSE;
+    for (row=ihit-1;row>ihit - verticalTestLimit && !found;row--) //Go up from bottom
+    {
+        int ptr = iwid * 4 * row; //second to last pixel on row...
+        col = [self scanRowLToR:idata :ptr :iwid/10 : 40];
+        if (col != -1)
+        {
+            found = TRUE;
+        }
+    }
+    if (col < x1) x1 = col; //Keep LH most column
+    y2 = row;
+    NSLog(@" image wh %d %d corners: x1,y1 %d,%d  : x2,y2 : %d,%d",iwid,ihit,x1,y1,x2,y2);
+    ix1 = x1; //Save results into our object here
+    ix2 = x2;
+    iy1 = y1;
+    iy2 = y2;
+    
+} //end findCorners
+
+
+//=============OCR Tester=====================================================
 -(void) deskew : (UIImage *)workImage
 {
     pixelData = CGDataProviderCopyData(CGImageGetDataProvider(workImage.CGImage));
@@ -102,62 +217,151 @@
     for (i=0;i<MAXBINS;i++)
     {
         bins[i] = -1;
+        binclumpaves[i] = -1;
         bgrad[i] = -1;
         absgrad[i] = -1;
     }
     int bcount = 0;
-    int stride = 1;
-    //Every "stride" rows, find LH edge, store in bins
-    for (i=0;i<ihit;i+=stride)
+    //Find LH edges...
+    for (int row=0;row<ihit;row++) //Go all the way down from top
     {
-        bins[bcount++] = [self findLHEdge:i];
-    }
-    //Now get bin gradients
-    for (i=1;i<bcount;i++)
-    {
-        if (bins[i-1] != -1)
-            bgrad[i-1] = bins[i] - bins[i-1];
-    }
-    //Get abs bingrads
-    for (i=0;i< bcount;i++)
-    {
-        if (bins[i] == -1) absgrad[i] = -1;
-        else absgrad[i] = abs(bgrad[i]);
-    }
-    //Get average of absgrads
-    float asum = 0.0f;
-    float acount = 0.0f;
-    for (i=0;i<bcount-1;i++)
-    {
-        if (absgrad[i] != -1)
+        int ptr = iwid * 4 * row;
+        int col = [self scanRowLToRLite:idata :ptr :iwid/2 : 120];
+        if (col != -1)
         {
-            asum+=(float)absgrad[i];
-            acount++;
+            bins[bcount++] = col;
+//            NSLog(@" rawbin [%d] = %d",bcount-1,col);
         }
     }
-    asum/=acount;
-    //Toss big skews
-    for (i=0;i<bcount-1;i++)
-    {
-        if (absgrad[i] > (int)asum) absgrad[i] = -1;
-    }
-    //OK get average of grads
-    asum =  acount = 0.0f;
-    for (i=0;i<bcount-1;i++)
-    {
-        if (absgrad[i] != -1)
-        {
-            asum+=(float)bgrad[i];
-            acount++;
-        }
-    }
-    asum/=acount; //Final skew average...
-    float fdx = asum;
-    float fdy = (float)stride;
-    float angle = atan2f(fdy, fdx);
-    //float adeg  = 360.0 * (angle / (2 * 3.14159));
-    NSLog(@"  dxy %f %f : skew %f",fdx,fdy,angle);
     
+    int firstMin = 9999;
+    int minAtTop = 1;
+    //find a minimum at the start
+    for (int i=0;i<bcount;i++)
+    {
+        if (bins[i] < firstMin)
+        {
+            firstMin = bins[i];
+            if (i > bcount / 2) minAtTop = 0;
+        }
+    }
+    
+    NSLog(@" firstmin %d minattop %d",firstMin,minAtTop);
+
+
+    //Now toss any bins that aren't near this minimum, also follow it up or down
+    int bigBinThresh = 10;
+    for (int i=0;i<bcount;i++)
+    {
+        int nm = bins[i];
+        if (abs(nm - firstMin) > bigBinThresh) bins[i] = -1; //not nearby? Toss!
+        else firstMin = nm;
+    }
+    // Next, find local minima and flatten them down...
+    for (int i=1;i<bcount-1;i++)
+    {
+        if (bins[i-1] != -1 && bins[i+1] != -1) //Got valid neighbors?
+        {
+            int tval = bins[i];
+            if (tval < bins[i-1] && tval < bins[i+1]) //this bin smaller than neighbors? shrink neighbors
+            {
+                bins[i-1] = tval;
+                bins[i+1] = tval;
+            }
+            else if (tval > bins[i-1] && tval > bins[i+1]) //this bin bigger than neighbors? shrink this bin
+            {
+                int nval = bins[i-1];
+                if (bins[i+1] < nval) nval = bins[i+1];
+                bins[i] = nval;
+            }
+        }
+    }
+    
+    NSLog(@"duh ");
+    //Now find start / end bin limits
+    int sbin = -1;
+    int ebin = -1;
+    int minbin = 99999;
+    //Get smallest bin size in top 10% of document
+    int ibin = 10; //Never start at very top, staples, etc
+    while (bins[ibin] == -1 && ibin < bcount) ibin++; //Find bottom data...
+    for (int i=0;i<bcount/10;i++)
+    {
+        int bval = bins[ibin++];
+        if (bval != -1 && bval < minbin)
+        {
+            sbin = ibin;
+            minbin = bval;
+        }
+    }
+
+    //Get smallest bin size in bottom 10% of document
+    minbin = 99999;
+    ibin = bcount - 1;
+    while (bins[ibin] == -1 && ibin > 0) ibin--; //Find bottom data...
+    for (int i=0;i<bcount/10;i++)
+    {
+        int bval = bins[ibin--];
+        if (bval != -1 && bval < minbin)
+        {
+            ebin = ibin;
+            minbin = bval;
+        }
+    }
+    for (int i=0;i<bcount;i++)
+       if (bins[i] != -1) NSLog(@" fbin [%d] = %d",i,bins[i]);
+
+    NSLog(@" start/end bins %d %d  vals %d %d",sbin,ebin,bins[sbin],bins[ebin]);
+    double ddx = (double)(ebin - sbin);
+    double ddy = (double)(bins[ebin] - bins[sbin]);
+    double angle2 = atan2f(ddy, ddx);
+    //float adeg  = 360.0 * (angle / (2 * 3.14159));
+    NSLog(@"  dxy %f %f : skew %f deg %f",ddx,ddy,angle2,180.0 * angle2 / 3.141592627);
+ 
+    // Rotates in place?
+    UIImage *rotImg =  [self imageRotatedByRadians:angle2 img:workImage];
+                        
+
+    NSLog(@" done rotated by %f degrees",180.0 * angle2 / 3.141592627);
 } //end deskew
+
+
+- (UIImage *)imageRotatedByRadians:(CGFloat)radians img:(UIImage *)img
+{
+    // calculate the size of the rotated view's containing box for our drawing space
+    UIView *rotatedViewBox = [[UIView alloc] initWithFrame:CGRectMake(0,0,img.size.width, img.size.height)];
+    UIView *nonrotatedViewBox = rotatedViewBox;
+    CGAffineTransform t = CGAffineTransformMakeRotation(radians);
+    rotatedViewBox.transform = t;
+    CGSize rotatedSize = rotatedViewBox.frame.size;
+    
+    // Create the bitmap context
+    UIGraphicsBeginImageContext(nonrotatedViewBox.frame.size);
+    //Fill in bkgd with white
+    CGColorRef whiteColor = [[UIColor whiteColor] CGColor];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetShouldAntialias(context, NO);
+    CGContextSetInterpolationQuality( UIGraphicsGetCurrentContext() , kCGInterpolationNone );
+    CGContextSetFillColorWithColor(context, whiteColor);
+    CGContextFillRect(context, CGRectMake(0,0,rotatedSize.width,rotatedSize.height));
+
+    
+    
+    CGContextRef bitmap = UIGraphicsGetCurrentContext();
+    
+    // Move the origin to the middle of the image so we will rotate and scale around the center.
+    CGContextTranslateCTM(bitmap, rotatedSize.width/2, rotatedSize.height/2);
+    
+    //Rotate the image context
+    CGContextRotateCTM(bitmap, radians);
+    
+    // Now, draw the rotated/scaled image into the context
+    CGContextScaleCTM(bitmap, 1.0, -1.0);
+    CGContextDrawImage(bitmap, CGRectMake(-img.size.width / 2, -img.size.height / 2, img.size.width, img.size.height), [img CGImage]);
+    
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
+}
 
 @end

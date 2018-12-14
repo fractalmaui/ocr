@@ -1,4 +1,10 @@
 //
+//  __     ___                ____            _             _ _
+//  \ \   / (_) _____      __/ ___|___  _ __ | |_ _ __ ___ | | | ___ _ __
+//   \ \ / /| |/ _ \ \ /\ / / |   / _ \| '_ \| __| '__/ _ \| | |/ _ \ '__|
+//    \ V / | |  __/\ V  V /| |__| (_) | | | | |_| | | (_) | | |  __/ |
+//     \_/  |_|\___| \_/\_/  \____\___/|_| |_|\__|_|  \___/|_|_|\___|_|
+//
 //  ViewController.m
 //  testOCR
 //
@@ -15,6 +21,7 @@
 //  needs openCV?
 //  https://www.codeproject.com/Articles/104248/%2fArticles%2f104248%2fDetect-image-skew-angle-and-deskew-image
 //  simple deskew?
+//  https://stackoverflow.com/questions/41546181/how-to-deskew-a-scanned-text-page-with-imagemagick
 //
 //  In Adjust mode, zoom in??
 #import "ViewController.h"
@@ -31,12 +38,16 @@
 
     od = [[OCRDocument alloc] init];
     ot = [[OCRTemplate alloc] init];
-    arrowStepSize = 5;
+    arrowLHStepSize = 10;
+    arrowRHStepSize = 10;
     editing = adjusting = FALSE;
+
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
     EXPDump     = [[NSMutableArray alloc] init];
     smartp      = [[smartProducts alloc] init];
+    fastIcon    = [UIImage imageNamed:@"ssd_hare"];
+    slowIcon    = [UIImage imageNamed:@"ssd_tortoise"];
     return self;
 }
 
@@ -530,7 +541,11 @@
 
 //=============OCR VC=====================================================
 - (IBAction)testSelect:(id)sender {
-    [self applyTemplate];
+    imageTools *it = [[imageTools alloc] init];
+    //[it findCorners:_inputImage.image];
+    [it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
+    
+    //[self applyTemplate];
     
 
 //    -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
@@ -609,7 +624,10 @@
     fieldName = ftype;
     [self getShortFieldName];
     editing = TRUE;
-    arrowStepSize = 10;
+    lhArrowsFast = rhArrowsFast = TRUE;
+    arrowLHStepSize = 10;
+    arrowRHStepSize = 10;
+    [self updateCenterArrowButtons];
     [self moveOrResizeSelectBox : -1000 : -1000 : 0 : 0];
     [self resetSelectBox];
     // Change bottom button so user knows they can cancel...
@@ -626,7 +644,12 @@
     fieldName = [ot getBoxFieldName:adjustSelect];
     [self getShortFieldName];
     adjusting = TRUE;
-    arrowStepSize = 1;
+    lhArrowsFast = rhArrowsFast = FALSE;
+    arrowLHStepSize = 1;
+    arrowRHStepSize = 1;
+    [self updateCenterArrowButtons];
+    [self updateCenterArrowButtons];
+
     CGRect rr = [ot getBoxRect:adjustSelect];
     [ot dumpBox:adjustSelect];
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
@@ -770,10 +793,6 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self adjustField];
                                                           }];
-    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Adjust Position and Size",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self adjustField];
-                                                          }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self promptForNewTagToAdd:self];
@@ -791,7 +810,7 @@
                                                            }];
     //DHS 3/13: Add owner's ability to delete puzzle
     [alert addAction:firstAction];
-    [alert addAction:secondAction];
+    //[alert addAction:secondAction];
     [alert addAction:thirdAction];
     if ([ot getTagCount:adjustSelect] > 0) [alert addAction:fourthAction];
     [alert addAction:cancelAction];
@@ -989,12 +1008,12 @@
     xs = r.size.width;
     ys = r.size.height;
     CGRect rs = selectBox.frame;
-    NSLog(@" inxy %d %d",(int)rs.origin.x,(int)rs.origin.y);
+    //NSLog(@" inxy %d %d",(int)rs.origin.x,(int)rs.origin.y);
     int docx = [self screenToDocumentX : rs.origin.x];
     int docy = [self screenToDocumentY : rs.origin.y];
     int docw = (int)(double)(rs.size.width  * docXConv);
     int doch = (int)(double)(rs.size.height * docYConv);
-    NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
+    //NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
     int docYoff = od.docRect.origin.y;
     docx -= docXoff;
@@ -1002,7 +1021,7 @@
     _instructionsLabel.text = [NSString stringWithFormat:
                                @"%@:XY(%d,%d)WH(%d,%d)",fieldNameShort,docx,docy,docw,doch];
     return CGRectMake(docx, docy, docw, doch);
-}
+} //end getDocumentFrameFromSelectBox
 
 
 //=============OCR VC=====================================================
@@ -1023,8 +1042,8 @@
     int dy = pageRect.origin.y;
     int dw = pageRect.size.width;
     int dh = pageRect.size.height;
-    if (xs<arrowStepSize) xs = arrowStepSize;
-    if (ys<arrowStepSize) ys = arrowStepSize;
+    if (xs<arrowLHStepSize) xs = arrowLHStepSize;
+    if (ys<arrowLHStepSize) ys = arrowLHStepSize;
     if (xs>dw) xs = dw;
     if (ys>dh) ys = dh;
     dy+=24; //NOTCH?
@@ -1042,9 +1061,9 @@
 - (IBAction)arrowDownSelect:(id)sender {
     UIButton *b = (UIButton *)sender;
     if (b.tag > 100) //LH arrows
-        [self moveOrResizeSelectBox:0 :arrowStepSize:0:0];
+        [self moveOrResizeSelectBox:0 :arrowLHStepSize:0:0];
     else
-        [self moveOrResizeSelectBox:0:0:0 :arrowStepSize];
+        [self moveOrResizeSelectBox:0:0:0 :arrowRHStepSize];
 }
 
 
@@ -1052,9 +1071,9 @@
 - (IBAction)arrowUpSelect:(id)sender {
     UIButton *b = (UIButton *)sender;
     if (b.tag > 100) //LH arrows
-        [self moveOrResizeSelectBox:0 :-arrowStepSize:0:0];
+        [self moveOrResizeSelectBox:0 :-arrowLHStepSize:0:0];
     else
-        [self moveOrResizeSelectBox:0:0:0 :-arrowStepSize];
+        [self moveOrResizeSelectBox:0:0:0 :-arrowRHStepSize];
 }
 
 
@@ -1062,18 +1081,18 @@
 - (IBAction)arrowLeftSelect:(id)sender {
     UIButton *b = (UIButton *)sender;
     if (b.tag > 100) //LH arrows
-        [self moveOrResizeSelectBox:-arrowStepSize:0:0:0];
+        [self moveOrResizeSelectBox:-arrowLHStepSize:0:0:0];
     else
-        [self moveOrResizeSelectBox:0:0:-arrowStepSize:0 ];
+        [self moveOrResizeSelectBox:0:0:-arrowRHStepSize:0 ];
 }
 
 //=============OCR VC=====================================================
 - (IBAction)arrowRightSelect:(id)sender {
     UIButton *b = (UIButton *)sender;
     if (b.tag > 100) //LH arrows
-        [self moveOrResizeSelectBox:arrowStepSize:0:0:0];
+        [self moveOrResizeSelectBox:arrowLHStepSize:0:0:0];
     else
-        [self moveOrResizeSelectBox:0:0:arrowStepSize:0 ];
+        [self moveOrResizeSelectBox:0:0:arrowRHStepSize:0 ];
 }
 
 
@@ -1143,5 +1162,45 @@
 //{
 //    [self dismissViewControllerAnimated:YES completion:NULL];
 //}
+
+
+
+//=============OCR VC=====================================================
+- (IBAction)arrowCenterSelect:(id)sender
+{
+    UIButton *b = (UIButton *)sender;
+    BOOL newstate = FALSE;
+    if (b.tag > 100) //LH arrows
+    {
+        newstate = lhArrowsFast = !lhArrowsFast;
+        arrowLHStepSize = 1;
+        if (newstate) arrowLHStepSize = 10;
+    }
+    else
+    {
+        newstate = rhArrowsFast = !rhArrowsFast;
+        arrowRHStepSize = 1;
+        if (newstate) arrowRHStepSize = 10;
+    }
+    [self updateCenterArrowButtons];
+} //end arrowCenterSelect
+
+//=============OCR VC=====================================================
+-(void) updateCenterArrowButtons
+{
+    if (lhArrowsFast)
+        [_lhCenterButton setBackgroundImage : fastIcon forState:UIControlStateNormal];
+    else
+        [_lhCenterButton setBackgroundImage : slowIcon forState:UIControlStateNormal];
+
+    if (rhArrowsFast)
+        [_rhCenterButton setBackgroundImage : fastIcon forState:UIControlStateNormal];
+    else
+        [_rhCenterButton setBackgroundImage : slowIcon forState:UIControlStateNormal];
+
+}
+
+
+
 
 @end

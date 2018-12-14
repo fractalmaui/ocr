@@ -34,6 +34,8 @@
 		722E090121BF50BF00BBD88D /* ParseFacebookUtilsV4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FD21BF50BE00BBD88D /* ParseFacebookUtilsV4.framework */; };
 		722E090221BF50BF00BBD88D /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FE21BF50BE00BBD88D /* Parse.framework */; };
 		722E090321BF50BF00BBD88D /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FF21BF50BF00BBD88D /* ParseUI.framework */; };
+		722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */ = {isa = PBXBuildFile; fileRef = 722F9A7121C23E0D001D8EE6 /* ssd_hare.png */; };
+		722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */ = {isa = PBXBuildFile; fileRef = 722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
@@ -76,6 +78,8 @@
 		722E08FD21BF50BE00BBD88D /* ParseFacebookUtilsV4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseFacebookUtilsV4.framework; path = 3rdparty/ParseFacebookUtilsV4.framework; sourceTree = "<group>"; };
 		722E08FE21BF50BE00BBD88D /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Parse.framework; path = 3rdparty/Parse.framework; sourceTree = "<group>"; };
 		722E08FF21BF50BF00BBD88D /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = 3rdparty/ParseUI.framework; sourceTree = "<group>"; };
+		722F9A7121C23E0D001D8EE6 /* ssd_hare.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssd_hare.png; path = Resources/ssd_hare.png; sourceTree = SOURCE_ROOT; };
+		722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssd_tortoise.png; path = Resources/ssd_tortoise.png; sourceTree = SOURCE_ROOT; };
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
 		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
 		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -134,16 +138,9 @@
 				7206009321B64055000B26DC /* LaunchScreen.storyboard */,
 				7206009621B64055000B26DC /* Info.plist */,
 				7206009721B64055000B26DC /* main.m */,
-				7209608721B7FBB000D49C63 /* OCRWord.h */,
-				7209608821B7FBB000D49C63 /* OCRWord.m */,
+				72724C6021C21D6F0043F49A /* OCR_Code */,
 				7209608A21B8164F00D49C63 /* imageTools.h */,
 				7209608B21B8164F00D49C63 /* imageTools.m */,
-				7209608D21B8173200D49C63 /* OCRDocument.h */,
-				7209608E21B8173200D49C63 /* OCRDocument.m */,
-				7209609921B81FB900D49C63 /* OCRTemplate.h */,
-				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
-				7209609C21B81FDC00D49C63 /* OCRBox.h */,
-				7209609D21B81FDC00D49C63 /* OCRBox.m */,
 				729C592A21C1D08900F4C695 /* smartProducts.h */,
 				729C592B21C1D08900F4C695 /* smartProducts.m */,
 			);
@@ -153,6 +150,8 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				722F9A7121C23E0D001D8EE6 /* ssd_hare.png */,
+				722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */,
 				7209609221B81E6B00D49C63 /* arrDown.png */,
 				7209609421B81E6B00D49C63 /* arrLeft.png */,
 				7209609121B81E6B00D49C63 /* arrRight.png */,
@@ -180,6 +179,21 @@
 				722E08F221BF504700BBD88D /* SystemConfiguration.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		72724C6021C21D6F0043F49A /* OCR_Code */ = {
+			isa = PBXGroup;
+			children = (
+				7209609C21B81FDC00D49C63 /* OCRBox.h */,
+				7209609D21B81FDC00D49C63 /* OCRBox.m */,
+				7209608D21B8173200D49C63 /* OCRDocument.h */,
+				7209608E21B8173200D49C63 /* OCRDocument.m */,
+				7209609921B81FB900D49C63 /* OCRTemplate.h */,
+				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
+				7209608721B7FBB000D49C63 /* OCRWord.h */,
+				7209608821B7FBB000D49C63 /* OCRWord.m */,
+			);
+			path = OCR_Code;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -243,6 +257,8 @@
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
 				7209609721B81E6B00D49C63 /* arrUp.png in Resources */,
 				7209609521B81E6B00D49C63 /* arrRight.png in Resources */,
+				722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */,
+				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
 				72E5D31121B6DE4C005AF869 /* txt in Resources */,
 				720600A321B64AA0000B26DC /* cocacola.jpg in Resources */,
 				7209609621B81E6B00D49C63 /* arrDown.png in Resources */,

@@ -1,9 +1,15 @@
 //
+//                            _   ____                _            _
+//   ___ _ __ ___   __ _ _ __| |_|  _ \ _ __ ___   __| |_   _  ___| |_ ___
+//  / __| '_ ` _ \ / _` | '__| __| |_) | '__/ _ \ / _` | | | |/ __| __/ __|
+//  \__ \ | | | | | (_| | |  | |_|  __/| | | (_) | (_| | |_| | (__| |_\__ \
+//  |___/_| |_| |_|\__,_|_|   \__|_|   |_|  \___/ \__,_|\__,_|\___|\__|___/
+//
 //  smartProducts.m
 //  testOCR
 //
 //  Created by Dave Scruton on 12/12/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "smartProducts.h"
@@ -16,7 +22,6 @@
 {
     if (self = [super init])
     {
-        proteinTable = [[NSMutableArray alloc] init];
         [self loadTables];
     }
     return self;
@@ -26,14 +31,181 @@
 //STUBBED FOR NOW, use DB
 -(void) loadTables
 {
+    beverageNames = @[   //CANNED
+                      @"apple juice",
+                      @"bottled water",
+                      @"cocoa",
+                      @"coffee",
+                      @"coke",
+                      @"cream",
+                      @"drink mix",
+                      @"ginger ale",
+                      @"grape juice",
+                      @"juice",
+                      @"mg guava nectar",   // Need multiple words?",
+                      @"mg pass organic nectar",   // Multiple words?
+                      @"orange juice",
+                      @"raspberry tea",
+                      @"sprite",
+                      @"sprite zero",
+                      @"tea",
+                      @"vegetable soup", //WTF???
+                      @"yogurt",
+                      @"zico natural"
+                      ];
+    dairyNames = @[   //CANNED
+                   @"buttermilk",
+                   @"cheese",
+                   @"cream",
+                   @"creamer",
+                   @"ice cream",
+                   @"milk",
+                   @"PP CS",   //WTF???
+                   @"sherbert",
+                   @"yogurt"
+                   ];
+    dryGoodsNames = @[   //CANNED
+                      @"applesauce",
+                      @"apple sauce",
+                      @"beans, black",  //vs. green beans as produce?
+                      @"beans, kidney",  //vs. green beans as produce?
+                      @"beef base",
+                      @"beef consume",
+                      @"bread",
+                      @"broth",
+                      @"butter prints",
+                      @"canned",
+                      @"catsup",
+                      @"cereal",
+                      @"chicken base",
+                      @"chowder",
+                      @"coconut milk",
+                      @"condensed milk",
+                      @"corn meal",
+                      @"cracker",
+                      @"crackers",
+                      @"cranberry juice",
+                      @"creamer",
+                      @"crisco",
+                      @"crouton",
+                      @"cumin",
+                      @"dressing",
+                      @"dressings",
+                      @"filling",
+                      @"filling cherry pie",
+                      @"filling blueberry",
+                      @"flour",
+                      @"fruit tropical mix",
+                      @"fruit bowl",
+                      @"fruit cocktail",
+                      @"garlic, granulated",
+                      @"granola",
+                      @"granulated",
+                      @"gravy",
+                      @"jelly",
+                      @"ketchup",
+                      @"margarine",
+                      @"mashed potatoes",
+                      @"mayonnaise",
+                      @"mustard",
+                      @"oats",
+                      @"oil",
+                      @"olives",
+                      @"onion powder",
+                      @"oranges, mandarin",
+                      @"pasta",
+                      @"paste",
+                      @"pepper",
+                      @"peaches", //NEVER FRESH?
+                      @"pears, bartlett",
+                      @"pickle",
+                      @"potato pearls",
+                      @"powder",
+                      @"pudding",
+                      @"pursed broccoli",
+                      @"rice",
+                      @"salt",
+                      @"seasoning",
+                      @"shoyu",
+                      @"soup",
+                      @"sugar",
+                      @"syrup",
+                      @"tahini",
+                      @"thickener",
+                      @"tortilla",
+                      @"topping",
+                      @"vanilla",
+                      @"vienna sausage", //WHY NOT PROTEIN?
+                      @"vinegar",
+                      @"wafer"
+                      ];
+    miscNames = @[ //CANNED
+                      @"charges",
+                      @"taxes"
+                     ];
     proteinNames = @[ //CANNED
                      @"beef",
-                     @"steak",
-                     @"pork",
                      @"chicken",
-                     @"fish"
+                     @"eggs",
+                     @"fish",
+                     @"fishcake",
+                     @"pork",
+                     @"spam",
+                     @"steak",
+                     @"tuna"    //here or dry goods?
                      ];
-   [proteinTable addObjectsFromArray : proteinNames];
+    produceNames = @[ //CANNED, need to check plurals too!
+                     @"apple",
+                     @"banana",
+                     @"basil",
+                     @"bok choy",
+                     @"broccoli",
+                     @"cantaloupe",
+                     @"cabbage",
+                     @"celery",
+                     @"corn IFQ",  //???WTF?
+                     @"cranberry",
+                     @"cucumber",
+                     @"garlic",
+                     @"green beans",
+                     @"honeydew",
+                     @"lemon",
+                     @"lettuce",
+                     @"mushroom",
+                     @"onion",
+                     @"orange",  //confusion w/ orange juice?
+                     @"papaya",
+                     @"peas",
+                     @"pineapple",
+                     @"potato",
+                     @"potatoes",
+                     @"spinach",
+                     @"squash",
+                     @"strawberries",
+                     @"strawberry",
+                     @"tomato",
+                     @"tomatoes",
+                     @"vegetable blend",
+                     @"watermelon"
+                     ];
+    suppliesNames = @[ //CANNED
+                      @"degreaser",
+                      @"delimer",
+                      @"detergent",
+                      @"filter",
+                      @"fork",
+                      @"hairnet",
+                      @"knives",
+                      @"knife",
+                      @"lid",
+                      @"presoak",
+                      @"rinse aid",
+                      @"refill",
+                      @"sanitizer",
+                      @"spoon",
+                      @"teaspoon",
+                      @"wiper"
+                  ];
 }
 
 //=============(smartProducts)=====================================================
@@ -102,13 +274,61 @@
     {
         if (found) break;
         NSString *lowerCase = [nextWord lowercaseString]; //Always match on lowercase
-        if ([proteinTable indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        if ([beverageNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = BEVERAGE_CATEGORY;
+            _latestUOM = @"case";
+            processed = TRUE;
+            bulk = TRUE;
+        }
+        else if ([dairyNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = DAIRY_CATEGORY;
+            _latestUOM = @"qt";  //THis varies widely! maybe second array should be:
+            processed = TRUE;    //   UOM/processed/bulk, matching product names one for one
+            bulk = TRUE;
+        }
+        else if ([dryGoodsNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = DRY_GOODS_CATEGORY;
+            _latestUOM = @"lb";  //THis varies widely! see dairy
+            processed = TRUE;
+            bulk = TRUE;
+        }
+        else if ([miscNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = MISC_CATEGORY;
+            _latestUOM = @"n/a";   
+            processed = FALSE;
+            bulk = FALSE;
+        }
+        else if ([produceNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = PRODUCE_CATEGORY;
+            _latestUOM = @"lb";
+            processed = FALSE;
+            bulk = TRUE;
+        }
+        else if ([proteinNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
             foundResult = PROTEIN_CATEGORY;
             _latestUOM = @"lb";
             processed = FALSE; //Is ground beef processed?
             bulk = TRUE; //Is this ok for all meat?
+        }
+        else if ([suppliesNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            foundResult = SUPPLIES_CATEGORY;
+            _latestUOM = @"n/a";
+            processed = FALSE;
+            bulk = FALSE;
         }
     }
     if (!found) return;
@@ -123,14 +343,21 @@
         [@"$" stringByAppendingString:_latestTotalPrice];
     
     //Handle flags...
-    if (processed) _latestProcessed = @"PROCESSED";
-    else           _latestProcessed = @"UNPROCESSED";
-    
     if (local) _latestLocal = @"Yes";
     else       _latestLocal = @"No";
     
     if (bulk) _latestBulkOrIndividual = @"Bulk";
     else      _latestBulkOrIndividual = @"Individual";
+    
+    if (processed) _latestProcessed = @"PROCESSED";
+    else           _latestProcessed = @"UNPROCESSED";
+    
+    if ([_latestUOM isEqualToString: @"n/a"])
+    {
+        _latestBulkOrIndividual = @"n/a";
+        _latestLocal            = @"n/a";
+        _latestProcessed        = @"n/a";
+    }
     
     _latestDateString = [self getDateAsString:invoiceDate];
     _latestShortDateString = [self getDateAsShortString:invoiceDate];
@@ -154,8 +381,8 @@
     for (NSString *nextWord in pItems)
     {
         if (found) break;
-        NSString *lowerCase = [nextWord lowercaseString];
-        if ([proteinTable indexOfObject:nextWord] != NSNotFound) //Found?
+        NSString *lowerCase = [nextWord lowercaseString]; //Match lowercase only
+        if ([proteinNames indexOfObject:lowerCase] != NSNotFound) //Found?
         {
             found = TRUE;
             foundResult = PROTEIN_CATEGORY;

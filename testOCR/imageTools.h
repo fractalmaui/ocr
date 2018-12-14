@@ -25,11 +25,19 @@ NS_ASSUME_NONNULL_BEGIN
     const UInt8* idata;
     int iwid,ihit;
     int bins[MAXBINS];
+    int binclumpaves[MAXBINS];
     int bgrad[MAXBINS];
     int absgrad[MAXBINS];
+    
+    int ix1,ix2,iy1,iy2;  //Image corners in pixels
 
 }
+-(void) deskew : (UIImage *)workImage;
+
+-(void) findCorners : (UIImage *)workImage;
 
 @end
+
+
 
 NS_ASSUME_NONNULL_END
