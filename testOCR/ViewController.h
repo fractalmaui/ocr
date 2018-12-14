@@ -19,6 +19,7 @@
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
 #import "imageTools.h"
+#import "MagnifierView.h"
 #import "smartProducts.h"
 
 #define DEFAULT_FIELD_FORMAT @"DEFAULT"
@@ -26,13 +27,6 @@
 #define DATE_MMDDYYYY_FIELD_FORMAT @"DATE_MMDDYYYY"
 #define DATE_DDMMYYYY_FIELD_FORMAT @"DATE_DDMMYYYY"
 
-#define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"
-#define INVOICE_DATE_FIELD     @"INVOICE_DATE"
-#define INVOICE_CUSTOMER_FIELD @"INVOICE_CUSTOMER"
-#define INVOICE_HEADER_FIELD   @"INVOICE_HEADER"
-#define INVOICE_COLUMN_FIELD   @"INVOICE_COLUMN"
-#define INVOICE_IGNORE_FIELD   @"INVOICE_IGNORE"
-#define INVOICE_TOTAL_FIELD    @"INVOICE_TOTAL"
 
 //Tags: used to get hints about field placement
 #define TOP_TAG_TYPE        @"TOP_TAG"
@@ -122,6 +116,10 @@
     smartProducts *smartp;
     NSMutableArray *EXPDump;
     NSString *EXPDumpCSVList;
+    
+    MagnifierView *magView;
+    
+    int docnum;
 }
 
 @property (weak, nonatomic) IBOutlet UIButton *arrowRightSelect;
@@ -135,6 +133,7 @@
 
 @property (weak, nonatomic) IBOutlet UILabel *instructionsLabel;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;
+- (IBAction)nextDocSelect:(id)sender;
 
 - (IBAction)arrowDownSelect:(id)sender;
 - (IBAction)arrowUpSelect:(id)sender;

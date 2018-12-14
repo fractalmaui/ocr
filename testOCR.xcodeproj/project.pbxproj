@@ -38,6 +38,10 @@
 		722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */ = {isa = PBXBuildFile; fileRef = 722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
+		72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB121C370FB004ADD79 /* hfm90.jpg */; };
+		72B8DEB521C45453004ADD79 /* MagnifierView.m in Sources */ = {isa = PBXBuildFile; fileRef = 72B8DEB421C45453004ADD79 /* MagnifierView.m */; };
+		72B8DEB821C45499004ADD79 /* magtarg.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB621C45499004ADD79 /* magtarg.png */; };
+		72B8DEB921C45499004ADD79 /* loupe-mask@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB721C45499004ADD79 /* loupe-mask@2x.png */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
 /* End PBXBuildFile section */
 
@@ -83,6 +87,11 @@
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
 		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
 		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		72B8DEB121C370FB004ADD79 /* hfm90.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = hfm90.jpg; sourceTree = "<group>"; };
+		72B8DEB321C45452004ADD79 /* MagnifierView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MagnifierView.h; path = ../../MagnifierView.h; sourceTree = "<group>"; };
+		72B8DEB421C45453004ADD79 /* MagnifierView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MagnifierView.m; path = ../../MagnifierView.m; sourceTree = "<group>"; };
+		72B8DEB621C45499004ADD79 /* magtarg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = magtarg.png; path = ../../magtarg.png; sourceTree = "<group>"; };
+		72B8DEB721C45499004ADD79 /* loupe-mask@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "loupe-mask@2x.png"; path = "../../loupe-mask@2x.png"; sourceTree = "<group>"; };
 		72E5D31021B6DE4C005AF869 /* txt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -141,6 +150,8 @@
 				72724C6021C21D6F0043F49A /* OCR_Code */,
 				7209608A21B8164F00D49C63 /* imageTools.h */,
 				7209608B21B8164F00D49C63 /* imageTools.m */,
+				72B8DEB321C45452004ADD79 /* MagnifierView.h */,
+				72B8DEB421C45453004ADD79 /* MagnifierView.m */,
 				729C592A21C1D08900F4C695 /* smartProducts.h */,
 				729C592B21C1D08900F4C695 /* smartProducts.m */,
 			);
@@ -156,8 +167,11 @@
 				7209609421B81E6B00D49C63 /* arrLeft.png */,
 				7209609121B81E6B00D49C63 /* arrRight.png */,
 				7209609321B81E6B00D49C63 /* arrUp.png */,
+				72B8DEB721C45499004ADD79 /* loupe-mask@2x.png */,
+				72B8DEB621C45499004ADD79 /* magtarg.png */,
 				720600A221B64AA0000B26DC /* cocacola.jpg */,
 				720600A021B6487D000B26DC /* hfm.jpg */,
+				72B8DEB121C370FB004ADD79 /* hfm90.jpg */,
 				7206009E21B640E2000B26DC /* hawaiiBeefInvoice.jpg */,
 			);
 			name = Resources;
@@ -256,6 +270,7 @@
 				7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */,
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
 				7209609721B81E6B00D49C63 /* arrUp.png in Resources */,
+				72B8DEB821C45499004ADD79 /* magtarg.png in Resources */,
 				7209609521B81E6B00D49C63 /* arrRight.png in Resources */,
 				722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */,
 				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
@@ -264,7 +279,9 @@
 				7209609621B81E6B00D49C63 /* arrDown.png in Resources */,
 				720600A121B6487E000B26DC /* hfm.jpg in Resources */,
 				7209609821B81E6B00D49C63 /* arrLeft.png in Resources */,
+				72B8DEB921C45499004ADD79 /* loupe-mask@2x.png in Resources */,
 				7206009F21B640E2000B26DC /* hawaiiBeefInvoice.jpg in Resources */,
+				72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */,
 				7206009021B64052000B26DC /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -277,6 +294,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7209609E21B81FDC00D49C63 /* OCRBox.m in Sources */,
+				72B8DEB521C45453004ADD79 /* MagnifierView.m in Sources */,
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
 				7206008D21B64052000B26DC /* ViewController.m in Sources */,

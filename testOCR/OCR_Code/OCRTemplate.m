@@ -65,6 +65,17 @@
     [ocrBoxes removeObjectAtIndex:index];
 }
 
+//=============(OCRTemplate)=====================================================
+-(int) firstColumn
+{
+    int i = 0;
+    for (OCRBox *ob in ocrBoxes)
+    {
+        if ([ob.fieldName isEqualToString : INVOICE_COLUMN_FIELD]) return i;
+        i++;
+    }
+    return -1;
+}
 
 //=============(OCRTemplate)=====================================================
 -(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format
@@ -73,6 +84,18 @@
     OCRBox *ob = [[OCRBox alloc] init];
     if (frame.origin.x < 0) frame.origin.x = 0; //Don't allow off-document frmaes!
     if (frame.origin.y < 0) frame.origin.y = 0;
+    
+    if ([fname isEqualToString : INVOICE_COLUMN_FIELD]) //Column? which one?
+    {
+        int fcindex = [self firstColumn];
+        if (fcindex >= 0) //2nd...column? just line up w/ first
+        {
+            OCRBox *ob = [ocrBoxes objectAtIndex:fcindex];
+            frame.origin.y    = ob.frame.origin.y;      // Match Top
+            frame.size.height = ob.frame.size.height;  // Match Top
+            NSLog(@" match column top/bottom...");
+        }
+    }
     ob.frame = frame;
     ob.fieldName = fname;
     ob.fieldFormat = format;

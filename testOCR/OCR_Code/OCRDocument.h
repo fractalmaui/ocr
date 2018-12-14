@@ -46,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 -(void) clearAllColumnStringData;
+-(NSString*) cleanUpNumberString : (NSString *)nstr;
+-(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) addColumnStringData : (NSMutableArray*)stringArray;
 -(void) addIgnoreBoxItems  : (CGRect )rr;
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
@@ -64,6 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(float) findPriceInArrayOfFields : (NSArray*)aof;
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
+-(NSDate *) isItADate : (NSString *)tstr;
 -(void) parseHeaderColumns : (NSArray*)aof;
 -(void) setupDocument : (NSString*) ifname : (NSDictionary *)d;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;

@@ -41,12 +41,61 @@
 }
 
 //=============(OCRDocument)=====================================================
+// Fix OCR errors in numeric strings...
+//    $ assumed to mean 5 for instance...
+//    assumed to be ONE NUMBER in the string!
+-(NSString*) cleanUpNumberString : (NSString *)nstr
+{
+    NSString *outstr;
+    outstr = [nstr stringByReplacingOccurrencesOfString:@"%" withString:@"5"];
+    outstr = [outstr stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces in number...
+    return outstr;
+}
+
+//=============(OCRDocument)=====================================================
+// Fix OCR errors in name strings...
+-(NSString*) cleanUpProductNameString : (NSString *)pstr
+{
+    NSString *outstr;
+    outstr = [pstr stringByReplacingOccurrencesOfString:@"|" withString:@""]; //No vertical bars
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"_" withString:@""]; //No underbars!
+    return outstr;
+}
+
+
+//=============(OCRDocument)=====================================================
 -(void) clearAllColumnStringData
 {
     [columnStringData removeAllObjects];
     _longestColumn = 0;
 }
 
+//=============(OCRDocument)=====================================================
+// Date formatter returns nil date on bogus input...
+-(NSDate *) isItADate : (NSString *)tstr
+{
+    NSString *dformat1 = @"yyyy-MM-dd";
+    NSString *dformat2 = @"MM-dd-yy";
+    NSString *dformat3 = @"MM/dd/yy";
+    NSString *dformat4 = @"dd-MMM-yy";
+    
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    //OK try some different formats...
+    [dateFormatter setDateFormat:dformat1];
+    NSDate *dtest = [dateFormatter dateFromString:tstr];
+    if (dtest != nil) return dtest;
+    [dateFormatter setDateFormat:dformat2];
+    dtest = [dateFormatter dateFromString:tstr];
+    if (dtest != nil) return dtest;
+    [dateFormatter setDateFormat:dformat3];
+    dtest = [dateFormatter dateFromString:tstr];
+    if (dtest != nil) return dtest;
+    [dateFormatter setDateFormat:dformat4];
+    dtest = [dateFormatter dateFromString:tstr];
+    if (dtest != nil) return dtest;
+    return nil;
+    
+} //end isItADate
 
 //=============OCRDocument=====================================================
 // Assumes r is in document coords, exhaustive search.

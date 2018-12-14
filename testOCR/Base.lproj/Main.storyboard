@@ -28,8 +28,9 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hawaiiBeefInvoice.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="RBk-xE-Koq">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hfm90.jpg" translatesAutoresizingMaskIntoConstraints="NO" id="RBk-xE-Koq">
                                 <rect key="frame" x="16" y="38" width="343" height="434"/>
+                                <color key="backgroundColor" red="0.29029605260000002" green="0.96510074010000002" blue="0.90167557570000001" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="434" id="0gn-m8-lpu"/>
                                     <constraint firstAttribute="width" constant="343" id="88u-vn-JQI"/>
@@ -217,6 +218,17 @@
                                     <action selector="testEmail:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ejC-Rt-yPI"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="wQN-6C-PFp">
+                                <rect key="frame" x="5" y="600" width="97" height="30"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="30" id="IC8-Mb-fRd"/>
+                                    <constraint firstAttribute="width" constant="97" id="VKf-vx-x1b"/>
+                                </constraints>
+                                <state key="normal" title="NextDoc"/>
+                                <connections>
+                                    <action selector="nextDocSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="a2o-Hc-w3U"/>
+                                </connections>
+                            </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ejW-Oz-qIc">
                                 <rect key="frame" x="294" y="625" width="65" height="30"/>
                                 <constraints>
@@ -228,7 +240,6 @@
                                 </state>
                                 <connections>
                                     <action selector="doneSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="wNE-Fg-XjX"/>
-                                    <action selector="testSelect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="gqz-Yg-xBP"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -236,6 +247,7 @@
                         <constraints>
                             <constraint firstItem="l5g-RH-K3c" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="7Fr-IC-m1K"/>
                             <constraint firstItem="RBk-xE-Koq" firstAttribute="top" secondItem="ioZ-IL-wk5" secondAttribute="bottom" constant="3" id="7Li-Gy-XGx"/>
+                            <constraint firstItem="Vja-od-GMR" firstAttribute="top" secondItem="wQN-6C-PFp" secondAttribute="bottom" constant="-5" id="Apd-6R-x5k"/>
                             <constraint firstItem="l5g-RH-K3c" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Axi-VC-nJD"/>
                             <constraint firstItem="SIK-df-PeH" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="BeW-1e-yh0"/>
                             <constraint firstItem="SIK-df-PeH" firstAttribute="height" secondItem="8bC-Xf-vdC" secondAttribute="height" id="COS-OU-00a"/>
@@ -244,6 +256,7 @@
                             <constraint firstItem="ZGC-aM-zdM" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="OoU-jM-zvY"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="NBT-2s-gLs" secondAttribute="bottom" constant="59" id="PGU-q0-e7e"/>
                             <constraint firstItem="SIK-df-PeH" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="PGr-af-bDx"/>
+                            <constraint firstItem="wQN-6C-PFp" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="5" id="PfG-X8-c2Z"/>
                             <constraint firstItem="RBk-xE-Koq" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="VNl-pC-1va"/>
                             <constraint firstItem="7l9-H4-46L" firstAttribute="top" secondItem="ioZ-IL-wk5" secondAttribute="top" id="Wn4-xg-zde"/>
                             <constraint firstItem="NBT-2s-gLs" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="17" id="ZP7-SY-RcR"/>
@@ -285,7 +298,7 @@
         <image name="arrLeft.png" width="128" height="128"/>
         <image name="arrRight.png" width="128" height="128"/>
         <image name="arrUp.png" width="128" height="128"/>
-        <image name="hawaiiBeefInvoice.jpg" width="1275" height="1650"/>
+        <image name="hfm90.jpg" width="1777" height="1181"/>
         <image name="ssd_hare.png" width="512" height="512"/>
     </resources>
 </document>

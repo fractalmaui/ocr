@@ -41,6 +41,8 @@
     arrowLHStepSize = 10;
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
+    
+    docnum = 1;
 
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
@@ -72,10 +74,19 @@
     _LHArrowView.hidden = TRUE;
     _RHArrowView.hidden = TRUE;
     pageRect = _inputImage.frame;
+    
+    CGRect magFrame = CGRectMake(0,0,120,120);
+    magView = [[MagnifierView alloc] initWithFrame:magFrame];
+    [self.view addSubview:magView];
+    magView.gotiPad       = FALSE; //_gotiPad; //DHS 5/8
+    magView.viewToMagnify = _inputImage;
+    magView.hidden        = TRUE;
+
 
 }
 
 //=============OCR VC=====================================================
+// NOTE this gets called WHENEVER select box moves!!!
 - (void)viewWillLayoutSubviews {
     //Make sure screen has settled before adding overlays!
     [self refreshOCRBoxes];
@@ -88,7 +99,27 @@
         selectBox.hidden = TRUE;
 
     }
+    
+ 
 }
+
+//=============OCR VC=====================================================
+-(void) stopMagView
+{
+    magView.hidden = TRUE;
+}
+
+//=============OCR VC=====================================================
+-(void) setupMagView : (int) x : (int) y
+{
+    //WHY DO I NEED the xy cluge!??
+//    CGPoint tl2 = CGPointMake(x + 17, y+17 );
+    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??
+    magView.hidden     = FALSE;
+    magView.touchPoint = tl2;
+    [_inputImage setNeedsDisplay];
+    [magView setNeedsDisplay];
+} //end setupMagView
 
 //=============OCR VC=====================================================
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -98,6 +129,7 @@
 //    int i,tx,ty,xoff,yoff,xytoler;
     UITouch *touch  = [[event allTouches] anyObject];
     touchLocation   = [touch locationInView:_inputImage];
+
     touchX          = touchLocation.x;
     touchY          = touchLocation.y;
     touchDocX = [self screenToDocumentX : touchX ];
@@ -109,7 +141,7 @@
     NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
     adjustSelect = [ot hitField:touchDocX :touchDocY];
     NSLog(@" ... hit %d",adjustSelect);
-    if (adjustSelect != -1)
+    if (adjustSelect != -1 && !editing && !adjusting)
     {
         [self promptForAdjust:self];
     }
@@ -510,10 +542,10 @@
             }
         }
         // Handle result: load up document and apply template here
-        //NSLog(@" annnnd result is %@",result);
+        NSLog(@" annnnd result is %@",result);
     }];
     [task resume];
-}
+} //end callOCRSpace
 
 //=============OCR VC=====================================================
 - (NSData *) createBodyWithBoundary:(NSString *)boundary parameters:(NSDictionary *)parameters imageData:(NSData*)data filename:(NSString *)filename
@@ -541,10 +573,15 @@
 
 //=============OCR VC=====================================================
 - (IBAction)testSelect:(id)sender {
+    //NSDate *date = [od isItADate:@"duhhhhhhhh"];
+    //NSDate *date2 = [od isItADate:@"12/24/18"];
+
+    
     imageTools *it = [[imageTools alloc] init];
     //[it findCorners:_inputImage.image];
-    [it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
-    
+    //[it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
+   // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
+    NSLog(@" duh just deskewed");
     //[self applyTemplate];
     
 
@@ -554,6 +591,7 @@
     //_inputImage.image = j;
     //[self callOCRSpace : selectFname];
 //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
+    [self callOCRSpace : @"hfm.jpg"];
 }
 
 //======(Hue-Do-Ku allColorPacks)==========================================
@@ -650,7 +688,7 @@
     [self updateCenterArrowButtons];
     [self updateCenterArrowButtons];
 
-    CGRect rr = [ot getBoxRect:adjustSelect];
+    CGRect rr = [ot getBoxRect:adjustSelect]; //This is in document coords!
     [ot dumpBox:adjustSelect];
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
     int docYoff = od.docRect.origin.y;
@@ -662,6 +700,10 @@
     int ys = (int)((double)rr.size.height / docYConv);
     selectBox.frame =  CGRectMake(xi, yi, xs, ys);
     selectBox.hidden = FALSE;
+    
+    //set up magview
+    [self setupMagView : xi : yi];
+    
     // Change bottom button so user knows they can cancel...
     [_addFieldButton setTitle:@"Cancel" forState:UIControlStateNormal];
     
@@ -706,6 +748,7 @@
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self clearFields];
+                                                              [self stopMagView];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -726,6 +769,7 @@
     {
         editing = adjusting = FALSE;
         [self clearScreenAfterEdit];
+        [self stopMagView];
         return;
     }
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Add New Field",nil)
@@ -793,6 +837,12 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self adjustField];
                                                           }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete this box",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self->ot deleteBox:self->adjustSelect];
+                                                              [self->ot saveTemplatesToDisk];
+                                                              [self refreshOCRBoxes];
+                                                          }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self promptForNewTagToAdd:self];
@@ -810,7 +860,7 @@
                                                            }];
     //DHS 3/13: Add owner's ability to delete puzzle
     [alert addAction:firstAction];
-    //[alert addAction:secondAction];
+    [alert addAction:secondAction];
     [alert addAction:thirdAction];
     if ([ot getTagCount:adjustSelect] > 0) [alert addAction:fourthAction];
     [alert addAction:cancelAction];
@@ -942,6 +992,8 @@
     [ot dump];
     [ot saveTemplatesToDisk];
     [self clearScreenAfterEdit];
+    [self stopMagView];
+
 }
 
 //=============OCR VC=====================================================
@@ -1052,9 +1104,32 @@
     if (xi+xs > dx+dw) xi = (dx+dw) - xs;
     if (yi+ys > dy+dh) yi = (dy+dh) - ys;
     selectBox.frame = CGRectMake(xi, yi, xs, ys);
+    
+    [self setupMagView : xi : yi];
+
     [self getDocumentFrameFromSelectBox]; //Just updates screen/ toss return val
 }
 
+
+//=============OCR VC=====================================================
+- (IBAction)nextDocSelect:(id)sender
+{
+    docnum++;
+    if (docnum > 2) docnum = 1;
+    if (docnum == 1)
+    {
+        supplierName = @"HFM";
+        selectFname  = @"hfm90.jpg";
+        [_inputImage setImage:[UIImage imageNamed:selectFname]];
+    }
+    else if (docnum == 2)
+    {
+        supplierName = @"Hawaii Beef Producers";
+        selectFname  = @"hawaiiBeefInvoice.jpg";
+        [_inputImage setImage:[UIImage imageNamed:selectFname]];
+    }
+
+}
 
 
 //=============OCR VC=====================================================
