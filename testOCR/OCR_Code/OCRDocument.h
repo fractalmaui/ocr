@@ -35,6 +35,15 @@ NS_ASSUME_NONNULL_BEGIN
     //Comes from each newly scanned document
     CGRect tlScalingRect,trScalingRect;
     double hScale,vScale; //For document scaling after template is made
+    //Groups: Used to try to find fields if templates fail?
+    NSMutableSet *gT10;   //Near top,bottom,left,right
+    NSMutableSet *gB10;
+    NSMutableSet *gL10;
+    NSMutableSet *gR10;
+    NSMutableSet *gH20; //Near H/V center
+    NSMutableSet *gV20;
+    NSMutableSet *gT50;   //Top half
+    NSMutableSet *gL50;   //Left half
 }
 @property (nonatomic , strong) UIImage* scannedImage;
 @property (nonatomic , strong) NSString* scannedName;
@@ -51,6 +60,16 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addColumnStringData : (NSMutableArray*)stringArray;
 -(void) addIgnoreBoxItems  : (CGRect )rr;
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
+-(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr;
+-(int) findIntInArrayOfFields : (NSArray*)aof;
+-(float) findPriceInArrayOfFields : (NSArray*)aof;
+-(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
+-(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
+-(int) findQuantityColumn;
+-(int) findItemColumn;
+-(int) findDescriptionColumn;
+-(int) findPriceColumn;
+-(int) findAmountColumn;
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs;
 -(NSArray*)  getHeaderNames;
 -(CGRect) getDocRect;
@@ -60,15 +79,11 @@ NS_ASSUME_NONNULL_BEGIN
 -(CGRect) getBRRect;
 -(void) getAverageGlyphHeight;
 -(NSMutableArray *) getRowFromColumnStringData : (int)index;
--(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr;
+-(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric;
 -(void) parseJSONfromDict : (NSDictionary *)d;
--(int) findIntInArrayOfFields : (NSArray*)aof;
--(float) findPriceInArrayOfFields : (NSArray*)aof;
--(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
--(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
 -(NSDate *) isItADate : (NSString *)tstr;
 -(void) parseHeaderColumns : (NSArray*)aof;
--(void) setupDocument : (NSString*) ifname : (NSDictionary *)d;
+-(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;
 -(void) setScalingRects;
 @end

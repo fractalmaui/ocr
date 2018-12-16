@@ -38,6 +38,7 @@
 
     od = [[OCRDocument alloc] init];
     ot = [[OCRTemplate alloc] init];
+    ot.delegate = self;
     arrowLHStepSize = 10;
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
@@ -50,6 +51,9 @@
     smartp      = [[smartProducts alloc] init];
     fastIcon    = [UIImage imageNamed:@"ssd_hare"];
     slowIcon    = [UIImage imageNamed:@"ssd_tortoise"];
+    
+    clugey = 39;
+    clugex = 84;
     return self;
 }
 
@@ -70,20 +74,56 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     //parse test
-    [self testit];
+    [self getStubbedDocument]; //also loads doc image
+    ot.supplierName = supplierName; //Pass along supplier name to template
+    [self loadStubbedOCRData];
     _LHArrowView.hidden = TRUE;
     _RHArrowView.hidden = TRUE;
     pageRect = _inputImage.frame;
     
-    CGRect magFrame = CGRectMake(0,0,120,120);
+    CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
+//    CGRect magFrame = CGRectMake(0,0,120,120);
     magView = [[MagnifierView alloc] initWithFrame:magFrame];
     [self.view addSubview:magView];
     magView.gotiPad       = FALSE; //_gotiPad; //DHS 5/8
     magView.viewToMagnify = _inputImage;
     magView.hidden        = TRUE;
+    
 
+    //Canned starting stuff...
+//    supplierName = @"HFM";
+//    selectFnameForTemplate  = @"hfm90.jpg";
+//    selectFname  = @"hfm.jpg";
+//    [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
+    [self scaleImageViewToFitDocument];
 
 }
+
+//=============OCR VC=====================================================
+-(void) dismiss
+{
+    //[_sfx makeTicSoundWithPitch : 8 : 52];
+    [self dismissViewControllerAnimated : YES completion:nil];
+    
+}
+
+
+//=============OCR VC=====================================================
+-(void) scaleImageViewToFitDocument
+{
+    int iwid = _inputImage.image.size.width;
+    int ihit = _inputImage.image.size.height;
+    int xi,yi,xs,ys;
+    xi = 0;
+    yi = 90;
+    xs = viewWid;
+    ys = (int)((double)xs * (double)ihit / (double)iwid);
+    CGRect rr = CGRectMake(xi, yi, xs, ys);
+    _inputImage.frame = rr;
+    _selectOverlayView.frame = rr;
+    _overlayView.frame = rr;
+}
+
 
 //=============OCR VC=====================================================
 // NOTE this gets called WHENEVER select box moves!!!
@@ -114,9 +154,28 @@
 {
     //WHY DO I NEED the xy cluge!??
 //    CGPoint tl2 = CGPointMake(x + 17, y+17 );
-    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??
+//    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??  for 120x120, radius,radius
+    //clugex = 60; //For bulls-eye
+    //clugey = 19;
+    
+    CGPoint tl2 = CGPointMake(x + clugex , y + clugey ); ///WHY O WHY??  for 120x120, radius,radius
+    //This is for the bulls eye
+    //    CGPoint tl2 = CGPointMake(x + 60 , y + 19 ); ///WHY O WHY??  for 120x120, radius,radius
+
+//    CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
+    //    CGRect magFrame = CGRectMake(0,0,120,120);
+
     magView.hidden     = FALSE;
-    magView.touchPoint = tl2;
+    
+    BOOL below = FALSE;
+    BOOL left  = TRUE;
+    int fry = _inputImage.frame.size.height;
+    int frx = _inputImage.frame.size.width;
+    if (y < fry/4) below = TRUE;
+    if (x < frx/2) left  = FALSE;
+    [magView setTouchPoint:tl2:below:left];
+    
+//    magView.touchPoint = tl2;
     [_inputImage setNeedsDisplay];
     [magView setNeedsDisplay];
 } //end setupMagView
@@ -136,8 +195,8 @@
     touchDocY = [self screenToDocumentY : touchY ];
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
     int docYoff = od.docRect.origin.y;
-    touchDocX+=docXoff;
-    touchDocY+=docYoff;
+//    touchDocX+=docXoff;
+//    touchDocY+=docYoff;
     NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
     adjustSelect = [ot hitField:touchDocX :touchDocY];
     NSLog(@" ... hit %d",adjustSelect);
@@ -171,27 +230,41 @@
     NSLog(@" touchEnded");
 } //end touchesEnded
 
+//=============OCR VC=====================================================
+-(void) clearOverlay
+{
+    NSArray *viewsToRemove = [_overlayView subviews];
+    for (UIView*v in viewsToRemove) [v removeFromSuperview];
+
+}
 
 //=============OCR VC=====================================================
 // Clears and adds OCR boxes as defined in the OCRTemplate
 -(void) refreshOCRBoxes
 {
     //Clear overlay...
-    NSArray *viewsToRemove = [_overlayView subviews];
-    for (UIView*v in viewsToRemove) [v removeFromSuperview];
+    [self clearOverlay];
+    NSLog(@" ot boxcount %d",[ot getBoxCount]);
     for (int i=0;i<[ot getBoxCount];i++)
     {
-        CGRect rr = [ot getBoxRect:i]; //In document coords!
+        CGRect rr = [ot getBoxRect:i]; //In document coords
+        //NSLog(@" docbox[%d] %@",i,NSStringFromCGRect(rr));
+
         //Add in top/left doc text corner to get absolute doc XY
-        int docXoff = od.docRect.origin.x; //Top left text corner in document...
-        int docYoff = od.docRect.origin.y;
-        rr.origin.x += docXoff;
-        rr.origin.y += docYoff;
+      //  int docXoff = od.docRect.origin.x; //Top left text corner in document...
+      //  int docYoff = od.docRect.origin.y;
+      //  rr.origin.x += docXoff;
+      //  rr.origin.y += docYoff;
         int xi = [self documentToScreenX:rr.origin.x];
         int yi = [self documentToScreenY:rr.origin.y];
         int xs = (int)((double)rr.size.width  / docXConv);
         int ys = (int)((double)rr.size.height / docYConv);
-        UIView *v =  [[UIView alloc] initWithFrame:CGRectMake(xi, yi, xs, ys)];
+        //WHY O WHY do I need the 90 offset when drawing these views?
+        //  it corresponds to the fact that overlayview is 90 pixels from screen top,
+        //   but WHY???
+        //selectoverlayview is in the same place but the select box isn't drawn off by 90!
+        UIView *v =  [[UIView alloc] initWithFrame:CGRectMake(xi, yi- 90, xs, ys)];
+        //NSLog(@" selbox[%d] %@",i,NSStringFromCGRect(v.frame));
         NSString *fieldName = [ot getBoxFieldName : i];
         if ([fieldName isEqualToString:INVOICE_IGNORE_FIELD])
             v.backgroundColor = [UIColor colorWithRed:0.8 green:0.9 blue:0.0 alpha:0.6]; //Yellowish
@@ -199,6 +272,7 @@
                  [fieldName isEqualToString:INVOICE_NUMBER_FIELD] ||
                  [fieldName isEqualToString:INVOICE_DATE_FIELD] ||
                  [fieldName isEqualToString:INVOICE_CUSTOMER_FIELD] ||
+                 [fieldName isEqualToString:INVOICE_SUPPLIER_FIELD] ||
                  [fieldName isEqualToString:INVOICE_HEADER_FIELD] ||
                  [fieldName isEqualToString:INVOICE_TOTAL_FIELD]
                  )
@@ -210,13 +284,50 @@
 } //end refreshOCRBoxes
 
 //=============OCR VC=====================================================
--(void) testit
+-(void) getStubbedDocument
+{
+
+    if (docnum == 1)
+    {
+        supplierName   = @"HFM";
+        selectFname    = @"hfm.jpg";
+        selectFnameForTemplate = @"hfm90.jpg"; //This should be rotated for user
+        docFlipped90 = TRUE;
+    }
+    if (docnum == 2)
+    {
+        supplierName   = @"Hawaii Beef Producers";
+        selectFname    = @"hawaiiBeefInvoice.jpg";
+        selectFnameForTemplate = @"hawaiiBeefInvoice.jpg";  //This should be rotated for user
+        docFlipped90 = FALSE;
+    }
+    [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
+    [self scaleImageViewToFitDocument];
+
+} //end getStubbedDocument
+
+//=============OCR VC=====================================================
+-(void) loadStubbedOCRData
 {
     NSLog(@" Load stubbed OCR data...");
-    NSDictionary *d = [self readTxtToJSON:@"beef"];
-    supplierName = @"Hawaii Beef Producers";
-    selectFname  = @"hawaiiBeefInvoice.jpg";
-    [od setupDocument : selectFname : d];
+    NSString *stubbedDocName;
+    if (docnum == 1)
+    {
+        stubbedDocName = @"hfm";
+    }
+    if (docnum == 2)
+    {
+        stubbedDocName = @"beef";
+    }
+
+    [self getStubbedDocument];
+    ot.supplierName = supplierName; //Pass along supplier name to template
+    NSDictionary *d = [self readTxtToJSON:stubbedDocName];
+    [od setupDocument : selectFname : d : docFlipped90];
+
+//    NSDictionary *d = [self readTxtToJSON:@"beef"];
+//    supplierName = @"Hawaii Beef Producers";
+//    selectFname  = @"hawaiiBeefInvoice.jpg";
     tlRect = [od getTLRect];
     trRect = [od getTRRect];
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
@@ -227,9 +338,8 @@
     //Screen -> Document conversion
     docXConv = (double)od.width  / (double)r.size.width;
     docYConv = (double)od.height / (double)r.size.height;
-
+    NSLog(@" duhhh");
 }
-
 
 
 //=============OCR VC=====================================================
@@ -258,11 +368,6 @@
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
         CGRect rr = [ot getBoxRect:i]; //In document coords!
-        int docXoff = od.docRect.origin.x; //Top left text corner in document...
-        int docYoff = od.docRect.origin.y;
-        //Add in top/left doc text corner to get absolute doc XY
-        rr.origin.x += docXoff;
-        rr.origin.y += docYoff;
         NSMutableArray *a = [od findAllWordsInRect:rr];
         //OK, let's go and get the field name to figure out what to do w data...
         NSString* fieldName = [ot getBoxFieldName:i];
@@ -280,10 +385,16 @@
                 invoiceDate = [od findDateInArrayOfFields:a]; //Looks for things with slashes in them?
                 NSLog(@" invoice date %@",invoiceDate);
             }
-            else if ([fieldName isEqualToString:INVOICE_CUSTOMER_FIELD]) //Looking for customer?
+            else if ([fieldName isEqualToString:INVOICE_CUSTOMER_FIELD]) //Looking for Customer?
             {
                 invoiceCustomer = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
-                NSLog(@" customer %@",invoiceCustomer);
+                NSLog(@" Customer %@",invoiceCustomer);
+            }
+            else if ([fieldName isEqualToString:INVOICE_SUPPLIER_FIELD]) //Looking for Supplier?
+            {
+                invoiceSupplier = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
+                BOOL matches = [ot isSupplierAMatch:invoiceSupplier]; //Check for rough match
+                NSLog(@" Supplier %@, match %d",invoiceSupplier,matches);
             }
             else if ([fieldName isEqualToString:INVOICE_HEADER_FIELD]) //Header is SPECIAL!
             {
@@ -306,14 +417,23 @@
     //We can only do columns after they are all loaded
     [od clearAllColumnStringData];
     NSMutableArray* rowYs; //overkill on rows too!
+    NSMutableArray* rowY2s; //overkill on rows too!
     //Look at RH most column, that dictates row tops...
     int numCols = [ot getColumnCount];
-    CGRect rrright = [ot getColumnByIndex:numCols-1];
-    rowYs = [od getColumnYPositionsInRect:rrright];
+    NSLog(@" price  col %d",[od findPriceColumn]);
+    NSLog(@" amount col %d",[od findAmountColumn]);
+    CGRect rrright = [ot getColumnByIndex:[od findPriceColumn]];
+    rowYs = [od getColumnYPositionsInRect:rrright : TRUE];
+    CGRect rrright2 = [ot getColumnByIndex:[od findAmountColumn]];
+    rowY2s = [od getColumnYPositionsInRect:rrright2 : TRUE];
     for (int i=0;i<numCols;i++)
     {
         CGRect rr = [ot getColumnByIndex:i];
-        NSMutableArray *stringArray = [od getColumnStrings : rr : rowYs];
+        NSMutableArray *stringArray;
+        if (rowY2s.count > rowYs.count)
+            stringArray = [od getColumnStrings : rr : rowY2s];
+        else
+            stringArray = [od getColumnStrings : rr : rowYs];
         [od addColumnStringData:stringArray];
     }
     //Now, columns are ready: let's dig them out!
@@ -336,15 +456,26 @@
     [self dumpResults];
     
     //Let's try getting a form for pam now...
-    [self writeEXPToParse];
+   // [self writeEXPToParse];
 } //end applyTemplate
 
 //=============OCR VC=====================================================
 -(void) writeEXPToParse
 {
+    
+    int quantityColumn    = [od findQuantityColumn];
+    int itemColumn        = [od findItemColumn];
+    //Not used yet? int descriptionColumn = [od findDescriptionColumn];
+    int priceColumn       = [od findPriceColumn];
+    //Not used yet? int amountColumn      = [od findAmountColumn];
     for (int i=0;i<od.longestColumn;i++)
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];
+        if (ac.count < 5)
+        {
+            NSLog(@" bad row pulled in EXP save!");
+            return;
+        }
         NSLog(@" ac %@",ac);
         [smartp clear];
         [smartp addVendor:supplierName]; //Is this the right string?
@@ -360,13 +491,13 @@
             PFObject *nextEXPRecord = [PFObject objectWithClassName:@"EXPFullTable"];
             nextEXPRecord[PInv_Category_key]    = smartp.latestCategory;
             nextEXPRecord[PInv_Month_key]       = smartp.latestShortDateString; //DD-MMM?
-            nextEXPRecord[PInv_Quantity_key]    = ac[0]; //Quantity:first column from invoice table
-            nextEXPRecord[PInv_Item_key]        = ac[1]; //item code:2nd column
+            nextEXPRecord[PInv_Quantity_key]    = ac[quantityColumn]; //Quantity:first column from invoice table
+            nextEXPRecord[PInv_Item_key]        = ac[itemColumn]; //item code:2nd column
             nextEXPRecord[PInv_UOM_key]         = smartp.latestUOM;
             nextEXPRecord[PInv_Bulk_or_Individual_key] = smartp.latestBulkOrIndividual;
             nextEXPRecord[PInv_Vendor_key]      = smartp.latestVendor;
             nextEXPRecord[PInv_TotalPrice_key]  = smartp.latestTotalPrice;
-            nextEXPRecord[PInv_PricePerUOM_key] = ac[3]; //column 4, next to RH!
+            nextEXPRecord[PInv_PricePerUOM_key] = ac[priceColumn]; //column 4, next to RH!
             nextEXPRecord[PInv_Processed_key]   = smartp.latestProcessed;
             nextEXPRecord[PInv_Local_key]       = smartp.latestLocal;
             nextEXPRecord[PInv_Date_key]        = smartp.invoiceDate; //ONLY column that ain't a String!
@@ -477,6 +608,8 @@
 {
     NSString *r = @"Invoice Parsed Results\n";
     r = [r stringByAppendingString:
+         [NSString stringWithFormat:@"Supplier %@\n",invoiceSupplier]];
+    r = [r stringByAppendingString:
          [NSString stringWithFormat: @"Number %d  Date %@\n",invoiceNumber,invoiceDate]];
     r = [r stringByAppendingString:
          [NSString stringWithFormat:@"Customer %@  Total %f\n",invoiceCustomer,invoiceTotal]];
@@ -527,6 +660,7 @@
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSError* myError;
         NSLog(@" got response from server...");
+        rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&myError];
@@ -541,6 +675,8 @@
                 case 4: errDesc = @"OCR internal error";break;
             }
         }
+        
+
         // Handle result: load up document and apply template here
         NSLog(@" annnnd result is %@",result);
     }];
@@ -577,21 +713,17 @@
     //NSDate *date2 = [od isItADate:@"12/24/18"];
 
     
-    imageTools *it = [[imageTools alloc] init];
+    //imageTools *it = [[imageTools alloc] init];
     //[it findCorners:_inputImage.image];
     //[it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
    // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
-    NSLog(@" duh just deskewed");
-    //[self applyTemplate];
+    //NSLog(@" duh just deskewed");
+    [self loadStubbedOCRData];
+    [self applyTemplate];
     
-
-//    -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
-
-    
-    //_inputImage.image = j;
     //[self callOCRSpace : selectFname];
 //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
-    [self callOCRSpace : @"hfm.jpg"];
+    //[self callOCRSpace : @"hfm.jpg"];
 }
 
 //======(Hue-Do-Ku allColorPacks)==========================================
@@ -690,14 +822,15 @@
 
     CGRect rr = [ot getBoxRect:adjustSelect]; //This is in document coords!
     [ot dumpBox:adjustSelect];
-    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    int docYoff = od.docRect.origin.y;
-    rr.origin.x += docXoff;
-    rr.origin.y += docYoff;
+//    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+//    int docYoff = od.docRect.origin.y;
+//    rr.origin.x += docXoff;
+//    rr.origin.y += docYoff;
     int xi = [self documentToScreenX:rr.origin.x];
     int yi = [self documentToScreenY:rr.origin.y];
-    int xs = (int)((double)rr.size.width  / docXConv);
-    int ys = (int)((double)rr.size.height / docYConv);
+    yi -= 90; //Stoopid 90 again!
+    int xs = [self documentToScreenW:rr.size.width];
+    int ys = [self documentToScreenH:rr.size.height];
     selectBox.frame =  CGRectMake(xi, yi, xs, ys);
     selectBox.hidden = FALSE;
     
@@ -717,6 +850,7 @@
     fieldNameShort = @"Number";
     if ([fieldName isEqualToString:INVOICE_DATE_FIELD])       fieldNameShort = @"Date";
     if ([fieldName isEqualToString:INVOICE_CUSTOMER_FIELD])   fieldNameShort = @"Cust";
+    if ([fieldName isEqualToString:INVOICE_SUPPLIER_FIELD])   fieldNameShort = @"Supp";
     if ([fieldName isEqualToString:INVOICE_HEADER_FIELD])     fieldNameShort = @"Header";
     if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD])     fieldNameShort = @"Column";
     if ([fieldName isEqualToString:INVOICE_IGNORE_FIELD])     fieldNameShort = @"Ignore";
@@ -770,6 +904,7 @@
         editing = adjusting = FALSE;
         [self clearScreenAfterEdit];
         [self stopMagView];
+
         return;
     }
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Add New Field",nil)
@@ -777,31 +912,35 @@
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     
     
-    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Number",nil)
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Supplier",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self addNewField : INVOICE_SUPPLIER_FIELD];
+                                                          }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Number",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_NUMBER_FIELD];
                                                           }];
-    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Date",nil)
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Date",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_DATE_FIELD];
                                                           }];
-    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Customer",nil)
+    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Customer",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self addNewField : INVOICE_CUSTOMER_FIELD];
                                                            }];
-    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Column Header",nil)
+    UIAlertAction *fifthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Column Header",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_HEADER_FIELD];
                                                           }];
-    UIAlertAction *fifthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add a Column",nil)
+    UIAlertAction *sixthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add a Column",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_COLUMN_FIELD];
                                                           }];
-    UIAlertAction *sixthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Total",nil)
+    UIAlertAction *seventhAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Total",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_TOTAL_FIELD];
                                                           }];
-    UIAlertAction *seventhAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ignore this Area",nil)
+    UIAlertAction *eighthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ignore this Area",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_IGNORE_FIELD];
                                                           }];
@@ -816,6 +955,7 @@
     [alert addAction:fifthAction];
     [alert addAction:sixthAction];
     [alert addAction:seventhAction];
+    [alert addAction:eighthAction];
 
     [alert addAction:cancelAction];
 
@@ -841,6 +981,7 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self->ot deleteBox:self->adjustSelect];
                                                               [self->ot saveTemplatesToDisk];
+                                                              [ot saveToParse:supplierName];
                                                               [self refreshOCRBoxes];
                                                           }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
@@ -854,6 +995,7 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self->ot clearTags:self->adjustSelect];
                                                               [self->ot saveTemplatesToDisk];
+                                                              [ot saveToParse:supplierName];
                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -978,6 +1120,10 @@
             [self finishAndAddBox];
         }
     }
+    else{
+        [self dismiss];
+
+    }
 } //end doneSelect
 
 //=============OCR VC=====================================================
@@ -991,6 +1137,7 @@
     editing = adjusting = FALSE;
     [ot dump];
     [ot saveTemplatesToDisk];
+    [ot saveToParse:supplierName];
     [self clearScreenAfterEdit];
     [self stopMagView];
 
@@ -1003,37 +1150,68 @@
     _RHArrowView.hidden     = TRUE;
     selectBox.hidden        = TRUE;
     _instructionsLabel.text = @"...";
+    [_wordsLabel setText:@""];
+
     [_addFieldButton setTitle:@"Add Field" forState:UIControlStateNormal];
     [self refreshOCRBoxes];
+    
 }
 
 //=============OCR VC=====================================================
 -(int) screenToDocumentX : (int) xin
 {
-    double dx = ((double)xin - _inputImage.frame.origin.x) * docXConv;
+    double dx = (double)xin * docXConv;
+//    double dx = ((double)xin - (double)_inputImage.frame.origin.x) * docXConv;
     return (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
 -(int) screenToDocumentY : (int) yin
 {
-    double dy = ((double)yin - _inputImage.frame.origin.y) * docYConv;
+    double dy = (double)yin * docYConv;
+//    double dy = ((double)yin - (double)_inputImage.frame.origin.y) * docYConv;
     return (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
+-(int) screenToDocumentW : (int) win
+{
+    return (int)floor((double)(win  * docXConv) + 0.5);
+}
+
+//=============OCR VC=====================================================
+-(int) screenToDocumentH : (int) hin
+{
+    return (int)floor((double)(hin  * docYConv) + 0.5);
+}
+
+
+//=============OCR VC=====================================================
 -(int) documentToScreenX : (int) xin
 {
-    double dx = ((double)xin / docXConv + _inputImage.frame.origin.x);
+    double dx = ((double)xin / docXConv + (double)_inputImage.frame.origin.x);
     return (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
 }
 
 //=============OCR VC=====================================================
 -(int) documentToScreenY : (int) yin
 {
-    double dy = ((double)yin / docYConv + _inputImage.frame.origin.y);
+    double dy = ((double)yin / docYConv + (double)_inputImage.frame.origin.y);
     return (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
 }
+
+//=============OCR VC=====================================================
+-(int) documentToScreenW : (int) win
+{
+    return (int)floor((double)(win  / docXConv) + 0.5);
+}
+
+//=============OCR VC=====================================================
+-(int) documentToScreenH : (int) hin
+{
+    return (int)floor((double)(hin  / docYConv) + 0.5);
+}
+
 
 //=============OCR VC=====================================================
 -(CGRect) documentToScreenRect : (CGRect) docRect
@@ -1041,10 +1219,8 @@
     int xi,yi,xs,ys;
     xi = [self documentToScreenX:docRect.origin.x];
     yi = [self documentToScreenY:docRect.origin.y];
-    double dx = (double)docRect.size.width / docXConv;
-    xs = (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
-    double dy = (double)docRect.size.height / docYConv;
-    ys = (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
+    xs = [self documentToScreenW:docRect.size.width];
+    ys = [self documentToScreenH:docRect.size.height];
     return CGRectMake(xi, yi, xs, ys);
 } //documentToScreenRect
 
@@ -1060,16 +1236,21 @@
     xs = r.size.width;
     ys = r.size.height;
     CGRect rs = selectBox.frame;
-    //NSLog(@" inxy %d %d",(int)rs.origin.x,(int)rs.origin.y);
+    //NSLog(@" sr1 %@",NSStringFromCGRect(rs));
+
     int docx = [self screenToDocumentX : rs.origin.x];
     int docy = [self screenToDocumentY : rs.origin.y];
-    int docw = (int)(double)(rs.size.width  * docXConv);
-    int doch = (int)(double)(rs.size.height * docYConv);
+    int docw = [self screenToDocumentW : rs.size.width];
+    int doch = [self screenToDocumentH : rs.size.height];
     //NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
-    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    int docYoff = od.docRect.origin.y;
-    docx -= docXoff;
-    docy -= docYoff;
+    
+    //xi = [self documentToScreenX:docx];
+    //yi = [self documentToScreenY:docy];
+    //xs = [self documentToScreenW:docw];
+    //ys = [self documentToScreenH:doch];
+    //NSLog(@"  and back again %d %d  , %d %d",xi,yi,xs,ys);
+    //docx -= docXoff;
+    //docy -= docYoff;
     _instructionsLabel.text = [NSString stringWithFormat:
                                @"%@:XY(%d,%d)WH(%d,%d)",fieldNameShort,docx,docy,docw,doch];
     return CGRectMake(docx, docy, docw, doch);
@@ -1081,6 +1262,7 @@
 -(void) moveOrResizeSelectBox : (int) xdel : (int) ydel : (int) xsdel : (int) ysdel
 {
     CGRect r = selectBox.frame;
+    NSLog(@" clugex %d clugey %d",clugex,clugey);
     int xi,yi,xs,ys;
     xi = r.origin.x;
     yi = r.origin.y;
@@ -1099,36 +1281,65 @@
     if (xs>dw) xs = dw;
     if (ys>dh) ys = dh;
     dy+=24; //NOTCH?
-    if (xi < dx) xi = dx;
-    if (yi < dy) yi = dy;
+    if (xi < 0) xi = 0;
+    if (yi < 0) yi = 0;
+//    if (xi < dx) xi = dx;
+//    if (yi < dy) yi = dy;
     if (xi+xs > dx+dw) xi = (dx+dw) - xs;
     if (yi+ys > dy+dh) yi = (dy+dh) - ys;
     selectBox.frame = CGRectMake(xi, yi, xs, ys);
     
     [self setupMagView : xi : yi];
+    [self getWordsInBox];
 
     [self getDocumentFrameFromSelectBox]; //Just updates screen/ toss return val
 }
 
+//=============OCR VC=====================================================
+-(void) getWordsInBox
+{
+    CGRect r = selectBox.frame;
+    //asdf
+    int xi,yi,xs,ys;
+    xi = [self screenToDocumentX:r.origin.x];
+    yi = [self screenToDocumentY:r.origin.y];
+    
+    //asdf
+    
+    
+    NSLog(@" selrect %@",NSStringFromCGRect(r));
+   // int docXoff = od.docRect.origin.x; //Top left text corner in document...
+   // int docYoff = od.docRect.origin.y;
+   // NSLog(@" docxyoff %d %d",docXoff,docYoff);
+    xs = [self screenToDocumentW :r.size.width];
+    ys = [self screenToDocumentH :r.size.height];
+
+//    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+//    int docYoff = od.docRect.origin.y;
+
+    CGRect r2 =CGRectMake(xi, yi, xs, ys);
+    NSLog(@" ...docrect %@",NSStringFromCGRect(r2));
+    NSMutableArray *a = [od findAllWordStringsInRect:r2];
+    NSString* wstr = @"";
+    for (NSString *s in a)
+    {
+        wstr = [wstr stringByAppendingString:[NSString stringWithFormat:@"%@,",s]];
+    }
+    [_wordsLabel setText:wstr];
+    NSLog(@" annnd array %@",wstr);
+}
 
 //=============OCR VC=====================================================
 - (IBAction)nextDocSelect:(id)sender
 {
     docnum++;
     if (docnum > 2) docnum = 1;
-    if (docnum == 1)
-    {
-        supplierName = @"HFM";
-        selectFname  = @"hfm90.jpg";
-        [_inputImage setImage:[UIImage imageNamed:selectFname]];
-    }
-    else if (docnum == 2)
-    {
-        supplierName = @"Hawaii Beef Producers";
-        selectFname  = @"hawaiiBeefInvoice.jpg";
-        [_inputImage setImage:[UIImage imageNamed:selectFname]];
-    }
-
+    ot.supplierName = supplierName; //Pass along supplier name to template
+    NSLog(@" nextdoc %@",supplierName);
+    [self getStubbedDocument]; //also loads doc image
+    [self loadStubbedOCRData]; //asdf
+    [self clearOverlay];
+    [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
 }
 
 
@@ -1137,8 +1348,10 @@
     UIButton *b = (UIButton *)sender;
     if (b.tag > 100) //LH arrows
         [self moveOrResizeSelectBox:0 :arrowLHStepSize:0:0];
-    else
+    else{
+        clugey++;
         [self moveOrResizeSelectBox:0:0:0 :arrowRHStepSize];
+    }
 }
 
 
@@ -1148,7 +1361,10 @@
     if (b.tag > 100) //LH arrows
         [self moveOrResizeSelectBox:0 :-arrowLHStepSize:0:0];
     else
+    {
+        clugey--;
         [self moveOrResizeSelectBox:0:0:0 :-arrowRHStepSize];
+    }
 }
 
 
@@ -1158,7 +1374,10 @@
     if (b.tag > 100) //LH arrows
         [self moveOrResizeSelectBox:-arrowLHStepSize:0:0:0];
     else
+    {
+        clugex--;
         [self moveOrResizeSelectBox:0:0:-arrowRHStepSize:0 ];
+    }
 }
 
 //=============OCR VC=====================================================
@@ -1167,7 +1386,10 @@
     if (b.tag > 100) //LH arrows
         [self moveOrResizeSelectBox:arrowLHStepSize:0:0:0];
     else
+    {
+        clugex++;
         [self moveOrResizeSelectBox:0:0:arrowRHStepSize:0 ];
+    }
 }
 
 
@@ -1275,7 +1497,13 @@
 
 }
 
+#pragma mark - OCRTemplateDelegate
 
-
+//=============OCR VC=====================================================
+- (void)didReadTemplate
+{
+    NSLog(@" didReadTemplate...");
+    [self refreshOCRBoxes];
+}
 
 @end

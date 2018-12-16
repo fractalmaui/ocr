@@ -19,6 +19,9 @@
 #import "OCRBox.h"
 NS_ASSUME_NONNULL_BEGIN
 
+@protocol OCRTemplateDelegate;
+
+
 @interface OCRTemplate : NSObject
 {
     NSMutableArray *ocrBoxes;
@@ -33,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"
 #define INVOICE_DATE_FIELD     @"INVOICE_DATE"
+#define INVOICE_SUPPLIER_FIELD @"INVOICE_SUPPLIER"
 #define INVOICE_CUSTOMER_FIELD @"INVOICE_CUSTOMER"
 #define INVOICE_HEADER_FIELD   @"INVOICE_HEADER"
 #define INVOICE_COLUMN_FIELD   @"INVOICE_COLUMN"
@@ -40,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 #define INVOICE_TOTAL_FIELD    @"INVOICE_TOTAL"
 
 @property (nonatomic , strong) NSString* versionNumber;
+@property (nonatomic , strong) NSString* supplierName;
+
+@property (nonatomic, unsafe_unretained) id <OCRTemplateDelegate> delegate; // receiver of completion messages
 
 
 -(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format;
@@ -61,12 +68,21 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addHeaderColumnToSortedArray : (int) index;
 -(void) dump;
 -(void) dumpBox : (int) index;
+-(BOOL) isSupplierAMatch : (NSString *)stest;
 -(void) loadTemplatesFromDisk;
 -(void) setOriginalRects : (CGRect) tlr : (CGRect) trr;
 -(void) saveTemplatesToDisk;
--(void) saveToParse : (NSString *)vendorName;
+-(void) saveToParse   : (NSString *)vendorName;
+-(void) readFromParse : (NSString *)vendorName;
 -(BOOL) gotFieldAlready : (NSString*)fname;
 -(int) hitField :(int) tx : (int) ty;
 @end
 
 NS_ASSUME_NONNULL_END
+
+@protocol OCRTemplateDelegate <NSObject>
+@required
+@optional
+- (void)didReadTemplate;  
+@end
+

@@ -17,6 +17,8 @@
 #import <MessageUI/MessageUI.h>
 #import "OCRWord.h"
 #import "OCRDocument.h"
+#import "NavButtons.h"
+NavButtons *nav;
 #import "OCRTemplate.h"
 #import "imageTools.h"
 #import "MagnifierView.h"
@@ -66,8 +68,12 @@
 #define PInv_InvoiceNumber_key @"InvoiceNumber"
 
 
-@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate>
+@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,
+                            NavButtonsDelegate,OCRTemplateDelegate>
 {
+    
+    
+    NSString *selectFnameForTemplate;
     NSString *selectFname;
     CFDataRef pixelData;
     OCRDocument *od;
@@ -84,6 +90,12 @@
     BOOL lhArrowsFast;
     BOOL rhArrowsFast;
     double docXConv,docYConv;
+    BOOL docFlipped90;
+    NSString *rawOCRResult;
+
+    
+    
+    //OCR'ed results...
     NSString *supplierName;
     NSString *fieldName;
     NSString *fieldNameShort;
@@ -100,6 +112,7 @@
 
     NSDate *invoiceDate;
     NSString *invoiceCustomer;
+    NSString *invoiceSupplier;
     float invoiceTotal;
     NSMutableArray *rowItems;
     
@@ -119,6 +132,8 @@
     
     MagnifierView *magView;
     
+    int clugex,clugey;
+
     int docnum;
 }
 
@@ -130,6 +145,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *addFieldButton;
 @property (weak, nonatomic) IBOutlet UIButton *lhCenterButton;
 @property (weak, nonatomic) IBOutlet UIButton *rhCenterButton;
+@property (weak, nonatomic) IBOutlet UILabel *wordsLabel;
 
 @property (weak, nonatomic) IBOutlet UILabel *instructionsLabel;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;

@@ -31,7 +31,7 @@
         [self loadTemplatesFromDisk];
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 
-        //[self dump];
+        [self dump];
     }
     return self;
 }
@@ -232,7 +232,7 @@
             if (![self isDupeFrame:ob.frame]) [ocrBoxes addObject:ob];
         }
     }
-    //NSLog(@" unpacked %d items",(int)ocrBoxes.count);
+    NSLog(@" unpacked %d items",(int)ocrBoxes.count);
 } //end unpackFromString
 
 //=============(OCRTemplate)=====================================================
@@ -364,6 +364,20 @@
     return [ob getTagCount];
 }
 
+//=============(OCRTemplate)=====================================================
+-(BOOL) isSupplierAMatch : (NSString *)stest
+{
+    NSString* sstr = _supplierName.lowercaseString;
+    sstr = [sstr stringByReplacingOccurrencesOfString:@" " withString:@""]; //Finally NO spaces
+    NSString* wstr = stest.lowercaseString;
+    //Get rid of extraneous stuff...
+    wstr = [wstr stringByReplacingOccurrencesOfString:@", llc" withString:@""];
+    wstr = [wstr stringByReplacingOccurrencesOfString:@",llc" withString:@""];
+    wstr = [wstr stringByReplacingOccurrencesOfString:@", inc" withString:@""];
+    wstr = [wstr stringByReplacingOccurrencesOfString:@",inc" withString:@""];
+    wstr = [wstr stringByReplacingOccurrencesOfString:@" " withString:@""]; //Finally NO spaces
+    return ([sstr isEqualToString:wstr]);
+}
 
 //=============(OCRTemplate)=====================================================
 -(void) loadTemplatesFromDisk
@@ -391,6 +405,27 @@
     // writeToFile:fileLocation atomically:YES];
     NSLog(@" ...saved templates to %@ [%@]",fileLocation,fileWorkString);
 }
+
+
+//=============(OCRTemplate)=====================================================
+// Use vendor name to find record, loads associated template...
+-(void) readFromParse : (NSString *)vendorName
+{
+    PFQuery *query = [PFQuery queryWithClassName:@"templates"];
+    [query whereKey:@"vendor" equalTo:vendorName];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->ocrBoxes removeAllObjects];
+            for( PFObject *pfo in objects) //Should only be one?
+            {
+                NSString *ps = [pfo objectForKey:@"packedString"];
+                [self unpackFromString:ps];
+                break;
+            }
+            [self.delegate didReadTemplate];  
+        }
+    }];
+} //end readFromParse
 
 // Saves a new record...
 //=============(OCRTemplate)=====================================================

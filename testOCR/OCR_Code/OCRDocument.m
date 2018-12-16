@@ -26,6 +26,15 @@
         headerNames          = [[NSMutableArray alloc] init];
         columnStringData     = [[NSMutableArray alloc] init];
         ignoreList           = [[NSMutableArray alloc] init];
+
+        gT10  = [[NSMutableSet alloc] init];
+        gB10  = [[NSMutableSet alloc] init];
+        gL10  = [[NSMutableSet alloc] init];
+        gR10  = [[NSMutableSet alloc] init];
+        gH20  = [[NSMutableSet alloc] init];
+        gV20  = [[NSMutableSet alloc] init];
+        gT50  = [[NSMutableSet alloc] init];
+        gL50  = [[NSMutableSet alloc] init];
         useIgnoreList        = FALSE;
         srand((unsigned int)time(NULL));
     }
@@ -38,6 +47,159 @@
     int clen = (int)stringArray.count; //Keep track of longest column...
     if (clen > _longestColumn) _longestColumn = clen;
     [columnStringData addObject:stringArray];
+}
+
+//=============(OCRDocument)=====================================================
+-(void) clearGroups
+{
+    [gT10 removeAllObjects];
+    [gB10 removeAllObjects];
+    [gL10 removeAllObjects];
+    [gR10 removeAllObjects];
+    [gH20 removeAllObjects];
+    [gV20 removeAllObjects];
+    [gT50 removeAllObjects];
+    [gL50 removeAllObjects];
+}
+
+//=============(OCRDocument)=====================================================
+// Exhaustive pass over words,funnels them into various groups...
+-(void) assembleGroups
+{
+    [self clearGroups];
+    int index,dxmin,dymin,dxmax,dymax; //Make these properties?
+    dxmin = dymin = 99999;
+    dxmax = dymax = -99999;
+    int xspread,yspread;
+    int dx10,dy10,dx50,dy50,dx90,dy90;
+
+    for (OCRWord *ow  in allWords)
+    {
+        int x = ow.left.intValue;
+        int y = ow.top.intValue;
+        if (x < dxmin) dxmin = x;
+        if (y < dymin) dymin = y;
+        if (x > dxmax) dxmax = x;
+        if (y > dymax) dymax = y;
+    }
+    xspread = dxmax - dxmin;
+    yspread = dymax - dymin;
+    //Now get some stats...
+    dx10 = dxmin + xspread/10;
+    dy10 = dymin + yspread/10;
+    dx50 = dxmin + xspread/2;
+    dy50 = dymin + yspread/2;
+    dx90 = dxmax - dx10;
+    dy90 = dymax - dy10;
+    index = 0;
+    for (OCRWord *ow  in allWords)
+    {
+        NSNumber* inum = [NSNumber numberWithInt:index];
+        NSNumber* xn = ow.left;
+        NSNumber* yn = ow.top;
+        int x = xn.intValue;
+        int y = yn.intValue;
+        if (x < dx10) [gL10 addObject:inum];  //Near L/R/T/B
+        if (x > dx90) [gR10 addObject:inum];
+        if (y < dy10) [gT10 addObject:inum];
+        if (y > dy90) [gB10 addObject:inum];
+        if (abs(x - dx50) < dx10) [gH20 addObject:inum]; //Near H center
+        if (abs(y - dy50) < dy10) [gV20 addObject:inum]; //Near V Center
+        if (x < dx50) [gL50 addObject:inum];  //Left half of page
+        if (x < dy50) [gT50 addObject:inum];  //Top half
+        index++;
+    }
+    //[self dumpGroup:gL50];
+    //NSLog(@" duh done assssembling");
+//    NSArray *dog = [self findTLWords];
+    
+} //end assembleGroups
+
+//=============(OCRDocument)=====================================================
+-(NSArray*) findTLWords
+{
+    NSMutableSet *set1 = [NSMutableSet setWithSet:gT10];
+    [set1 intersectSet: gL10];
+    return [set1 allObjects];
+}
+
+//=============(OCRDocument)=====================================================
+-(NSArray*) findTRWords
+{
+    NSMutableSet *set1 = [NSMutableSet setWithSet:gT10];
+    [set1 intersectSet: gR10];
+    return [set1 allObjects];
+}
+
+//=============(OCRDocument)=====================================================
+-(int) findStringInHeaders : (NSString*)s
+{
+    int index = 0;
+    for (NSString *h in headerNames)
+    {
+        if ([h.lowercaseString isEqualToString:s]) return index;
+    }
+    return -1;
+}
+//=============(OCRDocument)=====================================================
+-(int) findQuantityColumn
+{
+    int found = [self findStringInHeaders:@"quantity" ];
+    if (found < 0) found = 0;
+    return found;
+}
+
+//=============(OCRDocument)=====================================================
+-(int) findItemColumn
+{
+    int found = [self findStringInHeaders:@"item" ];
+    if (found < 0) found = 1;
+    return found;
+}
+
+
+//=============(OCRDocument)=====================================================
+-(int) findDescriptionColumn
+{
+    int found = [self findStringInHeaders:@"description" ];
+    if (found < 0) found = 2;
+    return found;
+}
+
+
+//=============(OCRDocument)=====================================================
+-(int) findPriceColumn
+{
+    int found = [self findStringInHeaders:@"price" ];
+    if (found < 0) found = 3;
+    return found;
+}
+
+//=============(OCRDocument)=====================================================
+-(int) findAmountColumn
+{
+    int found = [self findStringInHeaders:@"amount" ];
+    if (found < 0) found = 4;
+    return found;
+}
+
+//=============(OCRDocument)=====================================================
+-(void) dumpGroup : (NSMutableSet*)g
+{
+   for (NSNumber *n in g)
+   {
+       OCRWord *ow = allWords[n.longValue];
+       NSLog(@" w[%d] %@",n.intValue,ow.wordtext);
+   }
+}
+//=============(OCRDocument)=====================================================
+-(void) dumpArray : (NSArray*)a
+{
+    for (NSNumber *n in a)
+    {
+        OCRWord *ow = allWords[n.longValue];
+        NSLog(@" w[%d] %@",n.intValue,ow.wordtext);
+    }
 }
 
 //=============(OCRDocument)=====================================================
@@ -60,6 +222,13 @@
     outstr = [pstr stringByReplacingOccurrencesOfString:@"|" withString:@""]; //No vertical bars
     outstr = [outstr stringByReplacingOccurrencesOfString:@"_" withString:@""]; //No underbars!
     return outstr;
+}
+
+
+//=============(OCRDocument)=====================================================
+-(void) clear
+{
+    [allWords removeAllObjects];
 }
 
 
@@ -100,6 +269,23 @@
 //=============OCRDocument=====================================================
 // Assumes r is in document coords, exhaustive search.
 //  are words' origin at top left or bottom left?
+-(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr
+{
+    NSMutableArray *a = [self findAllWordsInRect:rr];
+    if (a == nil) return nil;
+    NSMutableArray *result = [[NSMutableArray alloc] init];
+    //Process, get words...
+    for (NSNumber *n in a)
+    {
+        OCRWord *ow  = [allWords objectAtIndex:n.longValue];
+        [result addObject:ow.wordtext];
+    }
+    return result;
+} //end findAllWordStringsInRect
+
+//=============OCRDocument=====================================================
+// Assumes r is in document coords, exhaustive search.
+//  are words' origin at top left or bottom left?
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr
 {
     int xi,yi,x2,y2,index;
@@ -132,8 +318,8 @@
 -(void) addIgnoreBoxItems  : (CGRect )rr
 {
     useIgnoreList = FALSE;
-    rr.origin.x +=_docRect.origin.x;
-    rr.origin.y +=_docRect.origin.y;
+  //  rr.origin.x +=_docRect.origin.x;
+  //  rr.origin.y +=_docRect.origin.y;
     NSMutableArray *ir = [self findAllWordsInRect:rr];
     [ignoreList addObjectsFromArray:ir];
     useIgnoreList = TRUE;
@@ -165,12 +351,37 @@
 
 
 //=============(OCRTemplate)=====================================================
+// Array of words is coming in from a box, take all words and make a sentence...
+//  Numeric means don't padd with spaces...
+-(NSString *) assembleWordFromArray : (NSMutableArray *) a : (BOOL) numeric
+{
+    NSMutableArray *wordPairs = [[NSMutableArray alloc] init];
+    for (NSNumber *n in a)
+    {
+        OCRWord *ow = [allWords objectAtIndex:n.longValue];
+        int y = ow.top.intValue;
+        y = glyphHeight * (y / glyphHeight); //Get nearest row Y only
+        int abspos = _width * y + ow.left.intValue; //Abs pixel position in document
+        //add dict of string / y pairs
+        [wordPairs addObject:@{@"Word": ow.wordtext,@"XY":[NSNumber numberWithInt:abspos]}];
+    }
+    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"XY" ascending:YES];
+    [wordPairs sortUsingDescriptors:@[descriptor]];
+    //All sorted! Now pluck'em out!
+    NSString *s = @"";
+    for (NSDictionary *d in wordPairs)
+    {
+        s = [s stringByAppendingString:[d objectForKey:@"Word"]];
+        if (!numeric) s = [s stringByAppendingString:@" "];
+    }
+    return s;
+} //end assembleWordFromArray
+
+
+//=============(OCRTemplate)=====================================================
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs
 {
-    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
-    rr.origin.y += (_docRect.origin.y);
-    
     //NSLog(@" ColRect %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
     NSMutableArray *a = [self findAllWordsInRect:rr];
     NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
@@ -185,43 +396,78 @@
             NSNumber *nyy = rowYs[i+1];
             nextY = nyy.intValue - 1;
         }
-        //NSLog(@" yc %d topy %d boty %d",i,thisY,nextY);
+        NSLog(@" yc %d topy %d boty %d",i,thisY,nextY);
         //Assemble a string now from this column item, may be multiline
         NSString *s = @"";
+        NSMutableArray *stuffToCombine = [[NSMutableArray alloc] init];
         for ( NSNumber *n in a)
         {
             OCRWord *ow = [allWords objectAtIndex:n.longValue];
             int owy = ow.top.intValue;
             if (owy >= thisY && owy < nextY) //Word within row bounds?
             {
-                s = [s stringByAppendingString:[NSString stringWithFormat:@"%@ ",ow.wordtext]];
+                [stuffToCombine addObject:n];
             }
         }
-        //NSLog(@"  ...nextColumnWord: %@  ", s);
+        NSLog(@" %d items in box",(int)stuffToCombine.count);
+        //OK we have all the stuff to put together...
+        if (stuffToCombine.count == 1)
+        {
+            NSNumber *n = [stuffToCombine objectAtIndex:0];
+            OCRWord *ow = [allWords objectAtIndex:n.longValue];
+            s = ow.wordtext;
+        }
+        else if (stuffToCombine.count > 1)
+        {
+            NSNumber *n = [stuffToCombine objectAtIndex:0];
+            OCRWord *ow = [allWords objectAtIndex:n.longValue];
+            s = ow.wordtext;
+            //Check to see if we are dealing with words or split numbers
+            s = [s stringByReplacingOccurrencesOfString:@"." withString:@""];
+            BOOL numeric = [self isStringAnInteger:s]; //Split numbers
+            NSLog(@" numeric %d",numeric);
+            s = [self assembleWordFromArray : stuffToCombine : numeric];
+            if (numeric) //Fix common OCR errs
+            {
+                s = [s stringByReplacingOccurrencesOfString:@"B" withString:@"8"];
+                s = [s stringByReplacingOccurrencesOfString:@"," withString:@""];
+            }
+        }
         [resultStrings addObject:s];
     }
     return resultStrings;
 } //end getColumnStrings
 
+
 //=============(OCRTemplate)=====================================================
--(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr
+-(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric
 {
-    NSMutableArray *yP = [[NSMutableArray alloc] init];
     //Get all content within this rect, assume one item per line!
-    rr.origin.x += _docRect.origin.x; //Don't forget document top left offset!
-    rr.origin.y += _docRect.origin.y;
     NSMutableArray *a = [self findAllWordsInRect:rr];
+    [self dumpArray:a];
     //NSLog(@" gcYPs %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
-    
+    NSMutableArray *colPairs = [[NSMutableArray alloc] init];
+    int oldy = -99999;
+    //Get each item in our column box...
     for (NSNumber* n  in a)
     {
         OCRWord *ow = [allWords objectAtIndex:n.longValue];
-        //NSLog(@" ow is %@ , add yp %d",ow.wordtext,ow.top.intValue);
-        [yP addObject:ow.top];
+        int ty = ow.top.intValue;
+        if (abs(ty - oldy) > glyphHeight) //Check Y for new row? (rows may be out of order)
+        {
+            oldy = ty;
+            NSString *s = ow.wordtext;
+            [colPairs addObject:@{@"Field": s,@"Y":ow.top}]; //add dict of string / y pairs
+        }
     }
+    //Perform sort of dictionary based on the Y coordinate ...
+    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"Y" ascending:YES];
+    [colPairs sortUsingDescriptors:@[descriptor]];
+    NSMutableArray *yP = [[NSMutableArray alloc] init];
+    for (NSDictionary *d in colPairs) [yP addObject:[d objectForKey:@"Y"]];
     return yP;
     
-}
+} //end getColumnYPositionsInRect
 
 //=============(OCRTemplate)=====================================================
 // Assumes 2D column array fully populated....
@@ -526,12 +772,12 @@
 // Sets up internal header column names based on passed array of words forming header
 -(void)  parseHeaderColumns  : (NSArray*)aof
 {
-    [headerNames removeAllObjects];
     BOOL firstField = TRUE;
     int acrossX,lastX,xwid;
     int hcount = 0;
     NSString *hstr = @"";
     acrossX = lastX = 0;
+    NSMutableArray *headerPairs = [NSMutableArray array];
     while (hcount < aof.count)
     {
         NSNumber* n = [aof objectAtIndex:hcount];
@@ -547,22 +793,37 @@
             firstField = FALSE;
             hstr = wstr;
         }
-        else if (acrossX - lastX < 40) //Another word nearby? append!
+        else if (acrossX - lastX < 40 && (acrossX > lastX)) //Another word nearby? append!
         {
             hstr = [hstr stringByAppendingString:[NSString stringWithFormat:@" %@",wstr]];
         }
         else //Big skip between words? Add header column
         {
             //NSLog(@" add %@",hstr);
-            [headerNames addObject:hstr];
+            hstr = [hstr stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
+            NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:lastX]};
+            [headerPairs addObject:dict];
+//            [headerNames addObject:hstr];
             if (hcount == (int)aof.count-1) //Last column? add one more (we are always one behind)
-                [headerNames addObject:wstr];
+            {
+                wstr = [wstr stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
+                NSDictionary *dict = @{@"Field": wstr,@"X":[NSNumber numberWithInt:(lastX+xwid)]};
+                [headerPairs addObject:dict];
+//                [headerNames addObject:wstr];
+            }
             hstr = wstr;
         }
         lastX   = acrossX + xwid;
         hcount++;
     }
-    //NSLog(@" Column Headers: %@",headerNames);
+    //Perform sort of dictionary based on the X item... (make sure headers are in correct order)
+    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"X" ascending:YES];
+    [headerPairs sortUsingDescriptors:@[descriptor]];
+    [headerNames removeAllObjects];
+    for (NSDictionary *d in headerPairs)
+    {
+        [headerNames addObject:[d objectForKey:@"Field"]];
+    }
 } //end parseHeaderColumns
 
 
@@ -570,6 +831,7 @@
 //=============OCRDocument=====================================================
 -(void) parseJSONfromDict : (NSDictionary *)d
 {
+    [self clear];
     rawJSONDict          = d;
     NSDictionary *pr     = [d valueForKey:@"ParsedResults"];
     //NSNumber* exitCode   = [d valueForKey:@"OCRExitCode"];
@@ -590,16 +852,26 @@
         }
     }
     [self getAverageGlyphHeight];
+    [self assembleGroups];
     //NSLog(@" overall image wh %d,%d",_width,_height);
 } //end parseJSONfromDict
 
 //=============OCR VC=====================================================
--(void) setupDocument : (NSString*) ifname : (NSDictionary *)d
+-(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90
 {
     _scannedImage = [UIImage imageNamed:ifname];
     _scannedName  = ifname;
-    _width        = _scannedImage.size.width;
-    _height       = _scannedImage.size.height;
+    if (!flipped90)
+    {
+        _width        = _scannedImage.size.width;
+        _height       = _scannedImage.size.height;
+    }
+    else
+    {
+        _height      = _scannedImage.size.width;
+        _width       = _scannedImage.size.height;
+    }
+
     [self parseJSONfromDict:d];
 }
 
