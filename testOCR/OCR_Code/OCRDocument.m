@@ -23,7 +23,7 @@
     if (self = [super init])
     {
         allWords             = [[NSMutableArray alloc] init];
-        headerNames          = [[NSMutableArray alloc] init];
+        headerPairs          = [[NSMutableArray alloc] init];
         columnStringData     = [[NSMutableArray alloc] init];
         ignoreList           = [[NSMutableArray alloc] init];
 
@@ -132,55 +132,19 @@
 }
 
 //=============(OCRDocument)=====================================================
+// Meant to find out which column contains ITEM, for instance...
 -(int) findStringInHeaders : (NSString*)s
 {
     int index = 0;
-    for (NSString *h in headerNames)
+    NSString *lcs = s.lowercaseString;
+    for (NSDictionary *d in headerPairs)
     {
-        if ([h.lowercaseString isEqualToString:s]) return index;
+        NSString* h = [d objectForKey:@"Field"];
+        if ([h.lowercaseString isEqualToString:lcs]) return index;
+        if ([h.lowercaseString containsString:lcs]) return index;
+        index++;
     }
     return -1;
-}
-//=============(OCRDocument)=====================================================
--(int) findQuantityColumn
-{
-    int found = [self findStringInHeaders:@"quantity" ];
-    if (found < 0) found = 0;
-    return found;
-}
-
-//=============(OCRDocument)=====================================================
--(int) findItemColumn
-{
-    int found = [self findStringInHeaders:@"item" ];
-    if (found < 0) found = 1;
-    return found;
-}
-
-
-//=============(OCRDocument)=====================================================
--(int) findDescriptionColumn
-{
-    int found = [self findStringInHeaders:@"description" ];
-    if (found < 0) found = 2;
-    return found;
-}
-
-
-//=============(OCRDocument)=====================================================
--(int) findPriceColumn
-{
-    int found = [self findStringInHeaders:@"price" ];
-    if (found < 0) found = 3;
-    return found;
-}
-
-//=============(OCRDocument)=====================================================
--(int) findAmountColumn
-{
-    int found = [self findStringInHeaders:@"amount" ];
-    if (found < 0) found = 4;
-    return found;
 }
 
 //=============(OCRDocument)=====================================================
@@ -209,10 +173,48 @@
 -(NSString*) cleanUpNumberString : (NSString *)nstr
 {
     NSString *outstr;
-    outstr = [nstr stringByReplacingOccurrencesOfString:@"%" withString:@"5"];
+    outstr = [nstr   stringByReplacingOccurrencesOfString:@"S" withString:@"5"];
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"B" withString:@"8"];
     outstr = [outstr stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces in number...
     return outstr;
 }
+
+//=============(OCRDocument)=====================================================
+// Makes sure price has format DDD.CC
+-(NSString *)cleanupPrice : (NSString *)s
+{
+    NSString* ptst = [s stringByReplacingOccurrencesOfString:@" " withString:@""];
+    BOOL numeric = [self isStringAPrice:ptst];
+    NSString *sout = @"";
+    if (!numeric)  //No numerals found? Just set to zero
+        sout = @"0.00";
+    else
+    {
+        sout = [s stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces please
+        sout = [self cleanUpNumberString:sout];                                 //Fix typos and pull blanks
+        sout = [sout stringByReplacingOccurrencesOfString:@"," withString:@""]; //No commas please
+        //Dissemble to dollars and cents, then reassemble to guarantee 2 digits of cents
+        float fdollarsAndCents = [sout floatValue];
+        int d = (int) fdollarsAndCents;
+        int c = (int)(100.0 * fdollarsAndCents) - 100*d;
+        sout = [NSString stringWithFormat:@"%d.%2.2d",d,c];
+
+    }
+    return sout;
+}
+
+//=============(OCRDocument)=====================================================
+// Fix typos etc in price / amount columns..
+-(NSMutableArray *) cleanUpPriceColumns : (int) index : (NSMutableArray*) a
+{
+    //THIS NEEDS IMPROVEMENT, and abstraction!
+    if (index != 3 && index != 4) return a; //Using our 5 canned columns
+    //Need a cleanup?
+    NSMutableArray *aout = [[NSMutableArray alloc] init];
+    for (NSString * s in a) [aout addObject:[self cleanupPrice:s]];
+    return aout;
+}
+
 
 //=============(OCRDocument)=====================================================
 // Fix OCR errors in name strings...
@@ -229,6 +231,13 @@
 -(void) clear
 {
     [allWords removeAllObjects];
+    //Clear postOCR stuff too...
+    for (int i=0;i<MAX_QPA_ROWS;i++)
+    {
+        postOCRQuantities[i] = @"";
+        postOCRPrices[i]     = @"";
+        postOCRAmounts[i]    = @"";
+    }
 }
 
 
@@ -346,27 +355,51 @@
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
 -(NSArray*)  getHeaderNames
 {
-    return headerNames;
+    NSMutableArray *hn = [[NSMutableArray alloc] init];
+    for (NSDictionary *d in headerPairs)
+    {
+        NSString* h = [d objectForKey:@"Field"];
+        [hn addObject:h];
+    }
+    return hn;
 } //end getHeaderNames
 
+//=============(OCRTemplate)=====================================================
+// Gets sorted array of words as they should appear in a sentence, given
+//  an array of separate words assumed to be in a retangle. Produces a hash
+//  for each word that guarantees proper sentence placement
+-(NSMutableArray *) getSortedWordPairsFromArray : (NSMutableArray*) a
+{
+    NSMutableArray *wordPairs = [[NSMutableArray alloc] init];
+    //NSLog(@" assemble word...");
+    int ys[16];
+    for (int i=0;i<16;i++) ys[i] = -999;
+    int yptr = 0;
+    for (NSNumber *n in a)
+    {
+        OCRWord *ow = [allWords objectAtIndex:n.longValue];
+        int y = ow.top.intValue;
+        int w = ow.width.intValue;
+        //Keep a collection of row y values, if we are near an earlier word's y, just use it!
+        //  this fixes the problem of slightly staggered words along a line...
+        for (int i=0;i<yptr;i++) if (abs(y-ys[i]) < glyphHeight) y = ys[i];
+        ys[yptr++] = y;
+        int abspos = _width * y + ow.left.intValue; //Abs pixel position in document
+        //NSLog(@" x %d y %d w %@",ow.left.intValue,y,ow.wordtext);
+        //add dict of string / y pairs
+        [wordPairs addObject:@{@"Word": ow.wordtext,@"XY":[NSNumber numberWithInt:abspos],@"W":[NSNumber numberWithInt:w]}];
+    }
+    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"XY" ascending:YES];
+    [wordPairs sortUsingDescriptors:@[descriptor]];
+    return wordPairs;
+} //end getSortedWordPairsFromArray
 
 //=============(OCRTemplate)=====================================================
 // Array of words is coming in from a box, take all words and make a sentence...
 //  Numeric means don't padd with spaces...
 -(NSString *) assembleWordFromArray : (NSMutableArray *) a : (BOOL) numeric
 {
-    NSMutableArray *wordPairs = [[NSMutableArray alloc] init];
-    for (NSNumber *n in a)
-    {
-        OCRWord *ow = [allWords objectAtIndex:n.longValue];
-        int y = ow.top.intValue;
-        y = glyphHeight * (y / glyphHeight); //Get nearest row Y only
-        int abspos = _width * y + ow.left.intValue; //Abs pixel position in document
-        //add dict of string / y pairs
-        [wordPairs addObject:@{@"Word": ow.wordtext,@"XY":[NSNumber numberWithInt:abspos]}];
-    }
-    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"XY" ascending:YES];
-    [wordPairs sortUsingDescriptors:@[descriptor]];
+    NSMutableArray *wordPairs = [self getSortedWordPairsFromArray:a];
     //All sorted! Now pluck'em out!
     NSString *s = @"";
     for (NSDictionary *d in wordPairs)
@@ -374,16 +407,16 @@
         s = [s stringByAppendingString:[d objectForKey:@"Word"]];
         if (!numeric) s = [s stringByAppendingString:@" "];
     }
+    //NSLog(@" ...assembled result [%@]",s);
     return s;
 } //end assembleWordFromArray
 
 
+
 //=============(OCRTemplate)=====================================================
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
--(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs
+-(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) index
 {
-    //NSLog(@" ColRect %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
-    NSMutableArray *a = [self findAllWordsInRect:rr];
     NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
     int yc = (int)rowYs.count;
     for (int i=0;i<yc;i++)
@@ -396,47 +429,34 @@
             NSNumber *nyy = rowYs[i+1];
             nextY = nyy.intValue - 1;
         }
-        NSLog(@" yc %d topy %d boty %d",i,thisY,nextY);
-        //Assemble a string now from this column item, may be multiline
-        NSString *s = @"";
-        NSMutableArray *stuffToCombine = [[NSMutableArray alloc] init];
-        for ( NSNumber *n in a)
-        {
-            OCRWord *ow = [allWords objectAtIndex:n.longValue];
-            int owy = ow.top.intValue;
-            if (owy >= thisY && owy < nextY) //Word within row bounds?
-            {
-                [stuffToCombine addObject:n];
-            }
-        }
-        NSLog(@" %d items in box",(int)stuffToCombine.count);
-        //OK we have all the stuff to put together...
-        if (stuffToCombine.count == 1)
-        {
-            NSNumber *n = [stuffToCombine objectAtIndex:0];
-            OCRWord *ow = [allWords objectAtIndex:n.longValue];
-            s = ow.wordtext;
-        }
-        else if (stuffToCombine.count > 1)
-        {
-            NSNumber *n = [stuffToCombine objectAtIndex:0];
-            OCRWord *ow = [allWords objectAtIndex:n.longValue];
-            s = ow.wordtext;
-            //Check to see if we are dealing with words or split numbers
-            s = [s stringByReplacingOccurrencesOfString:@"." withString:@""];
-            BOOL numeric = [self isStringAnInteger:s]; //Split numbers
-            NSLog(@" numeric %d",numeric);
-            s = [self assembleWordFromArray : stuffToCombine : numeric];
-            if (numeric) //Fix common OCR errs
-            {
-                s = [s stringByReplacingOccurrencesOfString:@"B" withString:@"8"];
-                s = [s stringByReplacingOccurrencesOfString:@"," withString:@""];
-            }
-        }
-        [resultStrings addObject:s];
+        CGRect cr = CGRectMake(rr.origin.x, thisY, rr.size.width, nextY-thisY);
+        [resultStrings addObject:[self assembleWordFromArray : [self findAllWordsInRect:cr] : FALSE]];
     }
+    
+    NSString *headerForThisColumn = [self getHeaderStringFromRect:rr];
+    headerForThisColumn = headerForThisColumn.lowercaseString;
+    //let's see what it contains:
+    if ([headerForThisColumn containsString:@"item"]) _itemColumn = index;
+    if ([headerForThisColumn containsString:@"quantity"]) _quantityColumn = index;
+    if ([headerForThisColumn containsString:@"description"]) _descriptionColumn = index;
+    if ([headerForThisColumn containsString:@"price"]) _priceColumn = index;
+    if ([headerForThisColumn containsString:@"amount"]) _amountColumn = index;
+
     return resultStrings;
 } //end getColumnStrings
+
+//=============(OCRTemplate)=====================================================
+-(NSString*) getHeaderStringFromRect : (CGRect)rr
+{
+    NSString *cname = @"";
+    for (NSDictionary*d in headerPairs)
+    {
+        NSNumber *nx = [d objectForKey:@"X"];
+        if (nx.intValue >= rr.origin.x  && nx.intValue <= rr.origin.x + rr.size.width)
+            return [d objectForKey:@"Field"]; //asdf
+    }
+    return cname;
+}
 
 
 //=============(OCRTemplate)=====================================================
@@ -770,60 +790,49 @@
 
 //=============(OCRTemplate)=====================================================
 // Sets up internal header column names based on passed array of words forming header
--(void)  parseHeaderColumns  : (NSArray*)aof
+-(void)  parseHeaderColumns  : (NSMutableArray*)aof
 {
     BOOL firstField = TRUE;
-    int acrossX,lastX,xwid;
-    int hcount = 0;
+    int acrossX,lastX;
     NSString *hstr = @"";
     acrossX = lastX = 0;
-    NSMutableArray *headerPairs = [NSMutableArray array];
-    while (hcount < aof.count)
+    [headerPairs removeAllObjects];
+    NSMutableArray *wordPairs = [self getSortedWordPairsFromArray:aof];
+    lastX = -1;
+    int firstX = -1;
+    for (NSMutableDictionary *d in wordPairs)
     {
-        NSNumber* n = [aof objectAtIndex:hcount];
-        int index = n.intValue;
-        NSString * wstr = [self getNthWord:[NSNumber numberWithInt:index]];
-        NSNumber *xc = [self getNthXCoord:[NSNumber numberWithInt:index]];
-        NSNumber *xw = [self getNthXWidth:[NSNumber numberWithInt:index]];
-        acrossX = xc.intValue;
-        xwid    = xw.intValue;
-        //NSLog(@" %@ hc %d ac %d xw %d",wstr,hcount,acrossX,xwid);
-        if (firstField)
+        NSNumber *n    = [d objectForKey:@"XY"];
+        NSNumber *nw   = [d objectForKey:@"W"];
+        NSString *wstr = [d objectForKey:@"Word"];
+        int x = n.intValue;
+        int xc = x / _width;
+        int xoff = x - (_width*xc);
+        int w = nw.intValue;
+        if (firstField) firstX = xoff;
+        NSLog(@" word [%@] xy %d firstx %d",wstr,xoff,firstX);
+        
+        if (xoff - lastX > 2*glyphHeight && (lastX > 0))
         {
-            firstField = FALSE;
-            hstr = wstr;
-        }
-        else if (acrossX - lastX < 40 && (acrossX > lastX)) //Another word nearby? append!
-        {
-            hstr = [hstr stringByAppendingString:[NSString stringWithFormat:@" %@",wstr]];
-        }
-        else //Big skip between words? Add header column
-        {
-            //NSLog(@" add %@",hstr);
-            hstr = [hstr stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
-            NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:lastX]};
+            firstField = TRUE;
+            int aveX = (firstX + (lastX-firstX)/2);
+            NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:aveX]};
             [headerPairs addObject:dict];
-//            [headerNames addObject:hstr];
-            if (hcount == (int)aof.count-1) //Last column? add one more (we are always one behind)
-            {
-                wstr = [wstr stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
-                NSDictionary *dict = @{@"Field": wstr,@"X":[NSNumber numberWithInt:(lastX+xwid)]};
-                [headerPairs addObject:dict];
-//                [headerNames addObject:wstr];
-            }
-            hstr = wstr;
+            firstX = xoff;
         }
-        lastX   = acrossX + xwid;
-        hcount++;
+        if (firstField)
+            {hstr = wstr;
+            firstField = FALSE;
+            }
+        else hstr = [hstr stringByAppendingString:[NSString stringWithFormat:@" %@",wstr]];
+        
+
+        lastX = xoff+w;
+        
     }
-    //Perform sort of dictionary based on the X item... (make sure headers are in correct order)
-    NSSortDescriptor *descriptor = [NSSortDescriptor sortDescriptorWithKey:@"X" ascending:YES];
-    [headerPairs sortUsingDescriptors:@[descriptor]];
-    [headerNames removeAllObjects];
-    for (NSDictionary *d in headerPairs)
-    {
-        [headerNames addObject:[d objectForKey:@"Field"]];
-    }
+    int aveX = (firstX + (lastX-firstX)/2);
+    NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:aveX]};
+    [headerPairs addObject:dict];
 } //end parseHeaderColumns
 
 
@@ -874,6 +883,38 @@
 
     [self parseJSONfromDict:d];
 }
+
+//=============(OCRTemplate)=====================================================
+-(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a
+{
+    if (row < 0 || row >= MAX_QPA_ROWS) return;
+    postOCRQuantities[row]  = q;
+    postOCRPrices[row]      = p;
+    postOCRAmounts[row]     = a;
+} //end setQPA
+
+//=============(OCRTemplate)=====================================================
+-(NSString*) getPostOCRQuantity : (int) row
+{
+    if (row < 0 || row >= MAX_QPA_ROWS)  return @"0.0";
+    return postOCRQuantities[row];
+}
+
+//=============(OCRTemplate)=====================================================
+-(NSString*) getPostOCRPrice : (int) row
+{
+    if (row < 0 || row >= MAX_QPA_ROWS) return @"0.0";
+    return postOCRPrices[row];
+}
+
+//=============(OCRTemplate)=====================================================
+-(NSString*) getPostOCRAmount : (int) row
+{
+    if (row < 0 || row >= MAX_QPA_ROWS)  return @"0.0";
+    return postOCRAmounts[row];
+}
+
+
 
 //=============(OCRTemplate)=====================================================
 -(void) computeScaling:(CGRect )tlr : (CGRect )trr

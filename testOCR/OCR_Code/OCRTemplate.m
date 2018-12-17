@@ -31,7 +31,7 @@
         [self loadTemplatesFromDisk];
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 
-        [self dump];
+        //[self dump];
     }
     return self;
 }
@@ -390,7 +390,7 @@
     else{
         NSLog(@" ...no template found ");
     }
-    //[self dump];
+    [self dump];
 }  //end loadTemplatesFromDisk
 
 
@@ -439,7 +439,7 @@
     [templateRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...OCRTemplate [vendor:%@] saved to parse",vendorName);
-            //[self.delegate didSaveUniqueUserToParse];
+            [self.delegate didSaveTemplate];
         } else {
             NSLog(@" ERROR: saving temlate to parse!");
         }

@@ -17,8 +17,6 @@
 #import <MessageUI/MessageUI.h>
 #import "OCRWord.h"
 #import "OCRDocument.h"
-#import "NavButtons.h"
-NavButtons *nav;
 #import "OCRTemplate.h"
 #import "imageTools.h"
 #import "MagnifierView.h"
@@ -60,6 +58,7 @@ NavButtons *nav;
 #define PInv_Bulk_or_Individual_key @"Bulk_or_Individual"
 #define PInv_Vendor_key @"Vendor"
 #define PInv_TotalPrice_key @"TotalPrice"
+#define PInv_ProductName_key @"ProductName"
 #define PInv_PricePerUOM_key @"PricePerUOM"
 #define PInv_Processed_key @"Processed"
 #define PInv_Local_key @"Local"
@@ -68,11 +67,11 @@ NavButtons *nav;
 #define PInv_InvoiceNumber_key @"InvoiceNumber"
 
 
-@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,
-                            NavButtonsDelegate,OCRTemplateDelegate>
+@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate>
 {
     
-    
+    UIActivityIndicatorView *spinner;
+
     NSString *selectFnameForTemplate;
     NSString *selectFname;
     CFDataRef pixelData;

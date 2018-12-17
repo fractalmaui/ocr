@@ -17,7 +17,7 @@
 #import "OCRWord.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
+#define MAX_QPA_ROWS 512
 @interface OCRDocument : NSObject
 {
     NSMutableArray *allWords;
@@ -25,9 +25,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *documentType;
     NSDictionary *rawJSONDict;
     NSString *parsedText;
-    NSMutableArray *headerNames;
+    NSMutableArray *headerPairs;
     NSMutableArray *columnStringData; //Array of Arrays...
     int glyphHeight;
+    NSString * postOCRQuantities[MAX_QPA_ROWS];
+    NSString * postOCRPrices[MAX_QPA_ROWS];
+    NSString * postOCRAmounts[MAX_QPA_ROWS];
+
     NSMutableArray *ignoreList;
     BOOL useIgnoreList;
     //Comes from templated original document...
@@ -53,25 +57,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , assign) int longestColumn;
 @property (nonatomic , assign) CGRect docRect;
 
+@property (nonatomic , assign) int itemColumn;
+@property (nonatomic , assign) int quantityColumn;
+@property (nonatomic , assign) int descriptionColumn;
+@property (nonatomic , assign) int priceColumn;
+@property (nonatomic , assign) int amountColumn;
 
 -(void) clearAllColumnStringData;
--(NSString*) cleanUpNumberString : (NSString *)nstr;
--(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) addColumnStringData : (NSMutableArray*)stringArray;
 -(void) addIgnoreBoxItems  : (CGRect )rr;
+-(NSString*) cleanUpNumberString : (NSString *)nstr;
+-(NSString *)cleanupPrice : (NSString *)s;
+-(NSMutableArray *) cleanUpPriceColumns : (int) index : (NSMutableArray*) a;
+-(NSString*) cleanUpProductNameString : (NSString *)pstr;
+-(void) computeScaling: (CGRect )tlr : (CGRect )trr;
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
 -(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr;
 -(int) findIntInArrayOfFields : (NSArray*)aof;
 -(float) findPriceInArrayOfFields : (NSArray*)aof;
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;
--(int) findQuantityColumn;
--(int) findItemColumn;
--(int) findDescriptionColumn;
--(int) findPriceColumn;
--(int) findAmountColumn;
--(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs;
+-(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) index;
 -(NSArray*)  getHeaderNames;
+-(NSString*) getPostOCRQuantity : (int) row;
+-(NSString*) getPostOCRPrice    : (int) row;
+-(NSString*) getPostOCRAmount   : (int) row;
+
 -(CGRect) getDocRect;
 -(CGRect) getTLRect;
 -(CGRect) getTRRect;
@@ -82,10 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric;
 -(void) parseJSONfromDict : (NSDictionary *)d;
 -(NSDate *) isItADate : (NSString *)tstr;
--(void) parseHeaderColumns : (NSArray*)aof;
--(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
--(void) computeScaling: (CGRect )tlr : (CGRect )trr;
+-(void) parseHeaderColumns : (NSMutableArray*)aof;
+-(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
 -(void) setScalingRects;
+-(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
 @end
 
 NS_ASSUME_NONNULL_END

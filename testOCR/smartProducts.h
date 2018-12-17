@@ -31,12 +31,23 @@ NS_ASSUME_NONNULL_BEGIN
 #define SUPPLEMENTS_CATEGORY @"SUPPLEMENTS"
 #define SUPPLIES_CATEGORY @"SUPPLIES"
 
+
+#define ANALYZER_BAD_PRICE_COLUMNS 1001
+#define ANALYZER_MATH_ERROR 1002
+#define ANALYZER_NO_PRODUCT_FOUND 1003
+#define ANALYZER_ZERO_AMOUNT 1004
+#define ANALYZER_ZERO_PRICE 1005
+#define ANALYZER_ZERO_QUANTITY 1006
+
+
 @interface smartProducts : NSObject
 {
     //These tables of product listings get loaded from DB
     NSString *fullProductName;
     NSString *vendor;
-    NSString *rawPrice;
+    NSString *price;
+    NSString *amount;
+    NSString *quantity;
     BOOL processed;
     BOOL local;
     BOOL bulk;
@@ -58,7 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , strong) NSString* latestBulkOrIndividual;
 @property (nonatomic , strong) NSString* latestQuantity;
 @property (nonatomic , strong) NSString* latestPricePerUOM;
-@property (nonatomic , strong) NSString* latestTotalPrice;
+@property (nonatomic , strong) NSString* latestPrice;
+@property (nonatomic , strong) NSString* latestAmount;
 @property (nonatomic , strong) NSString* latestProcessed;
 @property (nonatomic , strong) NSString* latestLocal;
 @property (nonatomic , strong) NSString* latestVendor;
@@ -74,9 +86,14 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addVendor : (NSString*)vname;
 -(void) addDate : (NSDate*)ndate;
 -(void) addLineNumber : (int)n;
--(void) addRawPrice : (NSString*)price;
--(void) analyze;
+-(void) addAmount : (NSString*)price;
+-(void) addPrice : (NSString*)price;
+-(void) addQuantity : (NSString*)qstr;
+-(int) analyzeFull;
+-(int) analyzeSimple;
 -(void) dump;
+-(NSString*) getErrDescription : (int) aerr;
+-(NSString*) getDollarsAndCentsString : (float) fin;
 
 
 @end

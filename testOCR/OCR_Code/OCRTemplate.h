@@ -83,6 +83,7 @@ NS_ASSUME_NONNULL_END
 @protocol OCRTemplateDelegate <NSObject>
 @required
 @optional
-- (void)didReadTemplate;  
+- (void)didReadTemplate;
+- (void)didSaveTemplate;
 @end
 

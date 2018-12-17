@@ -58,6 +58,7 @@
 }
 
 
+
 //=============OCR VC=====================================================
 -(void) loadView
 {
@@ -82,21 +83,29 @@
     pageRect = _inputImage.frame;
     
     CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
-//    CGRect magFrame = CGRectMake(0,0,120,120);
+    //    CGRect magFrame = CGRectMake(0,0,120,120);
     magView = [[MagnifierView alloc] initWithFrame:magFrame];
     [self.view addSubview:magView];
     magView.gotiPad       = FALSE; //_gotiPad; //DHS 5/8
     magView.viewToMagnify = _inputImage;
     magView.hidden        = TRUE;
     
-
+    spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    int xs,ys,xi,yi;
+    xs = ys = 64;
+    xi = viewW2 - xs/2;
+    yi = viewH2 - ys/2;
+    spinner.frame = CGRectMake(xi, yi, xs, ys);
+    [self.view addSubview:spinner];
+    spinner.hidden = TRUE;
+    
     //Canned starting stuff...
-//    supplierName = @"HFM";
-//    selectFnameForTemplate  = @"hfm90.jpg";
-//    selectFname  = @"hfm.jpg";
-//    [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
+    //    supplierName = @"HFM";
+    //    selectFnameForTemplate  = @"hfm90.jpg";
+    //    selectFname  = @"hfm.jpg";
+    //    [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -137,10 +146,10 @@
         selectBox.backgroundColor = [UIColor colorWithRed:0.5 green:0.0 blue:0.0 alpha:0.5];
         [_selectOverlayView addSubview:selectBox];
         selectBox.hidden = TRUE;
-
+        
     }
     
- 
+    
 }
 
 //=============OCR VC=====================================================
@@ -153,18 +162,18 @@
 -(void) setupMagView : (int) x : (int) y
 {
     //WHY DO I NEED the xy cluge!??
-//    CGPoint tl2 = CGPointMake(x + 17, y+17 );
-//    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??  for 120x120, radius,radius
+    //    CGPoint tl2 = CGPointMake(x + 17, y+17 );
+    //    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??  for 120x120, radius,radius
     //clugex = 60; //For bulls-eye
     //clugey = 19;
     
     CGPoint tl2 = CGPointMake(x + clugex , y + clugey ); ///WHY O WHY??  for 120x120, radius,radius
     //This is for the bulls eye
     //    CGPoint tl2 = CGPointMake(x + 60 , y + 19 ); ///WHY O WHY??  for 120x120, radius,radius
-
-//    CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
+    
+    //    CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
     //    CGRect magFrame = CGRectMake(0,0,120,120);
-
+    
     magView.hidden     = FALSE;
     
     BOOL below = FALSE;
@@ -175,7 +184,7 @@
     if (x < frx/2) left  = FALSE;
     [magView setTouchPoint:tl2:below:left];
     
-//    magView.touchPoint = tl2;
+    //    magView.touchPoint = tl2;
     [_inputImage setNeedsDisplay];
     [magView setNeedsDisplay];
 } //end setupMagView
@@ -184,19 +193,19 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     dragging = YES;
-//    CGPoint center;
-//    int i,tx,ty,xoff,yoff,xytoler;
+    //    CGPoint center;
+    //    int i,tx,ty,xoff,yoff,xytoler;
     UITouch *touch  = [[event allTouches] anyObject];
     touchLocation   = [touch locationInView:_inputImage];
-
+    
     touchX          = touchLocation.x;
     touchY          = touchLocation.y;
     touchDocX = [self screenToDocumentX : touchX ];
     touchDocY = [self screenToDocumentY : touchY ];
     int docXoff = od.docRect.origin.x; //Top left text corner in document...
     int docYoff = od.docRect.origin.y;
-//    touchDocX+=docXoff;
-//    touchDocY+=docYoff;
+    //    touchDocX+=docXoff;
+    //    touchDocY+=docYoff;
     NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
     adjustSelect = [ot hitField:touchDocX :touchDocY];
     NSLog(@" ... hit %d",adjustSelect);
@@ -220,7 +229,7 @@
     NSLog(@" touchMoved xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
     int hitIndex = [ot hitField:touchDocX :touchDocY];
     NSLog(@" ... hit %d",hitIndex);
-
+    
 }
 
 //==========createVC=========================================================================
@@ -235,7 +244,7 @@
 {
     NSArray *viewsToRemove = [_overlayView subviews];
     for (UIView*v in viewsToRemove) [v removeFromSuperview];
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -249,12 +258,12 @@
     {
         CGRect rr = [ot getBoxRect:i]; //In document coords
         //NSLog(@" docbox[%d] %@",i,NSStringFromCGRect(rr));
-
+        
         //Add in top/left doc text corner to get absolute doc XY
-      //  int docXoff = od.docRect.origin.x; //Top left text corner in document...
-      //  int docYoff = od.docRect.origin.y;
-      //  rr.origin.x += docXoff;
-      //  rr.origin.y += docYoff;
+        //  int docXoff = od.docRect.origin.x; //Top left text corner in document...
+        //  int docYoff = od.docRect.origin.y;
+        //  rr.origin.x += docXoff;
+        //  rr.origin.y += docYoff;
         int xi = [self documentToScreenX:rr.origin.x];
         int yi = [self documentToScreenY:rr.origin.y];
         int xs = (int)((double)rr.size.width  / docXConv);
@@ -286,7 +295,7 @@
 //=============OCR VC=====================================================
 -(void) getStubbedDocument
 {
-
+    
     if (docnum == 1)
     {
         supplierName   = @"HFM";
@@ -303,7 +312,7 @@
     }
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
-
+    
 } //end getStubbedDocument
 
 //=============OCR VC=====================================================
@@ -319,15 +328,15 @@
     {
         stubbedDocName = @"beef";
     }
-
+    
     [self getStubbedDocument];
     ot.supplierName = supplierName; //Pass along supplier name to template
     NSDictionary *d = [self readTxtToJSON:stubbedDocName];
     [od setupDocument : selectFname : d : docFlipped90];
-
-//    NSDictionary *d = [self readTxtToJSON:@"beef"];
-//    supplierName = @"Hawaii Beef Producers";
-//    selectFname  = @"hawaiiBeefInvoice.jpg";
+    
+    //    NSDictionary *d = [self readTxtToJSON:@"beef"];
+    //    supplierName = @"Hawaii Beef Producers";
+    //    selectFname  = @"hawaiiBeefInvoice.jpg";
     tlRect = [od getTLRect];
     trRect = [od getTRRect];
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
@@ -353,7 +362,7 @@
     CGRect trOriginal = [ot getTROriginalRect];
     [od setScalingRects];
     [od computeScaling : tlOriginal : trOriginal];
-
+    
     //First add any boxes of content to ignore...
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
@@ -364,7 +373,7 @@
             [od addIgnoreBoxItems:rr];
         }
     }
-
+    
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
         CGRect rr = [ot getBoxRect:i]; //In document coords!
@@ -407,7 +416,7 @@
                 invoiceTotal = [od findPriceInArrayOfFields:a];
                 NSLog(@" invoice Total %4.2f [%@]",invoiceTotal,[NSString stringWithFormat:@"%4.2f",invoiceTotal]);
             }
-
+            
         } //end if a.count
         if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD]) //Columns must be resorted from L->R...
         {
@@ -420,22 +429,23 @@
     NSMutableArray* rowY2s; //overkill on rows too!
     //Look at RH most column, that dictates row tops...
     int numCols = [ot getColumnCount];
-    NSLog(@" price  col %d",[od findPriceColumn]);
-    NSLog(@" amount col %d",[od findAmountColumn]);
-    CGRect rrright = [ot getColumnByIndex:[od findPriceColumn]];
+    CGRect rrright = [ot getColumnByIndex:3];  //][od findPriceColumn]];
     rowYs = [od getColumnYPositionsInRect:rrright : TRUE];
-    CGRect rrright2 = [ot getColumnByIndex:[od findAmountColumn]];
+    CGRect rrright2 = [ot getColumnByIndex:4] ; //[od findAmountColumn]];
     rowY2s = [od getColumnYPositionsInRect:rrright2 : TRUE];
+    //Assemble our columns...
     for (int i=0;i<numCols;i++)
     {
         CGRect rr = [ot getColumnByIndex:i];
         NSMutableArray *stringArray;
-        if (rowY2s.count > rowYs.count)
-            stringArray = [od getColumnStrings : rr : rowY2s];
+        if (rowY2s.count > rowYs.count) //Get the column using the largest y row array we have
+            stringArray = [od getColumnStrings : rr : rowY2s : i];
         else
-            stringArray = [od getColumnStrings : rr : rowYs];
-        [od addColumnStringData:stringArray];
+            stringArray = [od getColumnStrings : rr : rowYs : i];
+        NSMutableArray *cleanedUpArray = [od cleanUpPriceColumns : i : stringArray];
+        [od addColumnStringData:cleanedUpArray];
     }
+    
     //Now, columns are ready: let's dig them out!
     [rowItems removeAllObjects];
     for (int i=0;i<od.longestColumn;i++)
@@ -452,22 +462,68 @@
         }
         [rowItems addObject:rowString];
     }
+    
+    
     NSLog(@" invoice rows %@",rowItems);
     [self dumpResults];
     
-    //Let's try getting a form for pam now...
-   // [self writeEXPToParse];
 } //end applyTemplate
 
 //=============OCR VC=====================================================
+// Fix things like missing prices, price typos, etc...
+-(void) cleanupInvoice
+{
+    NSLog(@"cleanupInvoice");
+    if (od.quantityColumn == 0) //Usually this is an error , item should be 0 and descr should be 2 for instance...
+        od.quantityColumn = od.itemColumn + 1;
+    
+    for (int i=0;i<od.longestColumn;i++)
+    {
+        NSMutableArray *ac = [od getRowFromColumnStringData : i];
+        if (ac.count < 5)
+        {
+            NSLog(@" bad row pulled in EXP save!");
+            return;
+        }
+        NSLog(@" rec[%d] %@",i,ac);
+        [smartp clear];
+        [smartp addVendor:supplierName]; //Is this the right string?
+        NSString *productName = ac[2]; //3rd column?
+        [smartp addProductName:productName];
+        [smartp addDate:invoiceDate];
+        [smartp addLineNumber:i+1];
+        [smartp addAmount: ac[od.amountColumn]]; //column 5: RH total price
+        [smartp addPrice: ac[od.priceColumn]]; //column 5: RH total price
+        [smartp addQuantity : ac[od.quantityColumn]];
+        int aerr = [smartp analyzeFull]; //fills out fields -> smartp.latest...
+        
+        BOOL needNewPrices = TRUE; //Store in doc's postOCR area?
+        if (aerr != 0)
+        {
+            NSLog(@" analyze error %@",[smartp getErrDescription:aerr]);
+            if (aerr == ANALYZER_ZERO_PRICE || aerr == ANALYZER_ZERO_AMOUNT || aerr == ANALYZER_ZERO_QUANTITY)
+            {
+            }
+            else if (aerr == ANALYZER_BAD_PRICE_COLUMNS)
+            {
+                needNewPrices = FALSE; //We are setting new prices here...
+                [od setPostOCRQPA:i :smartp.latestQuantity : @"$ERR" : @"$ERR"];
+            }
+        }
+        if (needNewPrices)
+        {
+            [od setPostOCRQPA:i :smartp.latestQuantity :smartp.latestPrice :smartp.latestAmount];
+        }
+    }
+    NSLog(@" dun %@",od);
+} //end cleanupInvoice
+
+//=============OCR VC=====================================================
+// Assumes invoice prices are in cleaned-up post OCR area...
 -(void) writeEXPToParse
 {
     
-    int quantityColumn    = [od findQuantityColumn];
-    int itemColumn        = [od findItemColumn];
-    //Not used yet? int descriptionColumn = [od findDescriptionColumn];
-    int priceColumn       = [od findPriceColumn];
-    //Not used yet? int amountColumn      = [od findAmountColumn];
+    //Not used yet? int amountColumn      = od.amountColumn;
     for (int i=0;i<od.longestColumn;i++)
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];
@@ -479,31 +535,33 @@
         NSLog(@" ac %@",ac);
         [smartp clear];
         [smartp addVendor:supplierName]; //Is this the right string?
-        NSString *productName = ac[2]; //3rd column?
+        NSString *productName = ac[od.descriptionColumn]; //3rd column?
         [smartp addProductName:productName];
         [smartp addDate:invoiceDate];
         [smartp addLineNumber:i+1];
-        [smartp addRawPrice: ac[4]]; //column 5: RH total price
-        [smartp analyze]; //fills out fields -> smartp.latest...
+        [smartp analyzeSimple]; //fills out fields -> smartp.latest...
+        NSLog(@" analyze OK %d",smartp.analyzeOK);
         if (smartp.analyzeOK) //Only save valid stuff!
         {
             //Package up our fields...
             PFObject *nextEXPRecord = [PFObject objectWithClassName:@"EXPFullTable"];
             nextEXPRecord[PInv_Category_key]    = smartp.latestCategory;
             nextEXPRecord[PInv_Month_key]       = smartp.latestShortDateString; //DD-MMM?
-            nextEXPRecord[PInv_Quantity_key]    = ac[quantityColumn]; //Quantity:first column from invoice table
-            nextEXPRecord[PInv_Item_key]        = ac[itemColumn]; //item code:2nd column
+            nextEXPRecord[PInv_Item_key]        = ac[od.itemColumn]; //item code:2nd column
             nextEXPRecord[PInv_UOM_key]         = smartp.latestUOM;
             nextEXPRecord[PInv_Bulk_or_Individual_key] = smartp.latestBulkOrIndividual;
             nextEXPRecord[PInv_Vendor_key]      = smartp.latestVendor;
-            nextEXPRecord[PInv_TotalPrice_key]  = smartp.latestTotalPrice;
-            nextEXPRecord[PInv_PricePerUOM_key] = ac[priceColumn]; //column 4, next to RH!
+            nextEXPRecord[PInv_ProductName_key] = productName;
             nextEXPRecord[PInv_Processed_key]   = smartp.latestProcessed;
             nextEXPRecord[PInv_Local_key]       = smartp.latestLocal;
             nextEXPRecord[PInv_Date_key]        = smartp.invoiceDate; //ONLY column that ain't a String!
             nextEXPRecord[PInv_LineNumber_key]  = smartp.latestLineNumber;
             nextEXPRecord[PInv_InvoiceNumber_key]  = invoiceNumberString;
-
+            //NOTE: we need postOCR stuff, assumes already run thru analyzeFull!
+            nextEXPRecord[PInv_Quantity_key]    = [od getPostOCRQuantity:i];
+            nextEXPRecord[PInv_TotalPrice_key]  = [od getPostOCRAmount:i];
+            nextEXPRecord[PInv_PricePerUOM_key] = [od getPostOCRPrice:i];
+            
             [nextEXPRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (succeeded) {
                     NSLog(@" ...nextEXP: saved to parse %@",self->smartp.latestLineNumber);
@@ -512,20 +570,27 @@
                     NSLog(@" ...nextEXP: ERROR: %@",error.localizedDescription);
                 }
             }]; //end saveinBackground
-
+            
         } //end analyzeOK
     } //end for loop
 } //end getEXPForm
 
 
 //=============OCR VC=====================================================
--(void) loadEXPFromParseAsStrings : (BOOL) dumptoCSV
+-(void) loadEXPFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
 {
     if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    [query whereKey:PInv_Vendor_key equalTo:vendor];
     [query orderByAscending:PInv_LineNumber_key];
+    spinner.hidden = FALSE;
+    [spinner startAnimating];
+    
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
+            spinner.hidden = TRUE;
+            [spinner stopAnimating];
+            
             [self->EXPDump removeAllObjects];
             int i     = 0;
             //int count = (int)objects.count;
@@ -541,7 +606,7 @@
                 self->smartp.latestUOM              = [pfo objectForKey:PInv_UOM_key];
                 self->smartp.latestBulkOrIndividual = [pfo objectForKey:PInv_Bulk_or_Individual_key];
                 self->smartp.latestVendor           = [pfo objectForKey:PInv_Vendor_key];
-                self->smartp.latestTotalPrice       = [pfo objectForKey:PInv_TotalPrice_key];
+                self->smartp.latestPrice            = [pfo objectForKey:PInv_TotalPrice_key];
                 self->smartp.latestPricePerUOM      = [pfo objectForKey:PInv_PricePerUOM_key];
                 self->smartp.latestProcessed        = [pfo objectForKey:PInv_Processed_key];
                 self->smartp.latestLocal            = [pfo objectForKey:PInv_Local_key];
@@ -561,7 +626,7 @@
                 s = [s stringByAppendingString:
                      [NSString stringWithFormat:@"%@,",self->smartp.latestVendor]];
                 s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestTotalPrice]];
+                     [NSString stringWithFormat:@"%@,",self->smartp.latestPrice]];
                 s = [s stringByAppendingString:
                      [NSString stringWithFormat:@"%@,",self->smartp.latestPricePerUOM]];
                 s = [s stringByAppendingString:
@@ -622,7 +687,7 @@
     }
     NSLog(@"dump[%@]",r);
     [self alertMessage:@"Invoice Dump" :r];
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -676,7 +741,7 @@
             }
         }
         
-
+        
         // Handle result: load up document and apply template here
         NSLog(@" annnnd result is %@",result);
     }];
@@ -711,18 +776,21 @@
 - (IBAction)testSelect:(id)sender {
     //NSDate *date = [od isItADate:@"duhhhhhhhh"];
     //NSDate *date2 = [od isItADate:@"12/24/18"];
-
+    
     
     //imageTools *it = [[imageTools alloc] init];
     //[it findCorners:_inputImage.image];
     //[it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
-   // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
+    // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
     //NSLog(@" duh just deskewed");
     [self loadStubbedOCRData];
     [self applyTemplate];
+    //Let's try getting a form for pam now...
+    [self cleanupInvoice];
+    [self writeEXPToParse];
     
     //[self callOCRSpace : selectFname];
-//    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
+    //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
     //[self callOCRSpace : @"hfm.jpg"];
 }
 
@@ -730,7 +798,7 @@
 - (IBAction)testEmail:(id)sender
 {
     
-    [self loadEXPFromParseAsStrings : TRUE];
+    [self loadEXPFromParseAsStrings : TRUE : supplierName];
     
 }
 
@@ -765,7 +833,7 @@
 
 
 //=============OCR VC=====================================================
--(void) clearFields  
+-(void) clearFields
 {
     [ot clearFields];
     // Set limits where text was found at top / left / right,
@@ -802,7 +870,7 @@
     [self resetSelectBox];
     // Change bottom button so user knows they can cancel...
     [_addFieldButton setTitle:@"Cancel" forState:UIControlStateNormal];
-
+    
 } //end addNewField
 
 //=============OCR VC=====================================================
@@ -819,13 +887,13 @@
     arrowRHStepSize = 1;
     [self updateCenterArrowButtons];
     [self updateCenterArrowButtons];
-
+    
     CGRect rr = [ot getBoxRect:adjustSelect]; //This is in document coords!
     [ot dumpBox:adjustSelect];
-//    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-//    int docYoff = od.docRect.origin.y;
-//    rr.origin.x += docXoff;
-//    rr.origin.y += docYoff;
+    //    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+    //    int docYoff = od.docRect.origin.y;
+    //    rr.origin.x += docXoff;
+    //    rr.origin.y += docYoff;
     int xi = [self documentToScreenX:rr.origin.x];
     int yi = [self documentToScreenY:rr.origin.y];
     yi -= 90; //Stoopid 90 again!
@@ -840,7 +908,7 @@
     // Change bottom button so user knows they can cancel...
     [_addFieldButton setTitle:@"Cancel" forState:UIControlStateNormal];
     
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -892,7 +960,7 @@
     [alert addAction:secondAction];
     
     [self presentViewController:alert animated:YES completion:nil];
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -904,7 +972,7 @@
         editing = adjusting = FALSE;
         [self clearScreenAfterEdit];
         [self stopMagView];
-
+        
         return;
     }
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Add New Field",nil)
@@ -917,9 +985,9 @@
                                                               [self addNewField : INVOICE_SUPPLIER_FIELD];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Number",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self addNewField : INVOICE_NUMBER_FIELD];
-                                                          }];
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self addNewField : INVOICE_NUMBER_FIELD];
+                                                           }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Date",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self addNewField : INVOICE_DATE_FIELD];
@@ -937,16 +1005,16 @@
                                                               [self addNewField : INVOICE_COLUMN_FIELD];
                                                           }];
     UIAlertAction *seventhAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Total",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self addNewField : INVOICE_TOTAL_FIELD];
-                                                          }];
+                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                [self addNewField : INVOICE_TOTAL_FIELD];
+                                                            }];
     UIAlertAction *eighthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Ignore this Area",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self addNewField : INVOICE_IGNORE_FIELD];
-                                                          }];
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self addNewField : INVOICE_IGNORE_FIELD];
+                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                          }];
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
     //DHS 3/13: Add owner's ability to delete puzzle
     [alert addAction:firstAction];
     [alert addAction:secondAction];
@@ -956,11 +1024,11 @@
     [alert addAction:sixthAction];
     [alert addAction:seventhAction];
     [alert addAction:eighthAction];
-
+    
     [alert addAction:cancelAction];
-
+    
     [self presentViewController:alert animated:YES completion:nil];
-
+    
 } //end addFieldSelect
 
 //=============OCR VC=====================================================
@@ -978,25 +1046,29 @@
                                                               [self adjustField];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete this box",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self->ot deleteBox:self->adjustSelect];
-                                                              [self->ot saveTemplatesToDisk];
-                                                              [ot saveToParse:supplierName];
-                                                              [self refreshOCRBoxes];
-                                                          }];
-    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               [self promptForNewTagToAdd:self];
-          
+                                                               [self->ot deleteBox:self->adjustSelect];
+                                                               [self->ot saveTemplatesToDisk];
+                                                               self->spinner.hidden = FALSE;
+                                                               [self->spinner startAnimating];
+                                                               [self->ot saveToParse:supplierName];
+                                                               [self refreshOCRBoxes];
                                                            }];
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self promptForNewTagToAdd:self];
+                                                              
+                                                          }];
     UIAlertAction *fourthAction;
     if ([ot getTagCount:adjustSelect] > 0)
         fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Clear Tags",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self->ot clearTags:self->adjustSelect];
-                                                              [self->ot saveTemplatesToDisk];
-                                                              [ot saveToParse:supplierName];
-                                                          }];
+                                                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                    [self->ot clearTags:self->adjustSelect];
+                                                    [self->ot saveTemplatesToDisk];
+                                                    spinner.hidden = FALSE;
+                                                    [spinner startAnimating];
+                                                    [ot saveToParse:supplierName];
+                                                }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -1006,7 +1078,7 @@
     [alert addAction:thirdAction];
     if ([ot getTagCount:adjustSelect] > 0) [alert addAction:fourthAction];
     [alert addAction:cancelAction];
-
+    
     [self presentViewController:alert animated:YES completion:nil];
     
 } //end promptForAdjust
@@ -1030,9 +1102,9 @@
     for (NSString *aname in actionNames)
     {
         UIAlertAction *nextAction = [UIAlertAction actionWithTitle:NSLocalizedString(aname,nil)
-                                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                                  [self addTag:[actions objectAtIndex:index]];
-                                                              }];
+                                                             style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                 [self addTag:[actions objectAtIndex:index]];
+                                                             }];
         [alert addAction:nextAction];
         index++;
     }
@@ -1050,6 +1122,8 @@
     NSLog(@" addTag %@",tag);
     [ot addTag:adjustSelect:tag];
     [ot saveTemplatesToDisk];
+    spinner.hidden = FALSE;
+    [spinner startAnimating];
     [ot saveToParse:supplierName];
 } //end addTag
 
@@ -1122,7 +1196,7 @@
     }
     else{
         [self dismiss];
-
+        
     }
 } //end doneSelect
 
@@ -1137,10 +1211,12 @@
     editing = adjusting = FALSE;
     [ot dump];
     [ot saveTemplatesToDisk];
+    spinner.hidden = FALSE;
+    [spinner startAnimating];
     [ot saveToParse:supplierName];
     [self clearScreenAfterEdit];
     [self stopMagView];
-
+    
 }
 
 //=============OCR VC=====================================================
@@ -1151,7 +1227,7 @@
     selectBox.hidden        = TRUE;
     _instructionsLabel.text = @"...";
     [_wordsLabel setText:@""];
-
+    
     [_addFieldButton setTitle:@"Add Field" forState:UIControlStateNormal];
     [self refreshOCRBoxes];
     
@@ -1161,7 +1237,7 @@
 -(int) screenToDocumentX : (int) xin
 {
     double dx = (double)xin * docXConv;
-//    double dx = ((double)xin - (double)_inputImage.frame.origin.x) * docXConv;
+    //    double dx = ((double)xin - (double)_inputImage.frame.origin.x) * docXConv;
     return (int)floor(dx + 0.5);  //This is needed to get NEAREST INT!
 }
 
@@ -1169,7 +1245,7 @@
 -(int) screenToDocumentY : (int) yin
 {
     double dy = (double)yin * docYConv;
-//    double dy = ((double)yin - (double)_inputImage.frame.origin.y) * docYConv;
+    //    double dy = ((double)yin - (double)_inputImage.frame.origin.y) * docYConv;
     return (int)floor(dy + 0.5);  //This is needed to get NEAREST INT!
 }
 
@@ -1237,7 +1313,7 @@
     ys = r.size.height;
     CGRect rs = selectBox.frame;
     //NSLog(@" sr1 %@",NSStringFromCGRect(rs));
-
+    
     int docx = [self screenToDocumentX : rs.origin.x];
     int docy = [self screenToDocumentY : rs.origin.y];
     int docw = [self screenToDocumentW : rs.size.width];
@@ -1283,15 +1359,15 @@
     dy+=24; //NOTCH?
     if (xi < 0) xi = 0;
     if (yi < 0) yi = 0;
-//    if (xi < dx) xi = dx;
-//    if (yi < dy) yi = dy;
+    //    if (xi < dx) xi = dx;
+    //    if (yi < dy) yi = dy;
     if (xi+xs > dx+dw) xi = (dx+dw) - xs;
     if (yi+ys > dy+dh) yi = (dy+dh) - ys;
     selectBox.frame = CGRectMake(xi, yi, xs, ys);
     
     [self setupMagView : xi : yi];
     [self getWordsInBox];
-
+    
     [self getDocumentFrameFromSelectBox]; //Just updates screen/ toss return val
 }
 
@@ -1308,15 +1384,15 @@
     
     
     NSLog(@" selrect %@",NSStringFromCGRect(r));
-   // int docXoff = od.docRect.origin.x; //Top left text corner in document...
-   // int docYoff = od.docRect.origin.y;
-   // NSLog(@" docxyoff %d %d",docXoff,docYoff);
+    // int docXoff = od.docRect.origin.x; //Top left text corner in document...
+    // int docYoff = od.docRect.origin.y;
+    // NSLog(@" docxyoff %d %d",docXoff,docYoff);
     xs = [self screenToDocumentW :r.size.width];
     ys = [self screenToDocumentH :r.size.height];
-
-//    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-//    int docYoff = od.docRect.origin.y;
-
+    
+    //    int docXoff = od.docRect.origin.x; //Top left text corner in document...
+    //    int docYoff = od.docRect.origin.y;
+    
     CGRect r2 =CGRectMake(xi, yi, xs, ys);
     NSLog(@" ...docrect %@",NSStringFromCGRect(r2));
     NSMutableArray *a = [od findAllWordStringsInRect:r2];
@@ -1339,6 +1415,8 @@
     [self getStubbedDocument]; //also loads doc image
     [self loadStubbedOCRData]; //asdf
     [self clearOverlay];
+    spinner.hidden = FALSE;
+    [spinner startAnimating];
     [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
 }
 
@@ -1489,12 +1567,12 @@
         [_lhCenterButton setBackgroundImage : fastIcon forState:UIControlStateNormal];
     else
         [_lhCenterButton setBackgroundImage : slowIcon forState:UIControlStateNormal];
-
+    
     if (rhArrowsFast)
         [_rhCenterButton setBackgroundImage : fastIcon forState:UIControlStateNormal];
     else
         [_rhCenterButton setBackgroundImage : slowIcon forState:UIControlStateNormal];
-
+    
 }
 
 #pragma mark - OCRTemplateDelegate
@@ -1504,6 +1582,18 @@
 {
     NSLog(@" didReadTemplate...");
     [self refreshOCRBoxes];
+    spinner.hidden = TRUE;
+    [spinner stopAnimating];
 }
+
+
+//=============OCR VC=====================================================
+- (void)didSaveTemplate
+{
+    NSLog(@" didSaveTemplate...");
+    spinner.hidden = TRUE;
+    [spinner stopAnimating];
+}
+
 
 @end

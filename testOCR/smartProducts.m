@@ -155,28 +155,31 @@
                      @"tuna"    //here or dry goods?
                      ];
     produceNames = @[ //CANNED, need to check plurals too!
-                     @"apple",
-                     @"banana",
+                     @"apples",
+                     @"bananas",
                      @"basil",
                      @"bok choy",
                      @"broccoli",
-                     @"cantaloupe",
+                     @"cantaloupes",
                      @"cabbage",
+                     @"carrots",
                      @"celery",
                      @"corn IFQ",  //???WTF?
                      @"cranberry",
-                     @"cucumber",
+                     @"cucumbers",
                      @"garlic",
                      @"green beans",
                      @"honeydew",
-                     @"lemon",
+                     @"lemons",
                      @"lettuce",
-                     @"mushroom",
-                     @"onion",
-                     @"orange",  //confusion w/ orange juice?
+                     @"melons",
+                     @"mushrooms",
+                     @"onions",
+                     @"oranges",  //confusion w/ orange juice?
                      @"papaya",
+                     @"papayas",
                      @"peas",
-                     @"pineapple",
+                     @"pineapples",
                      @"potato",
                      @"potatoes",
                      @"spinach",
@@ -218,7 +221,7 @@
     _latestBulkOrIndividual = @"";
     _latestQuantity = @"";
     _latestPricePerUOM = @"";
-    _latestTotalPrice = @"";
+    _latestPrice = @"";
     _latestProcessed = @"";
     _latestLocal = @"";
     _invoiceDate = [NSDate date];
@@ -240,9 +243,15 @@
 }
 
 //=============(smartProducts)=====================================================
--(void) addRawPrice : (NSString*)price
+-(void) addAmount : (NSString*)s
 {
-    rawPrice = price; //String
+    amount = s; //String
+}
+
+//=============(smartProducts)=====================================================
+-(void) addPrice : (NSString*)s
+{
+    price = s; //String
 }
 
 //=============(smartProducts)=====================================================
@@ -260,24 +269,50 @@
 }
 
 //=============(smartProducts)=====================================================
--(void) analyze
+-(void) addQuantity:(NSString *)qstr
+{
+    quantity = qstr;
+}
+
+
+//=============(smartProducts)=====================================================
+-(NSString*) getErrDescription : (int) aerr
+{
+    NSString *result = @"Bad Errcode";
+    switch(aerr)
+    {
+        case ANALYZER_BAD_PRICE_COLUMNS: result = @"Bad Price Columns";
+            break;
+        case ANALYZER_MATH_ERROR:        result = @"Math Err";
+            break;
+        case ANALYZER_NO_PRODUCT_FOUND:  result = @"No Product Found";
+            break;
+        case ANALYZER_ZERO_AMOUNT:       result = @"Zero Amount";
+            break;
+        case ANALYZER_ZERO_PRICE:        result = @"Zero Price";
+            break;
+        case ANALYZER_ZERO_QUANTITY:     result = @"Zero Quantity";
+            break;
+    }
+    
+    return result;
+}
+
+//=============(smartProducts)=====================================================
+-(BOOL) analyzeProductName
 {
     BOOL found = FALSE;
-    _analyzeOK = FALSE;
-    processed = FALSE;
-    local     = FALSE;
-    bulk      = FALSE;
-    NSString *foundResult = @"EMPTY";
-    //Take a look at the product name, see if we can figger it out!
+    _latestCategory = @"EMPTY";
     NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
     for (NSString *nextWord in pItems)
     {
         if (found) break;
         NSString *lowerCase = [nextWord lowercaseString]; //Always match on lowercase
+        lowerCase = [lowerCase   stringByReplacingOccurrencesOfString:@"/" withString:@""]; //Get rid of illegal stuff!
         if ([beverageNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = BEVERAGE_CATEGORY;
+            _latestCategory = BEVERAGE_CATEGORY;
             _latestUOM = @"case";
             processed = TRUE;
             bulk = TRUE;
@@ -285,7 +320,7 @@
         else if ([dairyNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = DAIRY_CATEGORY;
+            _latestCategory = DAIRY_CATEGORY;
             _latestUOM = @"qt";  //THis varies widely! maybe second array should be:
             processed = TRUE;    //   UOM/processed/bulk, matching product names one for one
             bulk = TRUE;
@@ -293,7 +328,7 @@
         else if ([dryGoodsNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = DRY_GOODS_CATEGORY;
+            _latestCategory = DRY_GOODS_CATEGORY;
             _latestUOM = @"lb";  //THis varies widely! see dairy
             processed = TRUE;
             bulk = TRUE;
@@ -301,15 +336,15 @@
         else if ([miscNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = MISC_CATEGORY;
-            _latestUOM = @"n/a";   
+            _latestCategory = MISC_CATEGORY;
+            _latestUOM = @"n/a";
             processed = FALSE;
             bulk = FALSE;
         }
         else if ([produceNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = PRODUCE_CATEGORY;
+            _latestCategory = PRODUCE_CATEGORY;
             _latestUOM = @"lb";
             processed = FALSE;
             bulk = TRUE;
@@ -317,7 +352,7 @@
         else if ([proteinNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = PROTEIN_CATEGORY;
+            _latestCategory = PROTEIN_CATEGORY;
             _latestUOM = @"lb";
             processed = FALSE; //Is ground beef processed?
             bulk = TRUE; //Is this ok for all meat?
@@ -325,22 +360,136 @@
         else if ([suppliesNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            foundResult = SUPPLIES_CATEGORY;
+            _latestCategory = SUPPLIES_CATEGORY;
             _latestUOM = @"n/a";
             processed = FALSE;
             bulk = FALSE;
         }
     }
-    if (!found) return;
+    return found;
+    
+} //end analyzeProductName
+
+//=============(smartProducts)=====================================================
+-(int) analyzeSimple
+{
+    int aerror = 0;
+    _analyzeOK = FALSE;
+    processed = FALSE;
+    local     = FALSE;
+    bulk      = FALSE;
+//    NSString *foundResult = @"EMPTY";
+    BOOL found = [self analyzeProductName];
+    if (!found)
+    {
+        NSLog(@" analyze simple ... no product found %@",fullProductName);
+        _analyzeOK = FALSE;
+    }
+    
+    if ( //Got a product of Hawaii in description? set local flag
+        [fullProductName.lowercaseString containsString:@"hawaii"] ||
+        [fullProductName.lowercaseString containsString:@"hawa11"]
+        )
+        local = TRUE;
+    
+    //NOTE: quantity / price / amount NOT SET HERE!!
+    //  must use postOCR stuff from document instead (assumed to be saved)
+
+    //Handle flags...
+    if (local) _latestLocal = @"Yes";
+    else       _latestLocal = @"No";
+    
+    if (bulk) _latestBulkOrIndividual = @"Bulk";
+    else      _latestBulkOrIndividual = @"Individual";
+    
+    if (processed) _latestProcessed = @"PROCESSED";
+    else           _latestProcessed = @"UNPROCESSED";
+    
+    if ([_latestUOM isEqualToString: @"n/a"])
+    {
+        _latestBulkOrIndividual = @"n/a";
+        _latestLocal            = @"n/a";
+        _latestProcessed        = @"n/a";
+    }
+    
+    _latestDateString = [self getDateAsString:invoiceDate];
+    _latestShortDateString = [self getDateAsShortString:invoiceDate];
+    _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
+    //Just pass across from private -> public here
+    _latestVendor = vendor;
+    
+    _analyzeOK = TRUE;
+    return aerror;
+
+}
+
+//=============(smartProducts)=====================================================
+-(int) analyzeFull
+{
+    int aerror = 0;
+    _analyzeOK = FALSE;
+    processed = FALSE;
+    local     = FALSE;
+    bulk      = FALSE;
+    NSString *foundResult = @"EMPTY";
+    BOOL found = [self analyzeProductName];
+    if (!found)
+    {
+        //NSLog(@" analyze ... no product found %@",fullProductName);
+        return ANALYZER_NO_PRODUCT_FOUND; //Indicate failure
+    }
+    
     _latestCategory = foundResult;
     
-    //price per uom!
+    if ( //Got a product of Hawaii in description? set local flag
+        [fullProductName.lowercaseString containsString:@"hawaii"] ||
+        [fullProductName.lowercaseString containsString:@"hawa11"]
+        )
+        local = TRUE;
+
+    //Sanity Check: quantity * price = amount?
+    int qint = [quantity intValue];
+    float pfloat = [price floatValue];
+    float afloat = [amount floatValue];
+    float testAmount = (float)qint * pfloat;
+    if (pfloat == 0.0 && afloat == 0.0) //Bad! no price no dice!
+    {
+        //NSLog(@" ... bad price columns!");
+        aerror = ANALYZER_BAD_PRICE_COLUMNS;
+    }
+    else if (afloat != testAmount)
+    {
+        //NSLog(@" price err: mismatched price columns");
+        if (afloat == 0.0 && qint != 0)
+        {
+            amount = [self getDollarsAndCentsString:(float)qint * pfloat];
+            //amount = [NSString stringWithFormat:@"%4.2f",(float)qint * pfloat];
+            aerror = ANALYZER_ZERO_AMOUNT;
+        }
+        else if (afloat != 0.0 && qint == 0)
+        {
+            quantity = [NSString stringWithFormat:@"%d", (int)(afloat/pfloat) ]; //pf better be != 0!
+            aerror = ANALYZER_ZERO_QUANTITY;
+        }
+        else if (pfloat == 0.0)
+        {
+            price = [self getDollarsAndCentsString:afloat / (float)qint];
+            //price  = [NSString stringWithFormat:@"%4.2f",afloat / (float)qint];
+            aerror = ANALYZER_ZERO_PRICE;
+        }
+    }
+    //pass to outputs...
+    _latestQuantity = quantity;
+    _latestPrice    = price;
+    _latestAmount   = amount;
     
-    _latestTotalPrice = rawPrice;
-    if (![_latestTotalPrice containsString:@"."]) _latestTotalPrice = [_latestTotalPrice stringByAppendingString:@".00"];//super unformatted? add cents
+    //super unformatted price/amount? add cents
+    if (![_latestPrice containsString:@"."])  _latestPrice  = [_latestPrice  stringByAppendingString:@".00"];
+    if (![_latestAmount containsString:@"."]) _latestAmount = [_latestAmount stringByAppendingString:@".00"];
     // No dollar sign? add one
-    if (![_latestTotalPrice containsString:@"$"]) _latestTotalPrice =
-        [@"$" stringByAppendingString:_latestTotalPrice];
+    //Do we really need a dollar sign?
+    //if (![_latestPrice containsString:@"$"]) _latestPrice =
+    //    [@"$" stringByAppendingString:_latestPrice];
     
     //Handle flags...
     if (local) _latestLocal = @"Yes";
@@ -365,10 +514,9 @@
     //Just pass across from private -> public here
     _latestVendor = vendor;
     
-    // _latestDateString = [invoiceDate string
-    NSLog(@"duh %@",_latestLocal);
     _analyzeOK = TRUE;
-}
+    return aerror;
+} //end analyze
 
 
 
@@ -417,6 +565,14 @@
     NSString *dateString = [formatter stringFromDate:ndate];//pass the date you get from UIDatePicker
     return dateString;
 }
-                         
+
+//=============(smartProducts)=====================================================
+-(NSString*) getDollarsAndCentsString : (float) fin
+{
+    int d = (int) fin;
+    int c = (int)(100.0 * fin) - 100*d;
+    return [NSString stringWithFormat:@"%d.%2.2d",d,c];
+}
+
 
 @end
