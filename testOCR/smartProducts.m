@@ -209,6 +209,9 @@
                       @"teaspoon",
                       @"wiper"
                   ];
+    //MISSING: Equipment,Paper Goods, Snacks, Supplement, Bread, Labor, Other Exp, Services, Transfer
+    
+
 }
 
 //=============(smartProducts)=====================================================

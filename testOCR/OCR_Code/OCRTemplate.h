@@ -17,6 +17,7 @@
 #import <Parse/Parse.h>
 #import <UIKit/UIKit.h>
 #import "OCRBox.h"
+#import "DBKeys.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol OCRTemplateDelegate;

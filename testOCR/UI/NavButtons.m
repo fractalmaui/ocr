@@ -7,13 +7,9 @@
 //
 //
 //  NavButtons.m
-//  Huedoku Pix
 //
-//  Created by Dave Scruton on 2/3/17
-//  Copyright (c) 2015 huedoku, inc. All rights reserved.
-//  DHS 7/27 shrink buttons
-//  DHS 3/11/18 add setHidden for overall nav item
-//  DHS 9/14    add login animation, setHidden hides button and parent view now
+//  Created by Dave Scruton on 12/5/18.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 #import "NavButtons.h"
 
 @implementation NavButtons

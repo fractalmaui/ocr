@@ -15,12 +15,14 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <MessageUI/MessageUI.h>
+#import "DBKeys.h"
 #import "OCRWord.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
 #import "imageTools.h"
 #import "MagnifierView.h"
 #import "smartProducts.h"
+#import "invoiceTable.h"
 
 #define DEFAULT_FIELD_FORMAT @"DEFAULT"
 #define VALUE_BELOW_TITLE_FIELD_FORMAT @"VALUE_BELOW_TITLE"
@@ -50,21 +52,6 @@
 #define TOP_TAG_TYPE @"TOP_TAG"
 #define TOP_TAG_TYPE @"TOP_TAG"
 
-#define PInv_Month_key @"Month"
-#define PInv_Category_key @"Category"
-#define PInv_Quantity_key @"Quantity"
-#define PInv_Item_key @"Item"
-#define PInv_UOM_key @"UOM"
-#define PInv_Bulk_or_Individual_key @"Bulk_or_Individual"
-#define PInv_Vendor_key @"Vendor"
-#define PInv_TotalPrice_key @"TotalPrice"
-#define PInv_ProductName_key @"ProductName"
-#define PInv_PricePerUOM_key @"PricePerUOM"
-#define PInv_Processed_key @"Processed"
-#define PInv_Local_key @"Local"
-#define PInv_Date_key @"Date"
-#define PInv_LineNumber_key @"LineNumber"
-#define PInv_InvoiceNumber_key @"InvoiceNumber"
 
 
 @interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate>
@@ -126,6 +113,7 @@
 
     //Move to a processor object?
     smartProducts *smartp;
+    int smartCount;
     NSMutableArray *EXPDump;
     NSString *EXPDumpCSVList;
     
@@ -134,6 +122,8 @@
     int clugex,clugey;
 
     int docnum;
+    invoiceTable *it;
+    
 }
 
 @property (weak, nonatomic) IBOutlet UIButton *arrowRightSelect;
@@ -145,6 +135,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *lhCenterButton;
 @property (weak, nonatomic) IBOutlet UIButton *rhCenterButton;
 @property (weak, nonatomic) IBOutlet UILabel *wordsLabel;
+
+@property (nonatomic , strong) NSString* versionNumber;
 
 @property (weak, nonatomic) IBOutlet UILabel *instructionsLabel;
 @property (weak, nonatomic) IBOutlet UIView *overlayView;

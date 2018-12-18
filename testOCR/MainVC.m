@@ -2,8 +2,8 @@
 //  MainVC.m
 //  testOCR
 //
-//  Created by Dave Scruton on 12/14/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Created by Dave Scruton on 12/5/18.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "MainVC.h"

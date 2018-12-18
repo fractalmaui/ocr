@@ -435,7 +435,7 @@
     PFObject *templateRecord = [PFObject objectWithClassName:@"templates"];
     templateRecord[@"vendor"]        = vendorName;
     templateRecord[@"packedString"]  = [self packToString];
-    templateRecord[@"versionNumber"] = _versionNumber;
+    templateRecord[PInv_VersionNumber] = _versionNumber;
     [templateRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...OCRTemplate [vendor:%@] saved to parse",vendorName);

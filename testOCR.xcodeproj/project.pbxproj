@@ -46,6 +46,7 @@
 		7283813121C4A3FD00A2954B /* gearNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812F21C4A3FD00A2954B /* gearNOT.png */; };
 		7283813321C4A54600A2954B /* binonion.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283813221C4A54500A2954B /* binonion.png */; };
 		7283813621C4A60000A2954B /* MainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283813521C4A60000A2954B /* MainVC.m */; };
+		729B7A3E21C886590075486C /* invoiceTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 729B7A3D21C886590075486C /* invoiceTable.m */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
 		72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB121C370FB004ADD79 /* hfm90.jpg */; };
@@ -53,6 +54,7 @@
 		72B8DEC021C46459004ADD79 /* magtarg.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBE21C46459004ADD79 /* magtarg.png */; };
 		72B8DEC121C46459004ADD79 /* loupe-mask@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
+		72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72ECD04521C88A1000DBD08E /* invoiceObject.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,6 +86,7 @@
 		7209609C21B81FDC00D49C63 /* OCRBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRBox.h; sourceTree = "<group>"; };
 		7209609D21B81FDC00D49C63 /* OCRBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRBox.m; sourceTree = "<group>"; };
 		72183DEC21C5FA86005627AB /* squareMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = squareMask.png; path = Resources/squareMask.png; sourceTree = SOURCE_ROOT; };
+		722420F921C854F9002D02A4 /* DBKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBKeys.h; sourceTree = "<group>"; };
 		722E08F221BF504700BBD88D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		722E08F421BF504E00BBD88D /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		722E08F621BF505500BBD88D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
@@ -106,6 +109,8 @@
 		7283813221C4A54500A2954B /* binonion.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = binonion.png; path = Resources/binonion.png; sourceTree = SOURCE_ROOT; };
 		7283813421C4A60000A2954B /* MainVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainVC.h; sourceTree = "<group>"; };
 		7283813521C4A60000A2954B /* MainVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainVC.m; sourceTree = "<group>"; };
+		729B7A3C21C886590075486C /* invoiceTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invoiceTable.h; sourceTree = "<group>"; };
+		729B7A3D21C886590075486C /* invoiceTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = invoiceTable.m; sourceTree = "<group>"; };
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
 		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
 		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
@@ -115,6 +120,8 @@
 		72B8DEBE21C46459004ADD79 /* magtarg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = magtarg.png; path = Resources/magtarg.png; sourceTree = SOURCE_ROOT; };
 		72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "loupe-mask@2x.png"; path = "Resources/loupe-mask@2x.png"; sourceTree = SOURCE_ROOT; };
 		72E5D31021B6DE4C005AF869 /* txt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = txt; sourceTree = "<group>"; };
+		72ECD04421C88A1000DBD08E /* invoiceObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invoiceObject.h; sourceTree = "<group>"; };
+		72ECD04521C88A1000DBD08E /* invoiceObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = invoiceObject.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +167,10 @@
 		7206008721B64052000B26DC /* testOCR */ = {
 			isa = PBXGroup;
 			children = (
+				729B7A3C21C886590075486C /* invoiceTable.h */,
+				729B7A3D21C886590075486C /* invoiceTable.m */,
+				72ECD04421C88A1000DBD08E /* invoiceObject.h */,
+				72ECD04521C88A1000DBD08E /* invoiceObject.m */,
 				7206008821B64052000B26DC /* AppDelegate.h */,
 				7206008921B64052000B26DC /* AppDelegate.m */,
 				7283813421C4A60000A2954B /* MainVC.h */,
@@ -227,6 +238,7 @@
 		72724C6021C21D6F0043F49A /* OCR_Code */ = {
 			isa = PBXGroup;
 			children = (
+				722420F921C854F9002D02A4 /* DBKeys.h */,
 				7209609C21B81FDC00D49C63 /* OCRBox.h */,
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
@@ -351,9 +363,11 @@
 				7283812021C4A17300A2954B /* NavButtons.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,
 				7206008A21B64052000B26DC /* AppDelegate.m in Sources */,
+				729B7A3E21C886590075486C /* invoiceTable.m in Sources */,
 				729C592C21C1D08900F4C695 /* smartProducts.m in Sources */,
 				7283813621C4A60000A2954B /* MainVC.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
+				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				7209608F21B8173200D49C63 /* OCRDocument.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -52,8 +52,15 @@
     fastIcon    = [UIImage imageNamed:@"ssd_hare"];
     slowIcon    = [UIImage imageNamed:@"ssd_tortoise"];
     
-    clugey = 39;
+    it = [[invoiceTable alloc] init];
+    
+    clugey = 39; //Magnifying glass image pixel offsets!
     clugex = 84;
+    
+    smartCount = 0;
+    
+    _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+
     return self;
 }
 
@@ -476,7 +483,7 @@
     NSLog(@"cleanupInvoice");
     if (od.quantityColumn == 0) //Usually this is an error , item should be 0 and descr should be 2 for instance...
         od.quantityColumn = od.itemColumn + 1;
-    
+    smartCount = 0;
     for (int i=0;i<od.longestColumn;i++)
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];
@@ -496,7 +503,7 @@
         [smartp addPrice: ac[od.priceColumn]]; //column 5: RH total price
         [smartp addQuantity : ac[od.quantityColumn]];
         int aerr = [smartp analyzeFull]; //fills out fields -> smartp.latest...
-        
+        if (smartp.analyzeOK) smartCount++;
         BOOL needNewPrices = TRUE; //Store in doc's postOCR area?
         if (aerr != 0)
         {
@@ -520,10 +527,18 @@
 
 //=============OCR VC=====================================================
 // Assumes invoice prices are in cleaned-up post OCR area...
+//  also smartCount must be set!
 -(void) writeEXPToParse
 {
+    //WRiting two things here, setup invoice object too!
+    [it clear];
+    [it setupVendorTableName : supplierName];
+    NSString *its = [NSString stringWithFormat:@"%4.2f",invoiceTotal];
+    its = [od cleanupPrice:its]; //Make sure total is formatted!
+    [it setBasicFields:invoiceDate :invoiceNumberString : its : supplierName : invoiceCustomer];
     
     //Not used yet? int amountColumn      = od.amountColumn;
+    int nc = (int)od.longestColumn;
     for (int i=0;i<od.longestColumn;i++)
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];
@@ -561,10 +576,17 @@
             nextEXPRecord[PInv_Quantity_key]    = [od getPostOCRQuantity:i];
             nextEXPRecord[PInv_TotalPrice_key]  = [od getPostOCRAmount:i];
             nextEXPRecord[PInv_PricePerUOM_key] = [od getPostOCRPrice:i];
-            
+            nextEXPRecord[PInv_VersionNumber]   = _versionNumber;
+
             [nextEXPRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (succeeded) {
-                    NSLog(@" ...nextEXP: saved to parse %@",self->smartp.latestLineNumber);
+                    if (i == nc-1)
+                       NSLog(@" ...nextEXP: saved all recs to parse %@",self->smartp.latestLineNumber);
+                    NSString *objID = nextEXPRecord.objectId;  //Returned after save?
+                    [self->it addInvoiceItemByObjectID : objID];
+                    if (i == smartCount-1)  //Last object:
+                        [self->it saveToParse];
+                    //var ojId = report.objectId
                     //  [self.delegate didSaveUniqueUserToParse];
                 } else {
                     NSLog(@" ...nextEXP: ERROR: %@",error.localizedDescription);
@@ -588,8 +610,8 @@
     
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
-            spinner.hidden = TRUE;
-            [spinner stopAnimating];
+            self->spinner.hidden = TRUE;
+            [self->spinner stopAnimating];
             
             [self->EXPDump removeAllObjects];
             int i     = 0;
@@ -611,7 +633,7 @@
                 self->smartp.latestProcessed        = [pfo objectForKey:PInv_Processed_key];
                 self->smartp.latestLocal            = [pfo objectForKey:PInv_Local_key];
                 self->smartp.latestLineNumber       = [pfo objectForKey:PInv_LineNumber_key];
-                invoiceNumberString                 = [pfo objectForKey:PInv_InvoiceNumber_key];
+                self->invoiceNumberString           = [pfo objectForKey:PInv_InvoiceNumber_key];
                 NSString *s = [NSString stringWithFormat:@"%@,",self->smartp.latestCategory];
                 s = [s stringByAppendingString:
                      [NSString stringWithFormat:@"%@,",self->smartp.latestShortDateString]];
@@ -725,7 +747,7 @@
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSError* myError;
         NSLog(@" got response from server...");
-        rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        self->rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data
                                                                options:kNilOptions
                                                                  error:&myError];
@@ -1051,7 +1073,7 @@
                                                                [self->ot saveTemplatesToDisk];
                                                                self->spinner.hidden = FALSE;
                                                                [self->spinner startAnimating];
-                                                               [self->ot saveToParse:supplierName];
+                                                               [self->ot saveToParse:self->supplierName];
                                                                [self refreshOCRBoxes];
                                                            }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Tag...",nil)
@@ -1065,9 +1087,9 @@
                                                 style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                     [self->ot clearTags:self->adjustSelect];
                                                     [self->ot saveTemplatesToDisk];
-                                                    spinner.hidden = FALSE;
-                                                    [spinner startAnimating];
-                                                    [ot saveToParse:supplierName];
+                                                    self->spinner.hidden = FALSE;
+                                                    [self->spinner startAnimating];
+                                                    [self->ot saveToParse:supplierName];
                                                 }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {

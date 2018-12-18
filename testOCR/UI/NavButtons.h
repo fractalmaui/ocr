@@ -7,10 +7,9 @@
 //
 //
 //  NavButtons.h
-//  Huedoku Pix
 //
-//  Created by Dave Scruton on 2/3/17
-//  Copyright (c) 2015 huedoku, inc. All rights reserved.
+//  Created by Dave Scruton on 12/5/18.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
