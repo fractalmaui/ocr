@@ -9,7 +9,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/17/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "EXPTable.h"
@@ -80,13 +80,29 @@
     
 }
 
+
+//=============OCR VC=====================================================
+-(NSMutableArray *)getAllRecords
+{
+    return recordStrings;
+}
+
+//=============OCR VC=====================================================
+-(NSString *)getRecord : (int) index
+{
+    if (index < 0 || index >= recordStrings.count) return @"";
+    return [recordStrings objectAtIndex:index];
+}
+
+
 //=============OCR VC=====================================================
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
 {
     if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
     else EXPDumpCSVList = @"";
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
-    [query whereKey:PInv_Vendor_key equalTo:vendor];
+    if (![vendor isEqualToString:@"*"]) //Wildcard means get everything...
+        [query whereKey:PInv_Vendor_key equalTo:vendor];
     [query orderByAscending:PInv_LineNumber_key];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...

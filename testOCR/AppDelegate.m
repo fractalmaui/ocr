@@ -28,7 +28,8 @@
         NSLog(@" parse DB at sashido.io connected");
     }]];
     
-    
+    _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+
     // Override point for customization after application launch.
     return YES;
 }

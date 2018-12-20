@@ -237,7 +237,7 @@
 //=============(smartProducts)=====================================================
 -(void) addDate : (NSDate*)ndate
 {
-    invoiceDate = ndate;
+    _invoiceDate = ndate;
 }
 
 //=============(smartProducts)=====================================================
@@ -433,8 +433,8 @@
         _latestProcessed        = @"n/a";
     }
     
-    _latestDateString = [self getDateAsString:invoiceDate];
-    _latestShortDateString = [self getDateAsShortString:invoiceDate];
+    _latestDateString = [self getDateAsString:_invoiceDate];
+    _latestShortDateString = [self getDateAsShortString:_invoiceDate];
     _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
     //Just pass across from private -> public here
     _latestVendor = vendor;
@@ -529,8 +529,8 @@
         _latestProcessed        = @"n/a";
     }
     
-    _latestDateString = [self getDateAsString:invoiceDate];
-    _latestShortDateString = [self getDateAsShortString:invoiceDate];
+    _latestDateString = [self getDateAsString:_invoiceDate];
+    _latestShortDateString = [self getDateAsShortString:_invoiceDate];
     _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
     //Just pass across from private -> public here
     _latestVendor = vendor;

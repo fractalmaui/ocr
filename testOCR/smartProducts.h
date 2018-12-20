@@ -48,7 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *proteinNames;
     NSArray *produceNames;
     NSArray *suppliesNames;
-    NSDate* invoiceDate;
     
     OCRCategories* occ; //Categories / processed / local lookup table
 }

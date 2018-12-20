@@ -11,6 +11,7 @@
 //  Created by Dave Scruton on 12/17/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+// New columns? PDF source URL?  OCR'ed TextDump? is this useful?
 
 #import "invoiceTable.h"
 
@@ -23,6 +24,7 @@
     {
         iobjs = [[NSMutableArray alloc] init]; //Invoice Objects
         tableName = @"";
+        recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
     return self;
@@ -89,6 +91,7 @@
 } //end packInvoiceOids
 
 //=============(invoiceTable)=====================================================
+//Reads one invoice, using vendor and number
 -(void) readFromParse : (NSString *)vendor : (NSString *)invoiceNumberstring
 {
     [self setupVendorTableName:vendor];
@@ -108,10 +111,35 @@
                 self->packedOIDs     = pfo[PInv_EXPObjectID_key];
                 [self unpackInvoiceOids];
             }
+            [self->_delegate didReadInvoiceTable];
         }
     }];
     
 } //end readFromParse
+
+//=============(invoiceTable)=====================================================
+//Reads all invoices, packs to strings for now
+-(void) readFromParseAsStrings : (NSString *)vendor
+{
+    [self setupVendorTableName:vendor];
+    if (tableName.length < 1) return; //No table name!
+    PFQuery *query = [PFQuery queryWithClassName:tableName];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->recordStrings removeAllObjects];
+            for( PFObject *pfo in objects) //Should only be one?
+            {
+                NSDate *date = pfo[PInv_Date_key];
+                NSString *ds = [self getDateAsString:date];
+                NSString*s = [NSString stringWithFormat:@"[%@](%@):%@",ds,pfo[PInv_InvoiceNumber_key],pfo[PInv_CustomerKey]];
+                [self->recordStrings addObject:s];
+            }
+            [self->_delegate didReadInvoiceTableAsStrings:self->recordStrings];
+        }
+    }];
+    
+} //end readFromParse
+
 
 //=============(invoiceTable)=====================================================
 -(void) saveToParse
@@ -146,6 +174,15 @@
     _icustomer  = customer;
 } //end setBasicFields
 
+//=============(invoiceTable)=====================================================
+-(NSString *)getDateAsString : (NSDate *) ndate
+{
+    NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"MM/dd/yy"];
+    //    [formatter setDateFormat:@"yyyy-MMM-dd HH:mm:ss"];
+    NSString *dateString = [formatter stringFromDate:ndate];//pass the date you get from UIDatePicker
+    return dateString;
+}
 
 
 //=============OCR VC=====================================================

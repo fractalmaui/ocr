@@ -44,6 +44,7 @@
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
+		725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* DBViewController.m */; };
 		7283812021C4A17300A2954B /* NavButtons.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283811E21C4A17300A2954B /* NavButtons.m */; };
 		7283812A21C4A36200A2954B /* dbNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812621C4A36100A2954B /* dbNOT.png */; };
 		7283812B21C4A36200A2954B /* HamburgerNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812721C4A36100A2954B /* HamburgerNOT.png */; };
@@ -117,6 +118,8 @@
 		72435B3821C8E01200620F4B /* cal_kona.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cal_kona.jpg; sourceTree = "<group>"; };
 		72435B3A21C96E8E00620F4B /* loves.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = loves.jpg; sourceTree = "<group>"; };
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
+		725DA97B21CB53BC0024ECF7 /* DBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBViewController.h; sourceTree = "<group>"; };
+		725DA97C21CB53BC0024ECF7 /* DBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBViewController.m; sourceTree = "<group>"; };
 		7283811E21C4A17300A2954B /* NavButtons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavButtons.m; sourceTree = "<group>"; };
 		7283811F21C4A17300A2954B /* NavButtons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavButtons.h; sourceTree = "<group>"; };
 		7283812621C4A36100A2954B /* dbNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dbNOT.png; path = Resources/dbNOT.png; sourceTree = SOURCE_ROOT; };
@@ -190,12 +193,12 @@
 			children = (
 				7206008821B64052000B26DC /* AppDelegate.h */,
 				7206008921B64052000B26DC /* AppDelegate.m */,
-				72CA1A6821CADE1300F908A0 /* SessionManager.h */,
-				72CA1A6921CADE7200F908A0 /* SessionManager.m */,
 				7283813421C4A60000A2954B /* MainVC.h */,
 				7283813521C4A60000A2954B /* MainVC.m */,
 				7206008B21B64052000B26DC /* ViewController.h */,
 				7206008C21B64052000B26DC /* ViewController.m */,
+				725DA97B21CB53BC0024ECF7 /* DBViewController.h */,
+				725DA97C21CB53BC0024ECF7 /* DBViewController.m */,
 				7206008E21B64052000B26DC /* Main.storyboard */,
 				7206009121B64055000B26DC /* Assets.xcassets */,
 				7206009321B64055000B26DC /* LaunchScreen.storyboard */,
@@ -205,10 +208,8 @@
 				72724C6021C21D6F0043F49A /* OCR_Code */,
 				729C592A21C1D08900F4C695 /* smartProducts.h */,
 				729C592B21C1D08900F4C695 /* smartProducts.m */,
-				72435B3221C8C7C600620F4B /* EXPObject.h */,
-				72435B3321C8C7C600620F4B /* EXPObject.m */,
-				72435B3521C8C8EA00620F4B /* EXPTable.h */,
-				72435B3621C8C8EA00620F4B /* EXPTable.m */,
+				72CA1A6821CADE1300F908A0 /* SessionManager.h */,
+				72CA1A6921CADE7200F908A0 /* SessionManager.m */,
 			);
 			path = testOCR;
 			sourceTree = "<group>";
@@ -266,6 +267,10 @@
 			children = (
 				721D9C2221CB13E500D1E78A /* CatObject.h */,
 				721D9C2321CB13E500D1E78A /* CatObject.m */,
+				72435B3221C8C7C600620F4B /* EXPObject.h */,
+				72435B3321C8C7C600620F4B /* EXPObject.m */,
+				72435B3521C8C8EA00620F4B /* EXPTable.h */,
+				72435B3621C8C8EA00620F4B /* EXPTable.m */,
 				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
 				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				722420F921C854F9002D02A4 /* DBKeys.h */,
@@ -410,6 +415,7 @@
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */,
+				725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */,
 				7209608F21B8173200D49C63 /* OCRDocument.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

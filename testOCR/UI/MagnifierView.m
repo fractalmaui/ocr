@@ -60,7 +60,7 @@
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGRect bounds = self.bounds;
-    CGImageRef mask = [UIImage imageNamed: @"loupe-mask@2x.png"].CGImage;
+//    CGImageRef mask = [UIImage imageNamed: @"loupe-mask@2x.png"].CGImage;
 //    CGImageRef mask = [UIImage imageNamed: @"squareMask.png"].CGImage;
     UIImage *glass  = nil; //[UIImage imageNamed: @"magtarg.png"];
     

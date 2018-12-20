@@ -9,7 +9,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/17/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -41,8 +41,8 @@
 -(void) saveToParse;
 -(void) readFromParse : (NSString *) invoiceNumberstring;
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor;
-
-
+-(NSString *)getRecord : (int) index;
+-(NSMutableArray *)getAllRecords;
 
 
 @end

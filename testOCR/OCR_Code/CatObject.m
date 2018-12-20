@@ -1,9 +1,13 @@
 //
-//  CatObject.m
-//  testOCR
+//    ____      _    ___  _     _           _
+//   / ___|__ _| |_ / _ \| |__ (_) ___  ___| |_
+//  | |   / _` | __| | | | '_ \| |/ _ \/ __| __|
+//  | |__| (_| | |_| |_| | |_) | |  __/ (__| |_
+//   \____\__,_|\__|\___/|_.__// |\___|\___|\__|
+//                            |__/
 //
 //  Created by Dave Scruton on 12/19/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "CatObject.h"
@@ -25,13 +29,20 @@
             _isProcessed = TRUE;
             _processed   = @"PROCESSED";
         }
-        else if ([_processed isEqualToString:@"processed"])
+        else if ([_processed isEqualToString:@"unprocessed"])
         {
             _isProcessed = FALSE;
             _processed   = @"UNPROCESSED";
         }
+        else if ([_processed isEqualToString:@"n/a"])
+        {
+            _isProcessed = FALSE;
+            _processed   = @"N/A";
+        }
         else //Bad data from CSV?
             NSLog(@" bogus CSV processed entry :%@",_item);
+
+        //Local or imported?
         if ([_local isEqualToString:@"yes"])
         {
             _isLocal = TRUE;
@@ -41,6 +52,11 @@
         {
             _isLocal = FALSE;
             _local   = @"NO";
+        }
+        else if ([_local isEqualToString:@"n/a"])
+        {
+            _isLocal = FALSE;
+            _local   = @"N/A";
         }
         else //Bad data from CSV?
             NSLog(@" bogus CSV local entry :%@",_item);

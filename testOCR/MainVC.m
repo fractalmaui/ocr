@@ -30,7 +30,6 @@
     [self.view addSubview: nav];
     [self setupNavBar];
 
-    OCRCategories* occ = [OCRCategories sharedInstance];
     
     // if you're going to use local notifications, you must request permission
     
@@ -65,12 +64,12 @@
 }
 //==========feedVC=================================================================
 - (void)viewDidAppear:(BOOL)animated {
-    //NSLog(@"Feed viewDidAppear...");
+    //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
 
 
 
-   // [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+    [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0
@@ -127,14 +126,15 @@
     {
         NSLog(@"b0");
         [self testit];
+
         //[self performSegueWithIdentifier:@"cloudSegue" sender:@"feedCell"];
         
     }
     else if (which == 1) //THis is now a multi-function popup...
     {
         NSLog(@"db");
-        //[self performSegueWithIdentifier:@"cloudSegue" sender:@"feedCell"];
-        
+        [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+
     }
     if (which == 3) //THis is now a multi-function popup...
     {
@@ -147,7 +147,7 @@
 
 -(void) testit
 {
-    NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
+  //  NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
 //    [self downloadPDF:gd];
     // Get the PDF Data from the url in a NSData Object
 //    NSData *pdfData = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:gd]];

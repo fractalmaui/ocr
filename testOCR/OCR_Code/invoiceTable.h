@@ -23,7 +23,8 @@
 
 @interface invoiceTable : NSObject
 {
-    
+    NSMutableArray *recordStrings;
+
     NSMutableArray *iobjs;
     int dog;
     NSString *tableName;
@@ -45,6 +46,7 @@
 -(void) clear;
 -(int) getItemCount;
 -(void) readFromParse : (NSString *)vendor : (NSString *)invoiceNumberstring;
+-(void) readFromParseAsStrings : (NSString *)vendor;
 -(void) saveToParse;
 -(void) setupVendorTableName : (NSString *)vname;
 
@@ -55,6 +57,7 @@
 @required
 @optional
 - (void)didReadInvoiceTable;
+- (void)didReadInvoiceTableAsStrings : (NSMutableArray*) a;
 - (void)didSaveInvoiceTable;
 @end
 

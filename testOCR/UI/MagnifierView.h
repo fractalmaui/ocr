@@ -28,7 +28,7 @@
 //@property (nonatomic, retain) UIView *viewToMagnify;
 @property (assign) CGPoint touchPoint;
 
-- (void)setTouchPoint:(CGPoint)pt : (BOOL) belowFlag: (BOOL) leftFlag;
+- (void)setTouchPoint:(CGPoint)pt : (BOOL) belowFlag : (BOOL) leftFlag;
 
 
 @end

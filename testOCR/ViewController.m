@@ -43,8 +43,8 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 3;
-    OCR_mode = 2;  //1 = use stubbed OCR, 2 = fetch new OCR from server
+    docnum = 1;
+    OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
@@ -212,21 +212,18 @@
     //    int i,tx,ty,xoff,yoff,xytoler;
     UITouch *touch  = [[event allTouches] anyObject];
     touchLocation   = [touch locationInView:_inputImage];
-    
     touchX          = touchLocation.x;
     touchY          = touchLocation.y;
     touchDocX = [self screenToDocumentX : touchX ];
     touchDocY = [self screenToDocumentY : touchY ];
-    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    int docYoff = od.docRect.origin.y;
-    //    touchDocX+=docXoff;
-    //    touchDocY+=docYoff;
-    NSLog(@" touchDown xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
-    adjustSelect = [ot hitField:touchDocX :touchDocY];
-    NSLog(@" ... hit %d",adjustSelect);
-    if (adjustSelect != -1 && !editing && !adjusting)
+    if (!adjusting)
     {
-        [self promptForAdjust:self];
+        adjustSelect = [ot hitField:touchDocX :touchDocY];
+        //NSLog(@" touchDown xy %d %d doc %d %d hit %d", touchX, touchY,touchDocX,touchDocY,adjustSelect);
+        if (adjustSelect != -1 && !editing && !adjusting)
+        {
+            [self promptForAdjust:self];
+        }
     }
 }
 
@@ -240,10 +237,13 @@
     touchY = touchLocation.y;
     touchDocX = [self screenToDocumentX : touchX ];
     touchDocY = [self screenToDocumentY : touchY ];
-    
-    NSLog(@" touchMoved xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
-    int hitIndex = [ot hitField:touchDocX :touchDocY];
-    NSLog(@" ... hit %d",hitIndex);
+    if (adjusting || editing)
+    {
+        [self dragSelectBox:touchX :touchY];
+    }
+//    NSLog(@" touchMoved xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
+//    int hitIndex = [ot hitField:touchDocX :touchDocY];
+//    NSLog(@" ... hit %d",hitIndex);
     
 }
 
@@ -251,7 +251,7 @@
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     dragging = NO;
-    NSLog(@" touchEnded");
+    //NSLog(@" touchEnded");
 } //end touchesEnded
 
 //=============OCR VC=====================================================
@@ -268,17 +268,12 @@
 {
     //Clear overlay...
     [self clearOverlay];
-    NSLog(@" ot boxcount %d",[ot getBoxCount]);
+    //NSLog(@" ot boxcount %d",[ot getBoxCount]);
     for (int i=0;i<[ot getBoxCount];i++)
     {
         CGRect rr = [ot getBoxRect:i]; //In document coords
         //NSLog(@" docbox[%d] %@",i,NSStringFromCGRect(rr));
         
-        //Add in top/left doc text corner to get absolute doc XY
-        //  int docXoff = od.docRect.origin.x; //Top left text corner in document...
-        //  int docYoff = od.docRect.origin.y;
-        //  rr.origin.x += docXoff;
-        //  rr.origin.y += docYoff;
         int xi = [self documentToScreenX:rr.origin.x];
         int yi = [self documentToScreenY:rr.origin.y];
         int xs = (int)((double)rr.size.width  / docXConv);
@@ -809,10 +804,6 @@
     
     CGRect rr = [ot getBoxRect:adjustSelect]; //This is in document coords!
     [ot dumpBox:adjustSelect];
-    //    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    //    int docYoff = od.docRect.origin.y;
-    //    rr.origin.x += docXoff;
-    //    rr.origin.y += docYoff;
     int xi = [self documentToScreenX:rr.origin.x];
     int yi = [self documentToScreenY:rr.origin.y];
     yi -= 90; //Stoopid 90 again!
@@ -983,10 +974,10 @@
         fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Clear Tags",nil)
                                                 style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                     [self->ot clearTags:self->adjustSelect];
-                                                    [self->ot saveTemplatesToDisk:supplierName];
+                                                    [self->ot saveTemplatesToDisk:self->supplierName];
                                                     self->spinner.hidden = FALSE;
                                                     [self->spinner startAnimating];
-                                                    [self->ot saveToParse:supplierName];
+                                                    [self->ot saveToParse:self->supplierName];
                                                 }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -1239,17 +1230,23 @@
     int doch = [self screenToDocumentH : rs.size.height];
     //NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
     
-    //xi = [self documentToScreenX:docx];
-    //yi = [self documentToScreenY:docy];
-    //xs = [self documentToScreenW:docw];
-    //ys = [self documentToScreenH:doch];
-    //NSLog(@"  and back again %d %d  , %d %d",xi,yi,xs,ys);
-    //docx -= docXoff;
-    //docy -= docYoff;
     _instructionsLabel.text = [NSString stringWithFormat:
                                @"%@:XY(%d,%d)WH(%d,%d)",fieldNameShort,docx,docy,docw,doch];
     return CGRectMake(docx, docy, docw, doch);
 } //end getDocumentFrameFromSelectBox
+
+
+//=============OCR VC=====================================================
+// Handles touch dragging
+-(void) dragSelectBox : (int) xt : (int) yt
+{
+    CGRect rr = selectBox.frame;
+    selectBox.frame = CGRectMake(xt, yt, rr.size.width, rr.size.height);
+    [self setupMagView : xt : yt];
+    [self getWordsInBox];
+    [self getDocumentFrameFromSelectBox]; //Just updates screen/ toss return val
+
+} //end dragSelectBox
 
 
 //=============OCR VC=====================================================
@@ -1297,21 +1294,11 @@
     int xi,yi,xs,ys;
     xi = [self screenToDocumentX:r.origin.x];
     yi = [self screenToDocumentY:r.origin.y];
-    
-    
-    
-    NSLog(@" selrect %@",NSStringFromCGRect(r));
-    // int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    // int docYoff = od.docRect.origin.y;
-    // NSLog(@" docxyoff %d %d",docXoff,docYoff);
     xs = [self screenToDocumentW :r.size.width];
     ys = [self screenToDocumentH :r.size.height];
     
-    //    int docXoff = od.docRect.origin.x; //Top left text corner in document...
-    //    int docYoff = od.docRect.origin.y;
-    
     CGRect r2 =CGRectMake(xi, yi, xs, ys);
-    NSLog(@" ...docrect %@",NSStringFromCGRect(r2));
+    //NSLog(@" ...docrect %@",NSStringFromCGRect(r2));
     NSMutableArray *a = [od findAllWordStringsInRect:r2];
     NSString* wstr = @"";
     for (NSString *s in a)
@@ -1319,7 +1306,7 @@
         wstr = [wstr stringByAppendingString:[NSString stringWithFormat:@"%@,",s]];
     }
     [_wordsLabel setText:wstr];
-    NSLog(@" annnd array %@",wstr);
+    //NSLog(@" annnd array %@",wstr);
 }
 
 //=============OCR VC=====================================================

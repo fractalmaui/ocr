@@ -206,10 +206,10 @@
 
 
 //=============OCR Tester=====================================================
--(void) deskew : (UIImage *)workImage
+-(UIImage *) deskew : (UIImage *)workImage
 {
     pixelData = CGDataProviderCopyData(CGImageGetDataProvider(workImage.CGImage));
-    if (pixelData == nil) return;
+    if (pixelData == nil) return nil;
     idata = CFDataGetBytePtr(pixelData);
     iwid = workImage.size.width;
     ihit = workImage.size.height;
@@ -317,12 +317,9 @@
     double angle2 = atan2f(ddy, ddx);
     //float adeg  = 360.0 * (angle / (2 * 3.14159));
     NSLog(@"  dxy %f %f : skew %f deg %f",ddx,ddy,angle2,180.0 * angle2 / 3.141592627);
- 
     // Rotates in place?
-    UIImage *rotImg =  [self imageRotatedByRadians:angle2 img:workImage];
-                        
-
     NSLog(@" done rotated by %f degrees",180.0 * angle2 / 3.141592627);
+    return [self imageRotatedByRadians:angle2 img:workImage];
 } //end deskew
 
 
