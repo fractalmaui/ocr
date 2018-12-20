@@ -37,6 +37,10 @@
         gL50  = [[NSMutableSet alloc] init];
         useIgnoreList        = FALSE;
         srand((unsigned int)time(NULL));
+        NSDateFormatter *df = [[NSDateFormatter alloc] init];
+        [df setDateFormat:@"yyyy"];
+        NSString *ystr = [df stringFromDate:[NSDate date]];
+        currentYear = ystr.intValue;
     }
     return self;
 }
@@ -637,6 +641,14 @@
 } //end isStringAnInteger
 
 //=============(OCRTemplate)=====================================================
+-(BOOL) isStringAnLog : (NSString *)s
+{
+    NSCharacterSet *alphaNums = [NSCharacterSet decimalDigitCharacterSet];
+    NSCharacterSet *inStringSet = [NSCharacterSet characterSetWithCharactersInString:s];
+    return [alphaNums isSupersetOfSet:inStringSet];
+} //end isStringAnInteger
+
+//=============(OCRTemplate)=====================================================
 -(BOOL) isStringAPrice : (NSString *)s
 {
     NSCharacterSet *alphaNums = [NSCharacterSet characterSetWithCharactersInString:@"0123456789."];
@@ -699,6 +711,38 @@
 
 
 //=============(OCRTemplate)=====================================================
+-(NSDate *)getGarbledDate : (NSString *) dstr
+{
+    //Try to fix garbled date, where slashes are replaced by ones for instance...
+    NSString *tmonth = [dstr substringToIndex:2];
+    int imon,iday,iyear;
+    iyear = currentYear;
+    iday  = 1;
+    imon = tmonth.intValue;
+    if (imon >= 1 && imon <= 12) //Got a month?
+    {
+        int slen = (int)dstr.length;
+        NSString *tday = [dstr substringWithRange:NSMakeRange(3, 2)];
+        iday = tday.intValue;
+        NSString *tyear = @"";
+        if (slen > 8)
+        {
+            tyear = [dstr substringWithRange:NSMakeRange(6, slen-6-1)];
+            iyear = tyear.intValue;
+            //Try to make sense of year:
+            if (iyear < 100) iyear += 2000;
+            else if (iyear < 1900) iyear = currentYear;
+        }
+        
+        NSString *datestr = [NSString stringWithFormat:@"%4.4d-%2.2d-%2.2d",iyear,imon,iday];
+        NSDateFormatter *dformat = [[NSDateFormatter alloc]init];
+        [dformat setDateFormat:@"yyyy-MM-dd"];
+        return [dformat dateFromString:datestr];
+    } //end imon
+    return nil;
+} //end getGarbledDate
+
+//=============(OCRTemplate)=====================================================
 // Given array of field numbers, looks for date-like strings...
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof
 {    
@@ -709,6 +753,8 @@
         {
             return [self parseDateFromString:testText];
         }
+        NSDate *dgarbled = [self getGarbledDate:testText];
+        if (dgarbled != nil) return dgarbled;
     }
     return nil;
 } //end findDateInArrayOfFields
@@ -728,6 +774,19 @@
     }
     return foundInt;
 } //end findIntInArrayOfFields
+
+//=============(OCRTemplate)=====================================================
+-(long) findLongInArrayOfFields : (NSArray*)aof
+{
+    long foundLong = 0;
+    for (NSNumber* n in aof)
+    {
+        NSString *testText = [self getNthWord:n];
+        testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
+        if ([self isStringAnInteger:testText] ) foundLong = (long)[testText longLongValue];
+    } //end for n
+    return foundLong;
+} //end findLongInArrayOfFields
 
 //=============(OCRTemplate)=====================================================
 // Given array of field numbers, finds first string which is a legit integer...
@@ -792,6 +851,7 @@
 // Sets up internal header column names based on passed array of words forming header
 -(void)  parseHeaderColumns  : (NSMutableArray*)aof
 {
+    if (_width == 0) return; //Avoid error on weird docs
     BOOL firstField = TRUE;
     int acrossX,lastX;
     NSString *hstr = @"";

@@ -43,7 +43,8 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 1;
+    docnum = 3;
+    OCR_mode = 2;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
     rowItems    = [[NSMutableArray alloc] init];
@@ -53,6 +54,9 @@
     slowIcon    = [UIImage imageNamed:@"ssd_tortoise"];
     
     it = [[invoiceTable alloc] init];
+    it.delegate = self;
+    et = [[EXPTable alloc] init];
+    et.delegate = self;
     
     clugey = 39; //Magnifying glass image pixel offsets!
     clugex = 84;
@@ -84,7 +88,11 @@
     //parse test
     [self getStubbedDocument]; //also loads doc image
     ot.supplierName = supplierName; //Pass along supplier name to template
-    [self loadStubbedOCRData];
+    if (OCR_mode == 1)
+    {
+        [self loadStubbedOCRData];
+        [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+    }
     _LHArrowView.hidden = TRUE;
     _RHArrowView.hidden = TRUE;
     pageRect = _inputImage.frame;
@@ -317,6 +325,13 @@
         selectFnameForTemplate = @"hawaiiBeefInvoice.jpg";  //This should be rotated for user
         docFlipped90 = FALSE;
     }
+    if (docnum == 3)
+    {
+        supplierName   = @"Meadow Gold";
+        selectFname    = @"meadow";
+        selectFnameForTemplate = @"meadow.jpg";  //This should be rotated for user
+        docFlipped90 = FALSE;
+    }
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
     
@@ -335,11 +350,15 @@
     {
         stubbedDocName = @"beef";
     }
-    
+    if (docnum == 3)
+    {
+        stubbedDocName = @"meadow";
+    }
+
     [self getStubbedDocument];
     ot.supplierName = supplierName; //Pass along supplier name to template
     NSDictionary *d = [self readTxtToJSON:stubbedDocName];
-    [od setupDocument : selectFname : d : docFlipped90];
+    [od setupDocument : selectFnameForTemplate : d : docFlipped90];
     
     //    NSDictionary *d = [self readTxtToJSON:@"beef"];
     //    supplierName = @"Hawaii Beef Producers";
@@ -391,10 +410,10 @@
         {
             if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD]) //Looking for a number?
             {
-                invoiceNumber = [od findIntInArrayOfFields:a];
+                invoiceNumber = [od findLongInArrayOfFields:a];
                 //This will have to be more robust
-                invoiceNumberString = [NSString stringWithFormat:@"%d",invoiceNumber];
-                NSLog(@" invoice# %d [%@]",invoiceNumber,invoiceNumberString);
+                invoiceNumberString = [NSString stringWithFormat:@"%ld",invoiceNumber];
+                NSLog(@" invoice# %ld [%@]",invoiceNumber,invoiceNumberString);
             }
             else if ([fieldName isEqualToString:INVOICE_DATE_FIELD]) //Looking for a date?
             {
@@ -530,16 +549,8 @@
 //  also smartCount must be set!
 -(void) writeEXPToParse
 {
-    //WRiting two things here, setup invoice object too!
-    [it clear];
-    [it setupVendorTableName : supplierName];
-    NSString *its = [NSString stringWithFormat:@"%4.2f",invoiceTotal];
-    its = [od cleanupPrice:its]; //Make sure total is formatted!
-    [it setBasicFields:invoiceDate :invoiceNumberString : its : supplierName : invoiceCustomer];
-    
-    //Not used yet? int amountColumn      = od.amountColumn;
-    int nc = (int)od.longestColumn;
-    for (int i=0;i<od.longestColumn;i++)
+    [et clear];
+    for (int i=0;i<od.longestColumn;i++) //OK this does multiple parse saves at once!
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];
         if (ac.count < 5)
@@ -547,7 +558,6 @@
             NSLog(@" bad row pulled in EXP save!");
             return;
         }
-        NSLog(@" ac %@",ac);
         [smartp clear];
         [smartp addVendor:supplierName]; //Is this the right string?
         NSString *productName = ac[od.descriptionColumn]; //3rd column?
@@ -558,137 +568,17 @@
         NSLog(@" analyze OK %d",smartp.analyzeOK);
         if (smartp.analyzeOK) //Only save valid stuff!
         {
-            //Package up our fields...
-            PFObject *nextEXPRecord = [PFObject objectWithClassName:@"EXPFullTable"];
-            nextEXPRecord[PInv_Category_key]    = smartp.latestCategory;
-            nextEXPRecord[PInv_Month_key]       = smartp.latestShortDateString; //DD-MMM?
-            nextEXPRecord[PInv_Item_key]        = ac[od.itemColumn]; //item code:2nd column
-            nextEXPRecord[PInv_UOM_key]         = smartp.latestUOM;
-            nextEXPRecord[PInv_Bulk_or_Individual_key] = smartp.latestBulkOrIndividual;
-            nextEXPRecord[PInv_Vendor_key]      = smartp.latestVendor;
-            nextEXPRecord[PInv_ProductName_key] = productName;
-            nextEXPRecord[PInv_Processed_key]   = smartp.latestProcessed;
-            nextEXPRecord[PInv_Local_key]       = smartp.latestLocal;
-            nextEXPRecord[PInv_Date_key]        = smartp.invoiceDate; //ONLY column that ain't a String!
-            nextEXPRecord[PInv_LineNumber_key]  = smartp.latestLineNumber;
-            nextEXPRecord[PInv_InvoiceNumber_key]  = invoiceNumberString;
-            //NOTE: we need postOCR stuff, assumes already run thru analyzeFull!
-            nextEXPRecord[PInv_Quantity_key]    = [od getPostOCRQuantity:i];
-            nextEXPRecord[PInv_TotalPrice_key]  = [od getPostOCRAmount:i];
-            nextEXPRecord[PInv_PricePerUOM_key] = [od getPostOCRPrice:i];
-            nextEXPRecord[PInv_VersionNumber]   = _versionNumber;
-
-            [nextEXPRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
-                if (succeeded) {
-                    if (i == nc-1)
-                       NSLog(@" ...nextEXP: saved all recs to parse %@",self->smartp.latestLineNumber);
-                    NSString *objID = nextEXPRecord.objectId;  //Returned after save?
-                    [self->it addInvoiceItemByObjectID : objID];
-                    if (i == smartCount-1)  //Last object:
-                        [self->it saveToParse];
-                    //var ojId = report.objectId
-                    //  [self.delegate didSaveUniqueUserToParse];
-                } else {
-                    NSLog(@" ...nextEXP: ERROR: %@",error.localizedDescription);
-                }
-            }]; //end saveinBackground
-            
+            [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :
+                        ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
+                        smartp.latestVendor : productName : smartp.latestProcessed :
+                        smartp.latestLocal : smartp.latestLineNumber : invoiceNumberString :
+                        [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i]];
         } //end analyzeOK
     } //end for loop
-} //end getEXPForm
+    [et saveToParse];
 
+} //end writeEXPToParse
 
-//=============OCR VC=====================================================
--(void) loadEXPFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
-{
-    if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
-    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
-    [query whereKey:PInv_Vendor_key equalTo:vendor];
-    [query orderByAscending:PInv_LineNumber_key];
-    spinner.hidden = FALSE;
-    [spinner startAnimating];
-    
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (!error) { //Query came back...
-            self->spinner.hidden = TRUE;
-            [self->spinner stopAnimating];
-            
-            [self->EXPDump removeAllObjects];
-            int i     = 0;
-            //int count = (int)objects.count;
-            
-            for( PFObject *pfo in objects)
-            {
-                NSString *quantity = @"";
-                NSString *item     = @"";
-                self->smartp.latestShortDateString = [pfo objectForKey:PInv_Month_key];
-                self->smartp.latestCategory        = [pfo objectForKey:PInv_Category_key];
-                quantity                     = [pfo objectForKey:PInv_Quantity_key];
-                item                         = [pfo objectForKey:PInv_Item_key];
-                self->smartp.latestUOM              = [pfo objectForKey:PInv_UOM_key];
-                self->smartp.latestBulkOrIndividual = [pfo objectForKey:PInv_Bulk_or_Individual_key];
-                self->smartp.latestVendor           = [pfo objectForKey:PInv_Vendor_key];
-                self->smartp.latestPrice            = [pfo objectForKey:PInv_TotalPrice_key];
-                self->smartp.latestPricePerUOM      = [pfo objectForKey:PInv_PricePerUOM_key];
-                self->smartp.latestProcessed        = [pfo objectForKey:PInv_Processed_key];
-                self->smartp.latestLocal            = [pfo objectForKey:PInv_Local_key];
-                self->smartp.latestLineNumber       = [pfo objectForKey:PInv_LineNumber_key];
-                self->invoiceNumberString           = [pfo objectForKey:PInv_InvoiceNumber_key];
-                NSString *s = [NSString stringWithFormat:@"%@,",self->smartp.latestCategory];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestShortDateString]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",quantity]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",item]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestUOM]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestBulkOrIndividual]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestVendor]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestPrice]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestPricePerUOM]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestProcessed]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestLocal]];
-                NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
-                [formatter setDateFormat:@"MM/dd/yy"];
-                NSString *sfd = [formatter stringFromDate:[pfo objectForKey:PInv_Date_key]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",sfd]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",self->smartp.latestLineNumber]];
-                //LAST FIELD: note it has a comma after it in final CSV!
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@",self->invoiceNumberString]];
-                [self->EXPDump addObject:s];
-                if (dumptoCSV)
-                {
-                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
-                    //if (i < count-1) //Not at end? add LF
-                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
-                }
-                i++;
-            }
-            NSLog(@" ...loaded EXP OK %@",self->EXPDump);
-        }
-        NSLog(@" annnd csv is %@",self->EXPDumpCSVList);
-        [self mailit: self->EXPDumpCSVList];
-    }];
-} //end loadEXPFromParseAsStrings
-
-//=============OCR VC=====================================================
-// if start is -1, dump all
--(NSString *) dumpEXPToCSV : (int)start : (int) size
-{
-    NSString *csvout = @"";
-    return csvout;
-    
-}
 
 //=============OCR VC=====================================================
 -(void) dumpResults
@@ -697,7 +587,7 @@
     r = [r stringByAppendingString:
          [NSString stringWithFormat:@"Supplier %@\n",invoiceSupplier]];
     r = [r stringByAppendingString:
-         [NSString stringWithFormat: @"Number %d  Date %@\n",invoiceNumber,invoiceDate]];
+         [NSString stringWithFormat: @"Number %ld  Date %@\n",invoiceNumber,invoiceDate]];
     r = [r stringByAppendingString:
          [NSString stringWithFormat:@"Customer %@  Total %f\n",invoiceCustomer,invoiceTotal]];
     r = [r stringByAppendingString:
@@ -805,13 +695,19 @@
     //[it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
     // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
     //NSLog(@" duh just deskewed");
-    [self loadStubbedOCRData];
-    [self applyTemplate];
-    //Let's try getting a form for pam now...
-    [self cleanupInvoice];
-    [self writeEXPToParse];
+    OCR_mode = 1;
+    if (OCR_mode == 1)
+    {
+        [self loadStubbedOCRData];
+        [self applyTemplate];
+        //Let's try getting a form for pam now...
+//        [self cleanupInvoice];
+//        [self writeEXPToParse];
+    }
+    else{
+        [self callOCRSpace : selectFnameForTemplate];
+    }
     
-    //[self callOCRSpace : selectFname];
     //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
     //[self callOCRSpace : @"hfm.jpg"];
 }
@@ -819,8 +715,9 @@
 //======(Hue-Do-Ku allColorPacks)==========================================
 - (IBAction)testEmail:(id)sender
 {
-    
-    [self loadEXPFromParseAsStrings : TRUE : supplierName];
+    spinner.hidden = FALSE;
+    [spinner startAnimating];
+    [et readFromParseAsStrings : TRUE : supplierName];
     
 }
 
@@ -858,9 +755,9 @@
 -(void) clearFields
 {
     [ot clearFields];
+    [ot saveToParse:self->supplierName];
     // Set limits where text was found at top / left / right,
     //  used for re-scaling if invoice was shrunk or whatever
-    NSLog(@" clear fields: set template boundaries");
     [ot setOriginalRects:tlRect :trRect];
     [self refreshOCRBoxes];
 }
@@ -1070,7 +967,7 @@
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete this box",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self->ot deleteBox:self->adjustSelect];
-                                                               [self->ot saveTemplatesToDisk];
+                                                               [self->ot saveTemplatesToDisk:self->supplierName];
                                                                self->spinner.hidden = FALSE;
                                                                [self->spinner startAnimating];
                                                                [self->ot saveToParse:self->supplierName];
@@ -1086,7 +983,7 @@
         fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Clear Tags",nil)
                                                 style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                     [self->ot clearTags:self->adjustSelect];
-                                                    [self->ot saveTemplatesToDisk];
+                                                    [self->ot saveTemplatesToDisk:supplierName];
                                                     self->spinner.hidden = FALSE;
                                                     [self->spinner startAnimating];
                                                     [self->ot saveToParse:supplierName];
@@ -1143,7 +1040,7 @@
 {
     NSLog(@" addTag %@",tag);
     [ot addTag:adjustSelect:tag];
-    [ot saveTemplatesToDisk];
+    [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
     [ot saveToParse:supplierName];
@@ -1232,7 +1129,7 @@
     [ot addBox : r : fieldName : fieldFormat];
     editing = adjusting = FALSE;
     [ot dump];
-    [ot saveTemplatesToDisk];
+    [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
     [ot saveToParse:supplierName];
@@ -1397,12 +1294,10 @@
 -(void) getWordsInBox
 {
     CGRect r = selectBox.frame;
-    //asdf
     int xi,yi,xs,ys;
     xi = [self screenToDocumentX:r.origin.x];
     yi = [self screenToDocumentY:r.origin.y];
     
-    //asdf
     
     
     NSLog(@" selrect %@",NSStringFromCGRect(r));
@@ -1431,15 +1326,23 @@
 - (IBAction)nextDocSelect:(id)sender
 {
     docnum++;
-    if (docnum > 2) docnum = 1;
-    ot.supplierName = supplierName; //Pass along supplier name to template
-    NSLog(@" nextdoc %@",supplierName);
-    [self getStubbedDocument]; //also loads doc image
-    [self loadStubbedOCRData]; //asdf
+    if (docnum > 3) docnum = 1;
     [self clearOverlay];
-    spinner.hidden = FALSE;
-    [spinner startAnimating];
-    [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+    if (OCR_mode == 1) //Get stubbed data...
+    {
+        [self getStubbedDocument]; //also loads doc image
+        ot.supplierName = supplierName; //Pass along supplier name to template
+        NSLog(@" ocrmode 1:  nextdoc[%d] %@",docnum,supplierName);
+        [self loadStubbedOCRData];
+        spinner.hidden = FALSE;
+        [spinner startAnimating];
+        [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+    }
+    else{ //Do Full OCR
+       [self getStubbedDocument];
+        NSLog(@" ocrmode 2: nextdoc[%d] %@",docnum,supplierName);
+
+    }
 }
 
 
@@ -1616,6 +1519,43 @@
     spinner.hidden = TRUE;
     [spinner stopAnimating];
 }
+
+
+#pragma mark - invoiceTableDelegate
+//=============OCR VC=====================================================
+- (void)didSaveInvoiceTable
+{
+    NSLog(@" Invoice TABLE SAVED (OCR VC)");
+
+}
+
+
+#pragma mark - EXPTableDelegate
+
+//=============OCR VC=====================================================
+- (void)didSaveEXPTable  : (NSArray *)a
+{
+    NSLog(@" EXP TABLE SAVED (OCR VC)");
+    //Time to setup invoice object too!
+    [it clear];
+    [it setupVendorTableName : supplierName];
+    NSString *its = [NSString stringWithFormat:@"%4.2f",invoiceTotal];
+    its = [od cleanupPrice:its]; //Make sure total is formatted!
+    [it setBasicFields:invoiceDate :invoiceNumberString : its : supplierName : invoiceCustomer];
+    for (NSString *objID in a) [it addInvoiceItemByObjectID : objID];
+    [it saveToParse];
+} //end didSaveEXPTable
+
+
+//=============OCR VC=====================================================
+- (void)didReadEXPTableAsStrings : (NSString *)s
+{
+    spinner.hidden = TRUE;
+    [spinner stopAnimating];
+
+    [self mailit: s];
+}
+
 
 
 @end

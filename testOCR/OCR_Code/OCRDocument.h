@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString * postOCRPrices[MAX_QPA_ROWS];
     NSString * postOCRAmounts[MAX_QPA_ROWS];
 
+    int currentYear; //For fixing bad date strings
     NSMutableArray *ignoreList;
     BOOL useIgnoreList;
     //Comes from templated original document...
@@ -74,6 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
 -(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr;
 -(int) findIntInArrayOfFields : (NSArray*)aof;
+-(long) findLongInArrayOfFields : (NSArray*)aof;
 -(float) findPriceInArrayOfFields : (NSArray*)aof;
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof;
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof;

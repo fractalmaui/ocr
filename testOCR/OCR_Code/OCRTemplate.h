@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
     int headerColumnCount;
     //Comes from templated document (original)
     CGRect tlDocRect,trDocRect;
-
+    NSString *documentsDirectory;
 }
 
 #define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"
@@ -70,9 +70,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) dump;
 -(void) dumpBox : (int) index;
 -(BOOL) isSupplierAMatch : (NSString *)stest;
--(void) loadTemplatesFromDisk;
+-(void) loadTemplatesFromDisk : (NSString *)vendorName;
 -(void) setOriginalRects : (CGRect) tlr : (CGRect) trr;
--(void) saveTemplatesToDisk;
+-(void) saveTemplatesToDisk : (NSString *)vendorName;
 -(void) saveToParse   : (NSString *)vendorName;
 -(void) readFromParse : (NSString *)vendorName;
 -(BOOL) gotFieldAlready : (NSString*)fname;

@@ -5,6 +5,9 @@
 //  Created by Dave Scruton on 12/5/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+// PDF Image conversion?
+//   https://github.com/a2/FoodJournal-iOS/tree/master/Pods/UIImage%2BPDF/UIImage%2BPDF
+
 
 #import "MainVC.h"
 
@@ -26,6 +29,13 @@
     nav.delegate = self;
     [self.view addSubview: nav];
     [self setupNavBar];
+
+    OCRCategories* occ = [OCRCategories sharedInstance];
+    
+    // if you're going to use local notifications, you must request permission
+    
+   //DO I NEED THIS? UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert categories:nil];
+   //DO I NEED THIS? [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
 
 
 }
@@ -50,6 +60,8 @@
     viewHit = (int)csz.height;
     viewW2  = viewWid/2;
     viewH2  = viewHit/2;
+    
+    
 }
 //==========feedVC=================================================================
 - (void)viewDidAppear:(BOOL)animated {
@@ -58,7 +70,7 @@
 
 
 
-    [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+   // [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0
@@ -114,6 +126,7 @@
     if (which == 0) //THis is now a multi-function popup...
     {
         NSLog(@"b0");
+        [self testit];
         //[self performSegueWithIdentifier:@"cloudSegue" sender:@"feedCell"];
         
     }
@@ -131,6 +144,35 @@
     }
 
 } //end didSelectNavButton
+
+-(void) testit
+{
+    NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
+//    [self downloadPDF:gd];
+    // Get the PDF Data from the url in a NSData Object
+//    NSData *pdfData = [[NSData alloc] initWithContentsOfURL:[NSURL URLWithString:gd]];
+//    NSLog(@" data is %@",pdfData);
+   // UIImage *img = [ UIImage imageWithPDFURL:url atSize:CGSizeMake( 60, 60 ) atPage:1 ];
+
+}
+
+
+
+
+
+
+
+// https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_pdf/dq_pdf.html
+
+
+// This produces a file but it doesn't open up in acrobat
+-(void) downloadPDF : (NSString *) urlString
+{
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSLog(@" download PDF from [%@]",urlString);
+    [[SessionManager sharedSession] startDownload:url];
+    
+}
 
 
 @end

@@ -23,6 +23,7 @@
     if (self = [super init])
     {
         [self loadTables];
+        occ = [OCRCategories sharedInstance];
     }
     return self;
 }
@@ -307,6 +308,23 @@
     BOOL found = FALSE;
     _latestCategory = @"EMPTY";
     NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
+    
+    //Try matching with built-in CSV file first...
+    NSMutableArray *a = [occ matchCategory:fullProductName];
+    if (a != nil)  //Match?
+    {
+        if (a.count >= 4)
+        {
+            _latestCategory  = a[0];
+            _latestProcessed = a[2];
+            _latestLocal     = a[3];
+            processed = ([_latestProcessed isEqualToString:@"processed"]);
+            local     = ([_latestLocal isEqualToString:@"yes"]);
+            return TRUE;
+        }
+        else
+            NSLog(@" error matching category for %@",fullProductName);
+    }
     for (NSString *nextWord in pItems)
     {
         if (found) break;

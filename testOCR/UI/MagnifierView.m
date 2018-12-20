@@ -45,7 +45,7 @@
     touchPoint = pt;
     int xoff = 40;
     if (leftFlag) xoff = -90;
-    int yoff = 20;
+    int yoff = -20;
     if (belowFlag) yoff = 180;
     self.center = CGPointMake(pt.x + xoff, pt.y + yoff);
     

@@ -5,6 +5,9 @@
 //  Created by Dave Scruton on 12/3/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  Dec 18: add PDF support in info.plist (CFBundleDocumentTypes setup)
+//          change bundle id to com.bgpcloud.testOCR,
+//          for setup with google cloud API
 
 #import "AppDelegate.h"
 
@@ -57,5 +60,8 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler {
+    [SessionManager sharedSession].savedCompletionHandler = completionHandler;
+}
 
 @end

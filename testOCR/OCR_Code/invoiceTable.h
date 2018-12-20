@@ -1,4 +1,10 @@
 //
+//   _                 _         _____     _     _
+//  (_)_ ____   _____ (_) ___ __|_   _|_ _| |__ | | ___
+//  | | '_ \ \ / / _ \| |/ __/ _ \| |/ _` | '_ \| |/ _ \
+//  | | | | \ V / (_) | | (_|  __/| | (_| | |_) | |  __/
+//  |_|_| |_|\_/ \___/|_|\___\___||_|\__,_|_.__/|_|\___|
+//
 //  invoiceTable.h
 //  testOCR
 //
@@ -38,6 +44,7 @@
 -(void) setBasicFields : (NSDate *) ddd : (NSString*)num : (NSString*)total : (NSString*)vendor : (NSString*)customer;
 -(void) clear;
 -(int) getItemCount;
+-(void) readFromParse : (NSString *)vendor : (NSString *)invoiceNumberstring;
 -(void) saveToParse;
 -(void) setupVendorTableName : (NSString *)vname;
 

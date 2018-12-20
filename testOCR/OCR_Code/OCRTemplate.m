@@ -24,11 +24,8 @@
     if (self = [super init])
     {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString *documentsDirectory = [paths objectAtIndex:0];
-        //2) Create the full file path by appending the desired file name
-        fileLocation  = [documentsDirectory stringByAppendingPathComponent:@"templates.dat"];
+        documentsDirectory = [paths objectAtIndex:0];
         ocrBoxes      = [[NSMutableArray alloc] init];
-        [self loadTemplatesFromDisk];
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 
         //[self dump];
@@ -41,7 +38,6 @@
 {
     NSLog(@" clear document template...");
     [ocrBoxes removeAllObjects];
-    [self saveTemplatesToDisk];
 }
 
 //=============(OCRTemplate)=====================================================
@@ -380,10 +376,12 @@
 }
 
 //=============(OCRTemplate)=====================================================
--(void) loadTemplatesFromDisk
+-(void) loadTemplatesFromDisk : (NSString *)vendorName
 {
     //Load the array if anything exists...
     NSError *err;
+    fileLocation  = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.tmp",vendorName]];
+
     fileWorkString = [[NSString alloc] initWithContentsOfFile:fileLocation encoding:NSUTF8StringEncoding error:&err];
     if (fileWorkString != nil)
         [self unpackFromString:fileWorkString];
@@ -395,10 +393,12 @@
 
 
 //=============(OCRTemplate)=====================================================
--(void) saveTemplatesToDisk
+-(void) saveTemplatesToDisk : (NSString *)vendorName
 {
     NSError *err;
     fileWorkString = [self packToString];
+    fileLocation  = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.tmp",vendorName]];
+
     [fileWorkString writeToFile:fileLocation atomically:YES encoding:NSUTF8StringEncoding error:&err];
     
      

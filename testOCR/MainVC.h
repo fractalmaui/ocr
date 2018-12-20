@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 #import "NavButtons.h"
+#import "SessionManager.h"
+#import "OCRCategories.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate>
@@ -16,6 +19,10 @@ NS_ASSUME_NONNULL_BEGIN
     int viewWid,viewHit,viewW2,viewH2;
 
 }
+@property (weak, nonatomic) IBOutlet UIImageView *imageView;
+
+
+
 @end
 
 NS_ASSUME_NONNULL_END

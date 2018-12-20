@@ -23,6 +23,7 @@
 #import "MagnifierView.h"
 #import "smartProducts.h"
 #import "invoiceTable.h"
+#import "EXPTable.h"
 
 #define DEFAULT_FIELD_FORMAT @"DEFAULT"
 #define VALUE_BELOW_TITLE_FIELD_FORMAT @"VALUE_BELOW_TITLE"
@@ -54,7 +55,8 @@
 
 
 
-@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate>
+@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate,
+                                            invoiceTableDelegate,EXPTableDelegate>
 {
     
     UIActivityIndicatorView *spinner;
@@ -79,7 +81,7 @@
     BOOL docFlipped90;
     NSString *rawOCRResult;
 
-    
+    int OCR_mode;  //1 = need OCR from server 2 = load canned pre-OCR'ed data
     
     //OCR'ed results...
     NSString *supplierName;
@@ -93,7 +95,7 @@
     NSArray *columnHeaders;
     
     //INvoice-specific fields (MOVE TO SEPARATE OBJECT)
-    int invoiceNumber;
+    long invoiceNumber;
     NSString *invoiceNumberString;
 
     NSDate *invoiceDate;
@@ -123,6 +125,7 @@
 
     int docnum;
     invoiceTable *it;
+    EXPTable *et;
     
 }
 

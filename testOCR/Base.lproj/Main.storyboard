@@ -35,6 +35,10 @@
                                 <color key="textColor" name="controlLightHighlightColor" catalog="System" colorSpace="catalog"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="keF-Xd-xri">
+                                <rect key="frame" x="85" y="316" width="204" height="230"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -46,6 +50,7 @@
                         <viewLayoutGuide key="safeArea" id="JJ2-wG-LeA"/>
                     </view>
                     <connections>
+                        <outlet property="imageView" destination="keF-Xd-xri" id="NHX-Oj-43T"/>
                         <segue destination="BYZ-38-t0r" kind="show" identifier="templateSegue" id="1jN-gk-huX"/>
                     </connections>
                 </viewController>

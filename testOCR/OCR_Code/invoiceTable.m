@@ -1,4 +1,10 @@
 //
+//   _                 _         _____     _     _
+//  (_)_ ____   _____ (_) ___ __|_   _|_ _| |__ | | ___
+//  | | '_ \ \ / / _ \| |/ __/ _ \| |/ _` | '_ \| |/ _ \
+//  | | | | \ V / (_) | | (_|  __/| | (_| | |_) | |  __/
+//  |_|_| |_|\_/ \___/|_|\___\___||_|\__,_|_.__/|_|\___|
+//
 //  invoiceTable.m
 //  testOCR
 //
@@ -83,12 +89,12 @@
 } //end packInvoiceOids
 
 //=============(invoiceTable)=====================================================
--(void) readFromParse : (NSString *)vendor : (NSString *)instring
+-(void) readFromParse : (NSString *)vendor : (NSString *)invoiceNumberstring
 {
     [self setupVendorTableName:vendor];
     if (tableName.length < 1) return; //No table name!
     PFQuery *query = [PFQuery queryWithClassName:tableName];
-    [query whereKey:PInv_InvoiceNumber_key equalTo:instring];
+    [query whereKey:PInv_InvoiceNumber_key equalTo:invoiceNumberstring];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->iobjs removeAllObjects];
@@ -141,4 +147,27 @@
 } //end setBasicFields
 
 
+
+//=============OCR VC=====================================================
+// Hmm... to really dump we need data from exp to get full product info!
+-(void) dump
+{
+//    NSString *r = @"Invoice Parsed Results\n";
+//    r = [r stringByAppendingString:
+//         [NSString stringWithFormat:@"Supplier %@\n",invoiceSupplier]];
+//    r = [r stringByAppendingString:
+//         [NSString stringWithFormat: @"Number %d  Date %@\n",invoiceNumber,invoiceDate]];
+//    r = [r stringByAppendingString:
+//         [NSString stringWithFormat:@"Customer %@  Total %f\n",invoiceCustomer,invoiceTotal]];
+//    r = [r stringByAppendingString:
+//         [NSString stringWithFormat:@"Columns:%@\n",columnHeaders]];
+//    r = [r stringByAppendingString:@"Invoice Rows:\n"];
+//    for (NSString *rowi in rowItems)
+//    {
+//        r = [r stringByAppendingString:[NSString stringWithFormat:@"[%@]\n",rowi]];
+//    }
+//    NSLog(@"dump[%@]",r);
+//    [self alertMessage:@"Invoice Dump" :r];
+    
+}
 @end

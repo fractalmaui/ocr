@@ -14,22 +14,11 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "OCRCategories.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 
-#define BEVERAGE_CATEGORY @"BEVERAGE"
-#define BREAD_CATEGORY @"BREAD"
-#define DAIRY_CATEGORY @"DAIRY"
-#define DRY_GOODS_CATEGORY @"DRY GOODS"
-#define EQUIPMENT_CATEGORY @"EQUIPMENT"
-#define MISC_CATEGORY @"MISC"
-#define PAPER_GOODS_CATEGORY @"PAPER GOODS"
-#define PROTEIN_CATEGORY @"PROTEIN"
-#define PRODUCE_CATEGORY @"PRODUCE"
-#define SNACKS_CATEGORY @"SNACKS"
-#define SUPPLEMENTS_CATEGORY @"SUPPLEMENTS"
-#define SUPPLIES_CATEGORY @"SUPPLIES"
 
 
 #define ANALYZER_BAD_PRICE_COLUMNS 1001
@@ -60,6 +49,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *produceNames;
     NSArray *suppliesNames;
     NSDate* invoiceDate;
+    
+    OCRCategories* occ; //Categories / processed / local lookup table
 }
 //These props get set by analyze for public access...
 @property (nonatomic , strong) NSString* latestDateString;
