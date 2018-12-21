@@ -27,6 +27,7 @@
         documentsDirectory = [paths objectAtIndex:0];
         ocrBoxes      = [[NSMutableArray alloc] init];
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+        recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
 
         //[self dump];
     }
@@ -426,6 +427,27 @@
         }
     }];
 } //end readFromParse
+
+//=============(OCRTemplate)=====================================================
+-(void) readFromParseAsStrings
+{
+    PFQuery *query = [PFQuery queryWithClassName:@"templates"];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->recordStrings removeAllObjects];
+            for( PFObject *pfo in objects) //Should only be one?
+            {
+                NSString *v  = [pfo objectForKey:@"vendor"];
+                NSString *ps = [pfo objectForKey:@"packedString"];
+                NSString *s = [NSString stringWithFormat:@"Vendor:%@:%@",v,ps];
+                [self->recordStrings addObject:s];
+            }
+            [self.delegate didReadTemplateTableAsStrings : self->recordStrings];
+        }
+    }];
+
+}
+
 
 // Saves a new record...
 //=============(OCRTemplate)=====================================================

@@ -9,8 +9,12 @@
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
 #import "SessionManager.h"
-
+#import <DropboxOSX/DropboxOSX.h>
+#import <WebKit/WebKit.h>
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
+{
+    DBRestClient *restClient;
+}
 
 @property (strong, nonatomic) UIWindow *window;
 

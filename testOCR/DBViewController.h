@@ -26,11 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 #define DB_MODE_NONE 200
 #define DB_MODE_EXP 201
 #define DB_MODE_INVOICE 202
+#define DB_MODE_TEMPLATE 203
 
-@interface DBViewController : UIViewController <invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource>
+@interface DBViewController : UIViewController <OCRTemplateDelegate,invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource>
 {
     invoiceTable *it;
     EXPTable *et;
+    OCRTemplate *ot;
     
     NSMutableArray *dbResults;
     NSString *vendor;
@@ -39,8 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
-
 @property (weak, nonatomic) IBOutlet UITableView *table;
+
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)menuSelect:(id)sender;
 

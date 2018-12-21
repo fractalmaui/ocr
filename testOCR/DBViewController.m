@@ -25,8 +25,8 @@
     if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
     
 //    od = [[OCRDocument alloc] init];
-//    ot = [[OCRTemplate alloc] init];
-//    ot.delegate = self;
+    ot = [[OCRTemplate alloc] init];
+    ot.delegate = self;
     
     it = [[invoiceTable alloc] init];
     it.delegate = self;
@@ -95,6 +95,10 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self promptForInvoiceVendor];
                                                           }];
+    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load Templates Table...",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self loadTemplates];
+                                                          }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -102,7 +106,7 @@
     [alert addAction:firstAction];
     [alert addAction:secondAction];
     [alert addAction:thirdAction];
-//    [alert addAction:fourthAction];
+    [alert addAction:fourthAction];
 //    [alert addAction:fifthAction];
 //    [alert addAction:sixthAction];
 //    [alert addAction:seventhAction];
@@ -226,6 +230,16 @@
     [self updateUI];
 }
 
+//=============DB VC=====================================================
+-(void) loadTemplates
+{
+    tableName = @"Templates";
+    vendor = @"All Vendors";
+    dbMode = DB_MODE_TEMPLATE;
+    [ot readFromParseAsStrings];
+    [self updateUI];
+}
+
 
 
 //=============DB VC=====================================================
@@ -263,6 +277,8 @@
         c  = [UIColor yellowColor];
     else if (dbMode == DB_MODE_INVOICE)
         c  = [UIColor cyanColor];
+    else if (dbMode == DB_MODE_TEMPLATE)
+        c  = [UIColor greenColor];
 
     cell.backgroundColor  = c;
     cell.textLabel.text = [dbResults objectAtIndex:row];
@@ -291,6 +307,16 @@
 - (void)didReadInvoiceTableAsStrings : (NSMutableArray*)a
 {
     NSLog(@" dri");
+    dbResults = a;
+    [_table reloadData];
+
+}
+
+#pragma mark - OCRTemplateDelegate
+
+//=============DB VC=====================================================
+- (void)didReadTemplateTableAsStrings : (NSMutableArray*) a
+{
     dbResults = a;
     [_table reloadData];
 

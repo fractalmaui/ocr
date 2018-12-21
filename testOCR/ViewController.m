@@ -43,7 +43,7 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 1;
+    docnum = 2;
     OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];

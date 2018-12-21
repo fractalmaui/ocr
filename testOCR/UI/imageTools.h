@@ -32,9 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
     int ix1,ix2,iy1,iy2;  //Image corners in pixels
 
 }
--(void) deskew : (UIImage *)workImage;
 
+@property (nonatomic, assign) double skewAngleFound;
+
+-(void) deskew : (UIImage *)workImage;
 -(void) findCorners : (UIImage *)workImage;
+- (UIImage *)imageRotatedByRadians:(CGFloat)radians img:(UIImage *)img;
 
 @end
 

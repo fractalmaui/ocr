@@ -16,6 +16,7 @@
 		7206009F21B640E2000B26DC /* hawaiiBeefInvoice.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7206009E21B640E2000B26DC /* hawaiiBeefInvoice.jpg */; };
 		720600A121B6487E000B26DC /* hfm.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 720600A021B6487D000B26DC /* hfm.jpg */; };
 		720600A321B64AA0000B26DC /* cocacola.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 720600A221B64AA0000B26DC /* cocacola.jpg */; };
+		7207078621CD88EE00DB8CAD /* tgrid50.png in Resources */ = {isa = PBXBuildFile; fileRef = 7207078521CD88EE00DB8CAD /* tgrid50.png */; };
 		7209608921B7FBB000D49C63 /* OCRWord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608821B7FBB000D49C63 /* OCRWord.m */; };
 		7209608C21B8164F00D49C63 /* imageTools.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608B21B8164F00D49C63 /* imageTools.m */; };
 		7209608F21B8173200D49C63 /* OCRDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608E21B8173200D49C63 /* OCRDocument.m */; };
@@ -57,12 +58,15 @@
 		729B7A3E21C886590075486C /* invoiceTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 729B7A3D21C886590075486C /* invoiceTable.m */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
+		72A9828921CCAC7400D5EAC6 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A9828821CCAC7300D5EAC6 /* WebKit.framework */; };
 		72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB121C370FB004ADD79 /* hfm90.jpg */; };
 		72B8DEBD21C4642F004ADD79 /* MagnifierView.m in Sources */ = {isa = PBXBuildFile; fileRef = 72B8DEBB21C4642E004ADD79 /* MagnifierView.m */; };
 		72B8DEC021C46459004ADD79 /* magtarg.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBE21C46459004ADD79 /* magtarg.png */; };
 		72B8DEC121C46459004ADD79 /* loupe-mask@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */; };
+		72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */; };
 		72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 72CA1A6921CADE7200F908A0 /* SessionManager.m */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
+		72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */; };
 		72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72ECD04521C88A1000DBD08E /* invoiceObject.m */; };
 /* End PBXBuildFile section */
 
@@ -80,6 +84,7 @@
 		7206009E21B640E2000B26DC /* hawaiiBeefInvoice.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = hawaiiBeefInvoice.jpg; path = "New Group/hawaiiBeefInvoice.jpg"; sourceTree = SOURCE_ROOT; };
 		720600A021B6487D000B26DC /* hfm.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = hfm.jpg; path = "New Group/hfm.jpg"; sourceTree = SOURCE_ROOT; };
 		720600A221B64AA0000B26DC /* cocacola.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = cocacola.jpg; path = "New Group/cocacola.jpg"; sourceTree = SOURCE_ROOT; };
+		7207078521CD88EE00DB8CAD /* tgrid50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = tgrid50.png; path = Resources/tgrid50.png; sourceTree = SOURCE_ROOT; };
 		7209608721B7FBB000D49C63 /* OCRWord.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRWord.h; sourceTree = "<group>"; };
 		7209608821B7FBB000D49C63 /* OCRWord.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRWord.m; sourceTree = "<group>"; };
 		7209608A21B8164F00D49C63 /* imageTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imageTools.h; sourceTree = "<group>"; };
@@ -94,6 +99,7 @@
 		7209609A21B81FB900D49C63 /* OCRTemplate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRTemplate.m; sourceTree = "<group>"; };
 		7209609C21B81FDC00D49C63 /* OCRBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRBox.h; sourceTree = "<group>"; };
 		7209609D21B81FDC00D49C63 /* OCRBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRBox.m; sourceTree = "<group>"; };
+		720C17B821CCC1150059CA2D /* AddTemplateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AddTemplateViewController.h; sourceTree = "<group>"; };
 		72183DEC21C5FA86005627AB /* squareMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = squareMask.png; path = Resources/squareMask.png; sourceTree = SOURCE_ROOT; };
 		721D9C1E21CB11DA00D1E78A /* OCRCategories.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRCategories.h; sourceTree = "<group>"; };
 		721D9C1F21CB122F00D1E78A /* OCRCategories.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCategories.m; sourceTree = "<group>"; };
@@ -136,14 +142,17 @@
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
 		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
 		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		72A9828821CCAC7300D5EAC6 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		72B8DEB121C370FB004ADD79 /* hfm90.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = hfm90.jpg; sourceTree = "<group>"; };
 		72B8DEBB21C4642E004ADD79 /* MagnifierView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MagnifierView.m; path = testOCR/UI/MagnifierView.m; sourceTree = SOURCE_ROOT; };
 		72B8DEBC21C4642E004ADD79 /* MagnifierView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MagnifierView.h; path = testOCR/UI/MagnifierView.h; sourceTree = SOURCE_ROOT; };
 		72B8DEBE21C46459004ADD79 /* magtarg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = magtarg.png; path = Resources/magtarg.png; sourceTree = SOURCE_ROOT; };
 		72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "loupe-mask@2x.png"; path = "Resources/loupe-mask@2x.png"; sourceTree = SOURCE_ROOT; };
+		72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = emptyDoc.jpg; sourceTree = "<group>"; };
 		72CA1A6821CADE1300F908A0 /* SessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SessionManager.h; sourceTree = "<group>"; };
 		72CA1A6921CADE7200F908A0 /* SessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionManager.m; sourceTree = "<group>"; };
 		72E5D31021B6DE4C005AF869 /* txt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = txt; sourceTree = "<group>"; };
+		72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AddTemplateViewController.m; sourceTree = "<group>"; };
 		72ECD04421C88A1000DBD08E /* invoiceObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invoiceObject.h; sourceTree = "<group>"; };
 		72ECD04521C88A1000DBD08E /* invoiceObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = invoiceObject.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -153,6 +162,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72A9828921CCAC7400D5EAC6 /* WebKit.framework in Frameworks */,
 				729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */,
 				722E090321BF50BF00BBD88D /* ParseUI.framework in Frameworks */,
 				722E08FB21BF506200BBD88D /* libsqlite3.tbd in Frameworks */,
@@ -197,6 +207,8 @@
 				7283813521C4A60000A2954B /* MainVC.m */,
 				7206008B21B64052000B26DC /* ViewController.h */,
 				7206008C21B64052000B26DC /* ViewController.m */,
+				720C17B821CCC1150059CA2D /* AddTemplateViewController.h */,
+				72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */,
 				725DA97B21CB53BC0024ECF7 /* DBViewController.h */,
 				725DA97C21CB53BC0024ECF7 /* DBViewController.m */,
 				7206008E21B64052000B26DC /* Main.storyboard */,
@@ -217,6 +229,8 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7207078521CD88EE00DB8CAD /* tgrid50.png */,
+				72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */,
 				7283813221C4A54500A2954B /* binonion.png */,
 				7283812E21C4A3FD00A2954B /* gearHOT.png */,
 				7283812F21C4A3FD00A2954B /* gearNOT.png */,
@@ -248,6 +262,7 @@
 		722E08F121BF504700BBD88D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				72A9828821CCAC7300D5EAC6 /* WebKit.framework */,
 				729C592E21C1F62400F4C695 /* MessageUI.framework */,
 				722E08FC21BF50BE00BBD88D /* Bolts.framework */,
 				722E08FE21BF50BE00BBD88D /* Parse.framework */,
@@ -364,6 +379,7 @@
 				7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */,
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
 				7209609721B81E6B00D49C63 /* arrUp.png in Resources */,
+				72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */,
 				7283813021C4A3FD00A2954B /* gearHOT.png in Resources */,
 				72B8DEC021C46459004ADD79 /* magtarg.png in Resources */,
 				7209609521B81E6B00D49C63 /* arrRight.png in Resources */,
@@ -373,6 +389,7 @@
 				7283812C21C4A36200A2954B /* dbHOT.png in Resources */,
 				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
 				72E5D31121B6DE4C005AF869 /* txt in Resources */,
+				7207078621CD88EE00DB8CAD /* tgrid50.png in Resources */,
 				724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */,
 				720600A321B64AA0000B26DC /* cocacola.jpg in Resources */,
 				7283813121C4A3FD00A2954B /* gearNOT.png in Resources */,
@@ -411,6 +428,7 @@
 				721D9C2421CB13E500D1E78A /* CatObject.m in Sources */,
 				72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */,
 				72435B3421C8C7C600620F4B /* EXPObject.m in Sources */,
+				72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */,
 				7283813621C4A60000A2954B /* MainVC.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,

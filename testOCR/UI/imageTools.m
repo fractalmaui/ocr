@@ -17,7 +17,7 @@
 
 @implementation imageTools
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(UIImage *)convertOriginalImageToBWImage:(UIImage *)originalImage
 {
     UIImage *newImage;
@@ -44,7 +44,7 @@
     return newImage;
 }
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(UIImage*)getHiContrast:(UIImage*)inputImage
 {
     CIImage *coreImage = [[CIImage alloc] init];
@@ -66,7 +66,7 @@
 }
 
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(int) findLHEdge : (int) row
 {
     int ptr = 4 * iwid * row; //RGB or RGBA?
@@ -91,7 +91,7 @@
     return -1;
 }
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 // Find 3 dark pixels in a row...
 -(BOOL) isItDark : (const UInt8*) idata : (int) ptr : (int) thresh
 {
@@ -102,7 +102,7 @@
     return (r1 < thresh && r2 < thresh && r3 < thresh);
 }
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(int) scanRowLToR : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
 {
     for (int i=0;i<wid;i++)
@@ -113,7 +113,7 @@
     return -1;
 }
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(int) scanRowLToRLite : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
 {
     for (int i=0;i<wid;i++)
@@ -129,7 +129,7 @@
 }
 
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(int) scanRowRToL : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
 {
     for (int i=0;i<wid;i++)
@@ -142,7 +142,7 @@
 
 
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(void) findCorners : (UIImage *)workImage
 {
     int x1,y1,x2,y2;
@@ -205,7 +205,7 @@
 } //end findCorners
 
 
-//=============OCR Tester=====================================================
+//=============(imageTools)=====================================================
 -(UIImage *) deskew : (UIImage *)workImage
 {
     pixelData = CGDataProviderCopyData(CGImageGetDataProvider(workImage.CGImage));
@@ -315,6 +315,7 @@
     double ddx = (double)(ebin - sbin);
     double ddy = (double)(bins[ebin] - bins[sbin]);
     double angle2 = atan2f(ddy, ddx);
+    _skewAngleFound = angle2;
     //float adeg  = 360.0 * (angle / (2 * 3.14159));
     NSLog(@"  dxy %f %f : skew %f deg %f",ddx,ddy,angle2,180.0 * angle2 / 3.141592627);
     // Rotates in place?
@@ -323,6 +324,7 @@
 } //end deskew
 
 
+//=============(imageTools)=====================================================
 - (UIImage *)imageRotatedByRadians:(CGFloat)radians img:(UIImage *)img
 {
     // calculate the size of the rotated view's containing box for our drawing space

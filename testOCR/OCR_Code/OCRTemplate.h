@@ -33,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
     //Comes from templated document (original)
     CGRect tlDocRect,trDocRect;
     NSString *documentsDirectory;
+    
+    NSMutableArray *recordStrings;
+
 }
 
 #define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"
@@ -75,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) saveTemplatesToDisk : (NSString *)vendorName;
 -(void) saveToParse   : (NSString *)vendorName;
 -(void) readFromParse : (NSString *)vendorName;
+-(void) readFromParseAsStrings ;
 -(BOOL) gotFieldAlready : (NSString*)fname;
 -(int) hitField :(int) tx : (int) ty;
 @end
@@ -85,6 +89,7 @@ NS_ASSUME_NONNULL_END
 @required
 @optional
 - (void)didReadTemplate;
+- (void)didReadTemplateTableAsStrings : (NSMutableArray*) a;
 - (void)didSaveTemplate;
 @end
 

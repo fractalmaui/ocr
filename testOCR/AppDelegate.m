@@ -11,7 +11,9 @@
 
 #import "AppDelegate.h"
 
-@interface AppDelegate ()
+@interface AppDelegate () <DBRestClientDelegate>
+
+- (DBRestClient *)restClient;
 
 @end
 
@@ -27,6 +29,16 @@
         configuration.server        = @"https://pg-app-jhg70nkxzqetipfyic66ks9q3kq41y.scalabl.cloud/1/";
         NSLog(@" parse DB at sashido.io connected");
     }]];
+    
+    //Dropbox?
+//    NSString *appKey = @"ltqz6bwzqfskfwj";
+//    NSString *appSecret = @"c07h4ulunlzdgrt";
+//    NSString *root = nil; // Should be either kDBRootDropbox or kDBRootAppFolder
+//    DBSession *session = [[DBSession alloc] initWithAppKey:appKey appSecret:appSecret root:root];
+//    [DBSession setSharedSession:session];
+
+    
+//    [DBClientsManager setupWithAppKey:@"<APP_KEY>"];
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 

@@ -69,7 +69,7 @@
 
 
 
-    [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+    [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0
@@ -134,7 +134,13 @@
     {
         NSLog(@"db");
         [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
-
+        
+    }
+    else if (which == 2) //TEST
+    {
+        NSLog(@"test");
+        [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
+        
     }
     if (which == 3) //THis is now a multi-function popup...
     {
