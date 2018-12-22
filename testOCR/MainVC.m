@@ -60,7 +60,6 @@
     viewW2  = viewWid/2;
     viewH2  = viewHit/2;
     
-    
 }
 //==========feedVC=================================================================
 - (void)viewDidAppear:(BOOL)animated {
@@ -69,15 +68,15 @@
 
 
 
-    [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
+   // [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0
 #define NAV_DB_BUTTON 1
 #define NAV_SETTINGS_BUTTON 2
-#define NAV_SETTINGS2_BUTTON 3
+#define NAV_BATCH_BUTTON 3
 
-//==========FeedVC=========================================================================
+//=============OCR VC=====================================================
 -(void) setupNavBar
 {
     // Menu Button...
@@ -100,11 +99,11 @@
     [nav setLabelTextColor : NAV_SETTINGS_BUTTON : [UIColor blackColor]];
     [nav setHidden         : NAV_SETTINGS_BUTTON : FALSE]; //10/16 show create even logged out...
 
-    [nav setHotNot         : NAV_SETTINGS2_BUTTON : [UIImage imageNamed:@"gearHOT"]  :
-     [UIImage imageNamed:@"gearNOT"] ];
-    [nav setLabelText      : NAV_SETTINGS2_BUTTON : NSLocalizedString(@"Settings",nil)];
-    [nav setLabelTextColor : NAV_SETTINGS2_BUTTON : [UIColor blackColor]];
-    [nav setHidden         : NAV_SETTINGS2_BUTTON : FALSE]; //10/16 show create even logged out...
+    [nav setHotNot         : NAV_BATCH_BUTTON : [UIImage imageNamed:@"multiNOT"]  :
+     [UIImage imageNamed:@"multiHOT"] ];
+    [nav setLabelText      : NAV_BATCH_BUTTON : NSLocalizedString(@"Batch",nil)];
+    [nav setLabelTextColor : NAV_BATCH_BUTTON : [UIColor blackColor]];
+    [nav setHidden         : NAV_BATCH_BUTTON : FALSE]; //10/16 show create even logged out...
 
     [nav setSolidBkgdColor:[UIColor whiteColor] :1];
     
@@ -112,6 +111,31 @@
     //    vn = [[UIVersionNumber alloc] initWithPlacement:UI_VERSIONNUMBER_TOPRIGHT];
     //    [nav addSubview:vn];
     
+}
+
+
+//=============OCR VC=====================================================
+-(void) testBatchShite
+{
+    if ([DBClientsManager authorizedClient] || [DBClientsManager authorizedTeamClient])
+    {
+        NSLog(@" dropbox authorized...");
+        DropboxTools *dbt = [DropboxTools sharedInstance];
+        [dbt setParent:self];
+        [dbt getBatchList];
+    }
+    else
+    {
+        NSLog(@" need to be authorized...");
+        [DBClientsManager authorizeFromController:[UIApplication sharedApplication]
+                                       controller:self
+                                          openURL:^(NSURL *url) {
+                                              [[UIApplication sharedApplication] openURL:url];
+                                          }];
+        
+    }
+    
+
 }
 
 
@@ -136,16 +160,19 @@
         [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
         
     }
-    else if (which == 2) //TEST
+    else if (which == 2) //Templates / settings?
     {
         NSLog(@"test");
-        [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
+        [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+//        [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
         
     }
-    if (which == 3) //THis is now a multi-function popup...
+    if (which == 3) //batch
     {
-        NSLog(@"settings");
-        [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+        NSLog(@"batch");
+        [self testBatchShite];
+        
+      //  [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
         
     }
 

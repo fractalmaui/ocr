@@ -11,9 +11,7 @@
 
 #import "AppDelegate.h"
 
-@interface AppDelegate () <DBRestClientDelegate>
-
-- (DBRestClient *)restClient;
+@interface AppDelegate () 
 
 @end
 
@@ -31,13 +29,16 @@
     }]];
     
     //Dropbox?
-//    NSString *appKey = @"ltqz6bwzqfskfwj";
-//    NSString *appSecret = @"c07h4ulunlzdgrt";
-//    NSString *root = nil; // Should be either kDBRootDropbox or kDBRootAppFolder
-//    DBSession *session = [[DBSession alloc] initWithAppKey:appKey appSecret:appSecret root:root];
-//    [DBSession setSharedSession:session];
-
-    
+    NSString *appKey = @"ltqz6bwzqfskfwj";
+    NSString *registeredUrlToHandle = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"][0][@"CFBundleURLSchemes"][0];
+    if (!appKey || [registeredUrlToHandle containsString:@"<"]) {
+        NSString *message = @"You need to set `appKey` variable in `AppDelegate.m`, as well as add to `Info.plist`, before you can use DBRoulette.";
+        NSLog(@"%@", message);
+        NSLog(@"Terminating...");
+        exit(1);
+    }
+    [DBClientsManager setupWithAppKey:appKey];
+    NSLog(@" ...logged into dropbox...");
 //    [DBClientsManager setupWithAppKey:@"<APP_KEY>"];
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
@@ -75,6 +76,24 @@
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(NSString *)identifier completionHandler:(void (^)())completionHandler {
     [SessionManager sharedSession].savedCompletionHandler = completionHandler;
+}
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    DBOAuthResult *authResult = [DBClientsManager handleRedirectURL:url];
+    if (authResult != nil) {
+        if ([authResult isSuccess]) {
+            NSLog(@"Success! User is logged into Dropbox.");
+            UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
+            _authSuccessful = YES;
+            return YES;
+        } else if ([authResult isCancel]) {
+            NSLog(@"Authorization flow was manually canceled by user!");
+        } else if ([authResult isError]) {
+            NSLog(@"Error: %@", authResult);
+        }
+    }
+    
+    return NO;
 }
 
 @end

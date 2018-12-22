@@ -426,11 +426,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "testOCR/MainVC.m"
-            timestampString = "567113842.502106"
+            timestampString = "567135153.403603"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "84"
-            endingLineNumber = "84"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
             landmarkName = "-setupNavBar"
             landmarkType = "7">
          </BreakpointContent>
@@ -1034,7 +1034,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "testOCR/OCR_Code/OCRCategories.m"
-            timestampString = "566980195.433971"
+            timestampString = "567133305.326242"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "87"
@@ -1050,7 +1050,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "testOCR/OCR_Code/OCRCategories.m"
-            timestampString = "566980195.434078"
+            timestampString = "567133305.326358"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "69"
@@ -1278,7 +1278,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "220"
             endingLineNumber = "220"
-            landmarkName = "-updateUI"
+            landmarkName = "-dismiss"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1294,7 +1294,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "396"
             endingLineNumber = "396"
-            landmarkName = "-cSliderChanged:"
+            landmarkName = "-bSliderChanged:"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1310,7 +1310,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "385"
             endingLineNumber = "385"
-            landmarkName = "-bSliderChanged:"
+            landmarkName = "-getProcessedImageBkgd"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -1374,7 +1374,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "217"
             endingLineNumber = "217"
-            landmarkName = "-updateUI"
+            landmarkName = "-dismiss"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

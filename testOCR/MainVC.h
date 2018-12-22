@@ -9,6 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "NavButtons.h"
 #import "SessionManager.h"
+#import "DropboxTools.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
