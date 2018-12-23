@@ -31,7 +31,17 @@
 #define PInv_Date_key @"Date"
 #define PInv_LineNumber_key @"LineNumber"
 #define PInv_InvoiceNumber_key @"InvoiceNumber"
+#define PInv_Batch_key @"Batch"
+#define PInv_ErrStatus_key @"ErrStatus"
+#define PInv_PDFFile_key @"PDFFile"
+
+
+
+
+
 #define PInv_VersionNumber @"versionNumber"
+#define PInv_ActivityType @"ActivityType"
+#define PInv_ActivityData @"ActivityData"
 
 //Invoice table items...
 #define PInv_EXPObjectID_key @"EXPObjectID"

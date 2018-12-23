@@ -140,8 +140,8 @@
         int lilys = 9;
         int lilyi;
         //DHS 2/9/18 handle iphoneX
-        if (iphoneX) lilyi = fieldWid - 2.4*lilys;
-        else         lilyi = fieldWid - 1.4*lilys;
+        if (iphoneX) lilyi = fieldWid - 2.2*lilys;
+        else         lilyi = fieldWid - 1.6*lilys;
         labelArray[i] = [[UILabel alloc] initWithFrame:  CGRectMake(0,lilyi,fieldWid,lilys)];
         [labelArray[i] setFont:[UIFont fontWithName:defaultFont size:1*lilys]];
         labelArray[i].text            = @"";

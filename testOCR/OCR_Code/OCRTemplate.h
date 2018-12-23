@@ -89,6 +89,7 @@ NS_ASSUME_NONNULL_END
 @required
 @optional
 - (void)didReadTemplate;
+- (void)errorReadingTemplate : (NSString *)errmsg;
 - (void)didReadTemplateTableAsStrings : (NSMutableArray*) a;
 - (void)didSaveTemplate;
 @end

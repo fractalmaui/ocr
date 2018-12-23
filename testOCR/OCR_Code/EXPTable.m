@@ -39,7 +39,7 @@
 }
 
 //=============(EXPTable)=====================================================
--(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total
+-(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile
 {
     NSLog(@" addr.. %@",productName);
     EXPObject *exo = [[EXPObject alloc] init];
@@ -58,6 +58,10 @@
     exo.quantity = quantity;
     exo.pricePerUOM = pricePerUOM;
     exo.total = total;
+    exo.batch = batch;
+    exo.errStatus = errStatus;
+    exo.PDFFile = PDFFile;
+
     [expos addObject:exo];
     
 } //end addRecord
@@ -178,6 +182,9 @@
         exoRecord[PInv_Quantity_key]            = exo.quantity;;
         exoRecord[PInv_TotalPrice_key]          = exo.total;
         exoRecord[PInv_PricePerUOM_key]         = exo.pricePerUOM;
+        exoRecord[PInv_Batch_key]               = exo.batch;
+        exoRecord[PInv_ErrStatus_key]           = exo.errStatus;
+        exoRecord[PInv_PDFFile_key]             = exo.PDFFile;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
         NSLog(@" exp savetoParse...");
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {

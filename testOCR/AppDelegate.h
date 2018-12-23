@@ -11,6 +11,8 @@
 #import <Parse/Parse.h>
 #import "SessionManager.h"
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
+#import "Vendors.h"
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 {
 

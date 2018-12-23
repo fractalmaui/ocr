@@ -40,11 +40,6 @@
     return self;
 }
 
-
-
-
-
-
 //=============DB VC=====================================================
 - (void)viewDidLoad {
     [super viewDidLoad];

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		20899A2B70E61B4FE406FEEF /* libPods-testOCR.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D64CF6F8DED5B2240FC357AE /* libPods-testOCR.a */; };
 		7206008A21B64052000B26DC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7206008921B64052000B26DC /* AppDelegate.m */; };
-		7206008D21B64052000B26DC /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7206008C21B64052000B26DC /* ViewController.m */; };
+		7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7206008C21B64052000B26DC /* EditTemplateVC.m */; };
 		7206009021B64052000B26DC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7206008E21B64052000B26DC /* Main.storyboard */; };
 		7206009221B64055000B26DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7206009121B64055000B26DC /* Assets.xcassets */; };
 		7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7206009321B64055000B26DC /* LaunchScreen.storyboard */; };
@@ -45,6 +45,7 @@
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
+		725662E621CDF8D200295F44 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 725662E421CDF8D200295F44 /* Vendors.m */; };
 		725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* DBViewController.m */; };
 		7283812021C4A17300A2954B /* NavButtons.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283811E21C4A17300A2954B /* NavButtons.m */; };
 		7283812A21C4A36200A2954B /* dbNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812621C4A36100A2954B /* dbNOT.png */; };
@@ -63,6 +64,10 @@
 		72B8DEBD21C4642F004ADD79 /* MagnifierView.m in Sources */ = {isa = PBXBuildFile; fileRef = 72B8DEBB21C4642E004ADD79 /* MagnifierView.m */; };
 		72B8DEC021C46459004ADD79 /* magtarg.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBE21C46459004ADD79 /* magtarg.png */; };
 		72B8DEC121C46459004ADD79 /* loupe-mask@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */; };
+		72BA4D2521CE175000F432E9 /* BatchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4D2421CE175000F432E9 /* BatchViewController.m */; };
+		72BA4D2821CEFC0100F432E9 /* ActivityTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4D2721CEFC0100F432E9 /* ActivityTable.m */; };
+		72BA4D2B21CF52B600F432E9 /* BatchObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4D2A21CF52B600F432E9 /* BatchObject.m */; };
+		72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */; };
 		72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */; };
 		72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 72CA1A6921CADE7200F908A0 /* SessionManager.m */; };
 		72DB331C21CDC14600AA44C0 /* multiNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 72DB331A21CDC14500AA44C0 /* multiNOT.png */; };
@@ -79,8 +84,8 @@
 		7206008521B64052000B26DC /* testOCR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testOCR.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7206008821B64052000B26DC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7206008921B64052000B26DC /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		7206008B21B64052000B26DC /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		7206008C21B64052000B26DC /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		7206008B21B64052000B26DC /* EditTemplateVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EditTemplateVC.h; sourceTree = "<group>"; };
+		7206008C21B64052000B26DC /* EditTemplateVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EditTemplateVC.m; sourceTree = "<group>"; };
 		7206008F21B64052000B26DC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		7206009121B64055000B26DC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7206009421B64055000B26DC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -128,6 +133,8 @@
 		72435B3821C8E01200620F4B /* cal_kona.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cal_kona.jpg; sourceTree = "<group>"; };
 		72435B3A21C96E8E00620F4B /* loves.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = loves.jpg; sourceTree = "<group>"; };
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
+		725662E421CDF8D200295F44 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m; sourceTree = "<absolute>"; };
+		725662E521CDF8D200295F44 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h; sourceTree = "<absolute>"; };
 		725DA97B21CB53BC0024ECF7 /* DBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBViewController.h; sourceTree = "<group>"; };
 		725DA97C21CB53BC0024ECF7 /* DBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBViewController.m; sourceTree = "<group>"; };
 		7283811E21C4A17300A2954B /* NavButtons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavButtons.m; sourceTree = "<group>"; };
@@ -152,6 +159,14 @@
 		72B8DEBC21C4642E004ADD79 /* MagnifierView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MagnifierView.h; path = testOCR/UI/MagnifierView.h; sourceTree = SOURCE_ROOT; };
 		72B8DEBE21C46459004ADD79 /* magtarg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = magtarg.png; path = Resources/magtarg.png; sourceTree = SOURCE_ROOT; };
 		72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "loupe-mask@2x.png"; path = "Resources/loupe-mask@2x.png"; sourceTree = SOURCE_ROOT; };
+		72BA4D2321CE175000F432E9 /* BatchViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BatchViewController.h; sourceTree = "<group>"; };
+		72BA4D2421CE175000F432E9 /* BatchViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BatchViewController.m; sourceTree = "<group>"; };
+		72BA4D2621CEFC0100F432E9 /* ActivityTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ActivityTable.h; sourceTree = "<group>"; };
+		72BA4D2721CEFC0100F432E9 /* ActivityTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ActivityTable.m; sourceTree = "<group>"; };
+		72BA4D2921CF52B600F432E9 /* BatchObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BatchObject.h; sourceTree = "<group>"; };
+		72BA4D2A21CF52B600F432E9 /* BatchObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BatchObject.m; sourceTree = "<group>"; };
+		72BA4D2C21CF644A00F432E9 /* OCRTopObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRTopObject.h; sourceTree = "<group>"; };
+		72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRTopObject.m; sourceTree = "<group>"; };
 		72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = emptyDoc.jpg; sourceTree = "<group>"; };
 		72CA1A6821CADE1300F908A0 /* SessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SessionManager.h; sourceTree = "<group>"; };
 		72CA1A6921CADE7200F908A0 /* SessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionManager.m; sourceTree = "<group>"; };
@@ -213,12 +228,18 @@
 			children = (
 				7206008821B64052000B26DC /* AppDelegate.h */,
 				7206008921B64052000B26DC /* AppDelegate.m */,
-				72DB331E21CDC35F00AA44C0 /* DropboxTools.h */,
-				72DB331F21CDC35F00AA44C0 /* DropboxTools.m */,
 				7283813421C4A60000A2954B /* MainVC.h */,
 				7283813521C4A60000A2954B /* MainVC.m */,
-				7206008B21B64052000B26DC /* ViewController.h */,
-				7206008C21B64052000B26DC /* ViewController.m */,
+				72BA4D2321CE175000F432E9 /* BatchViewController.h */,
+				72BA4D2421CE175000F432E9 /* BatchViewController.m */,
+				72BA4D2921CF52B600F432E9 /* BatchObject.h */,
+				72BA4D2A21CF52B600F432E9 /* BatchObject.m */,
+				72DB331E21CDC35F00AA44C0 /* DropboxTools.h */,
+				72DB331F21CDC35F00AA44C0 /* DropboxTools.m */,
+				72BA4D2C21CF644A00F432E9 /* OCRTopObject.h */,
+				72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */,
+				7206008B21B64052000B26DC /* EditTemplateVC.h */,
+				7206008C21B64052000B26DC /* EditTemplateVC.m */,
 				720C17B821CCC1150059CA2D /* AddTemplateViewController.h */,
 				72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */,
 				725DA97B21CB53BC0024ECF7 /* DBViewController.h */,
@@ -294,6 +315,8 @@
 		72724C6021C21D6F0043F49A /* OCR_Code */ = {
 			isa = PBXGroup;
 			children = (
+				72BA4D2621CEFC0100F432E9 /* ActivityTable.h */,
+				72BA4D2721CEFC0100F432E9 /* ActivityTable.m */,
 				721D9C2221CB13E500D1E78A /* CatObject.h */,
 				721D9C2321CB13E500D1E78A /* CatObject.m */,
 				72435B3221C8C7C600620F4B /* EXPObject.h */,
@@ -315,6 +338,8 @@
 				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
 				7209608721B7FBB000D49C63 /* OCRWord.h */,
 				7209608821B7FBB000D49C63 /* OCRWord.m */,
+				725662E521CDF8D200295F44 /* Vendors.h */,
+				725662E421CDF8D200295F44 /* Vendors.m */,
 			);
 			path = OCR_Code;
 			sourceTree = "<group>";
@@ -470,17 +495,22 @@
 				72B8DEBD21C4642F004ADD79 /* MagnifierView.m in Sources */,
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
-				7206008D21B64052000B26DC /* ViewController.m in Sources */,
+				72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */,
+				7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */,
 				7283812021C4A17300A2954B /* NavButtons.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,
 				7206008A21B64052000B26DC /* AppDelegate.m in Sources */,
+				72BA4D2B21CF52B600F432E9 /* BatchObject.m in Sources */,
+				72BA4D2521CE175000F432E9 /* BatchViewController.m in Sources */,
 				721D9C2021CB122F00D1E78A /* OCRCategories.m in Sources */,
 				729B7A3E21C886590075486C /* invoiceTable.m in Sources */,
+				72BA4D2821CEFC0100F432E9 /* ActivityTable.m in Sources */,
 				729C592C21C1D08900F4C695 /* smartProducts.m in Sources */,
 				721D9C2421CB13E500D1E78A /* CatObject.m in Sources */,
 				72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */,
 				72435B3421C8C7C600620F4B /* EXPObject.m in Sources */,
 				72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */,
+				725662E621CDF8D200295F44 /* Vendors.m in Sources */,
 				7283813621C4A60000A2954B /* MainVC.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,

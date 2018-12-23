@@ -1,9 +1,16 @@
 //
+//      _       _     _ _____                    _       _     __     ______
+//     / \   __| | __| |_   _|__ _ __ ___  _ __ | | __ _| |_ __\ \   / / ___|
+//    / _ \ / _` |/ _` | | |/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \ \ / / |
+//   / ___ \ (_| | (_| | | |  __/ | | | | | |_) | | (_| | ||  __/\ V /| |___
+//  /_/   \_\__,_|\__,_| |_|\___|_| |_| |_| .__/|_|\__,_|\__\___| \_/  \____|
+//                                        |_|
+//
 //  AddTemplateViewController.h
 //  testOCR
 //
 //  Created by Dave Scruton on 12/20/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

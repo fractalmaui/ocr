@@ -1,9 +1,16 @@
 //
+//   ____                  _               _____           _
+//  |  _ \ _ __ ___  _ __ | |__   _____  _|_   _|__   ___ | |___
+//  | | | | '__/ _ \| '_ \| '_ \ / _ \ \/ / | |/ _ \ / _ \| / __|
+//  | |_| | | | (_) | |_) | |_) | (_) >  <  | | (_) | (_) | \__ \
+//  |____/|_|  \___/| .__/|_.__/ \___/_/\_\ |_|\___/ \___/|_|___/
+//                  |_|
+//
 //  DropboxTools.m
 //  testOCR
 //
 //  Created by Dave Scruton on 12/21/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "DropboxTools.h"
@@ -31,13 +38,31 @@ static DropboxTools *sharedInstance = nil;
     {
         _batchFileList = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImages   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-//        [self loadCategoriesFile];
-        client = [DBClientsManager authorizedClient];
-
-        NSLog(@" dropbox tools created, client:%@",client);
+        client         = [DBClientsManager authorizedClient];
     }
     return self;
 }
+
+
+//=============(DropboxTools)=====================================================
+-(void) countEntries:(NSString *)batchFolder :(NSString *)vendorFolder
+{
+    NSLog(@" ce %@",vendorFolder);
+    NSString *searchPath = [NSString stringWithFormat:@"/%@/%@",batchFolder,vendorFolder];
+    [[client.filesRoutes listFolder:searchPath]
+     setResponseBlock:^(DBFILESListFolderResult *result, DBFILESListFolderError *routeError, DBRequestError *error) {
+         if (result) { //Only handle good folders
+             self->_entries = result.entries;
+             int count = (int)result.entries.count;
+             [self->_delegate didCountEntries:vendorFolder :count];
+         }
+         else
+         {
+             [self->_delegate didCountEntries:vendorFolder :0];
+         }
+     }];
+
+} //end countEntries
 
 //=============(DropboxTools)=====================================================
 -(void) setParent : (UIViewController*) p
@@ -45,19 +70,69 @@ static DropboxTools *sharedInstance = nil;
     parent = p;
 }
 
+
+//=============(DropboxTools)=====================================================
+// Must be able to handle multiple pages : adds to internal array...
+-(void)addImagesFromPDFData : (NSData *)fileData
+{
+    CFDataRef pdfData = (__bridge CFDataRef) fileData;
+    CGDataProviderRef provider = CGDataProviderCreateWithCFData(pdfData);
+    CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(provider);
+    if (pdf)
+    {
+        int pageCount = (int)CGPDFDocumentGetNumberOfPages(pdf);
+        NSLog(@" PDF has %d pages",pageCount);
+        for (int i = 1;i<=pageCount;i++) // loop over pages...
+        {
+            CGPDFPageRef PDFPage = CGPDFDocumentGetPage(pdf, i);
+            if (PDFPage)
+            {
+                UIImage *nextImage = nil;
+                // Determine the size of the PDF page.
+                CGRect pageRect = CGPDFPageGetBoxRect(PDFPage, kCGPDFMediaBox);
+                CGFloat PDFScale = 1.0; //view.frame.size.width/pageRect.size.width;
+                pageRect.size = CGSizeMake(pageRect.size.width*PDFScale, pageRect.size.height*PDFScale);
+                UIGraphicsBeginImageContext(pageRect.size);
+                
+                CGContextRef context = UIGraphicsGetCurrentContext();
+                
+                // First fill the background with white.
+                CGContextSetRGBFillColor(context, 1.0,1.0,1.0,1.0);
+                CGContextFillRect(context,pageRect);
+                
+                CGContextSaveGState(context);
+                // Flip the context so that the PDF page is rendered right side up.
+                CGContextTranslateCTM(context, 0.0, pageRect.size.height);
+                CGContextScaleCTM(context, 1.0, -1.0);
+                
+                // Scale the context so that the PDF page is rendered at the correct size for the zoom level.
+                CGContextScaleCTM(context, PDFScale,PDFScale);
+                CGContextDrawPDFPage(context, PDFPage);
+                CGContextRestoreGState(context);
+                
+                nextImage = UIGraphicsGetImageFromCurrentImageContext();
+                if (nextImage != nil)  [_batchImages addObject:nextImage];
+                if (i == pageCount) [self->_delegate didDownloadImages : self->_batchImages];
+            } //end pdfpage
+        } //end for i
+    }  //end if pdf
+} //end addImagesFromPDFData
+
 //=============(DropboxTools)=====================================================
 // Looks in default location for this app, we have ONLY one folder for now...
--(void) getBatchList
+-(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder
 {
-    NSString *searchPath = @"";
-    NSLog(@"  get batchList from DB");
+    NSString *searchPath = [NSString stringWithFormat:@"/%@/%@",batchFolder,vendorFolder]; //Prepend / to get subfolder
+    NSLog(@"  get batchList from DB [%@]",searchPath);
+    _prefix = searchPath;
     // list folder metadata contents (folder will be root "/" Dropbox folder if app has permission
     // "Full Dropbox" or "/Apps/<APP_NAME>/" if app has permission "App Folder").
     [[client.filesRoutes listFolder:searchPath]
      setResponseBlock:^(DBFILESListFolderResult *result, DBFILESListFolderError *routeError, DBRequestError *error) {
          if (result) {
-             
+             self->_entries = result.entries;
              [self loadBatchEntries :result.entries];
+             [self->_delegate didGetBatchList : result.entries];
          } else {
              NSString *title = @"";
              NSString *message = @"";
@@ -90,18 +165,10 @@ static DropboxTools *sharedInstance = nil;
                      message = [NSString stringWithFormat:@"%@", genericLocalError];
                  }
              }
-             NSLog(@"DROPBOX ERROR!!! [%@]",message);
-             //Put this into an error message somewhere
-//             UIAlertController *alertController =
-//             [UIAlertController alertControllerWithTitle:title
-//                                                 message:message
-//                                          preferredStyle:(UIAlertControllerStyle)UIAlertControllerStyleAlert];
-//             [alertController addAction:[UIAlertAction actionWithTitle:@"OK"
-//                                                                 style:(UIAlertActionStyle)UIAlertActionStyleCancel
-//                                                               handler:nil]];
-             //[self presentViewController:alertController animated:YES completion:nil];
-             
-           //  [self setFinished];
+             [self errMsg:@"Dropbox read error" :message];
+             [self->_delegate errorGettingBatchList : message];
+
+             //  [self setFinished];
          }
      }];
 }
@@ -117,7 +184,7 @@ static DropboxTools *sharedInstance = nil;
 //=============(DropboxTools)=====================================================
 -(void) loadBatchEntries : (NSArray *)folderEntries
 {
-    NSLog(@" entries %@",folderEntries);
+    //NSLog(@" entries %@",folderEntries);
     NSMutableArray<NSString *> *imagePaths = [NSMutableArray new];
     [_batchFileList removeAllObjects];
     for (DBFILESMetadata *entry in folderEntries) {
@@ -127,44 +194,38 @@ static DropboxTools *sharedInstance = nil;
             [_batchFileList addObject:entry.pathDisplay];
         }
     }
-//    if ([imagePaths count] > 0) {
-//        NSString *imagePathToDownload = imagePaths[arc4random_uniform((int)[imagePaths count] - 1)];
-//        [self downloadImage:imagePathToDownload];
-//    } else {
-//        NSLog(@" no entries found!");
-//    }
-    NSLog(@" loaded %d entries",(int)_batchFileList.count);
+    //Make this an error message!
+    if ([imagePaths count] == 0)
+    {
+        [self errMsg:@"Error loading batch list" :@" no entries found!"];
+        NSLog(@" no entries found!");
+    }
+    //NSLog(@" loaded %d entries",(int)_batchFileList.count);
 } //end loadBatchEntries
 
 
 //=============(DropboxTools)=====================================================
-- (void)downloadImage:(NSString *)imagePath {
+- (void)downloadImages:(NSString *)imagePath
+{
     DBUserClient *client = [DBClientsManager authorizedClient];
     NSLog(@" dload image %@",imagePath);
     
-    
+    [_batchImages removeAllObjects];
     [[client.filesRoutes downloadData:imagePath]
      setResponseBlock:^(DBFILESFileMetadata *result, DBFILESDownloadError *routeError, DBRequestError *error, NSData *fileData) {
          if (result) {
-             UIImageView *imageView;
+             UIImage *nextImage;
              //Got a PDF?
              if ([imagePath.lowercaseString containsString:@"pdf"])
              {
-                 UIImage *pimage = [self getImageFromPDFData:fileData];
-                 
-//                 imageView = [[UIImageView alloc] initWithImage:pimage];
-                 
+                 [self addImagesFromPDFData:fileData]; //May add more than one image!
              } //end .pdf string
-//             else //Non-pdf
-//             {
-//                 imageView = [[UIImageView alloc] initWithImage:[UIImage imageWithData:fileData]];
-//             }
-//
-//             imageView.frame = CGRectMake(100, 100, 300, 300);
-//             [imageView setCenter:CGPointMake(parent.view.bounds.size.width/2, self.view.bounds.size.height/2)];
-//             [self.view addSubview:imageView];
-//             _currentImageView = imageView;
-//             [self setFinished];
+             else //Jpg / PNG file?
+             {
+                 nextImage = [UIImage imageWithData:fileData];
+                 if (nextImage != nil)  [self->_batchImages addObject:nextImage];
+             }
+             [self->_delegate didDownloadImages : self->_batchImages];
          } else {
              NSString *title = @"";
              NSString *message = @"";
@@ -199,61 +260,26 @@ static DropboxTools *sharedInstance = nil;
                      message = [NSString stringWithFormat:@"%@", genericLocalError];
                  }
              }
+             [self errMsg:title :message];
              
-             UIAlertController *alertController =
-             [UIAlertController alertControllerWithTitle:title
-                                                 message:message
-                                          preferredStyle:(UIAlertControllerStyle)UIAlertControllerStyleAlert];
-             [alertController addAction:[UIAlertAction actionWithTitle:@"OK"
-                                                                 style:(UIAlertActionStyle)UIAlertActionStyleCancel
-                                                               handler:nil]];
-             [parent presentViewController:alertController animated:YES completion:nil];
-             
-//             [self setFinished];
+             //             [self setFinished];
          }
      }];
 }
 
 //=============(DropboxTools)=====================================================
--(UIImage *)getImageFromPDFData : (NSData *)fileData
+-(void) errMsg : (NSString *)title : (NSString*)message
 {
-    CFDataRef pdfData = (__bridge CFDataRef) fileData;
-    CGDataProviderRef provider = CGDataProviderCreateWithCFData(pdfData);
-    CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(provider);
-    UIImage *result = nil;
-    if (pdf)
-    {
-        
-        CGPDFPageRef PDFPage = CGPDFDocumentGetPage(pdf, 1);
-        
-        if (PDFPage)
-        {
-            // Determine the size of the PDF page.
-            CGRect pageRect = CGPDFPageGetBoxRect(PDFPage, kCGPDFMediaBox);
-            CGFloat PDFScale = 1.0; //view.frame.size.width/pageRect.size.width;
-            pageRect.size = CGSizeMake(pageRect.size.width*PDFScale, pageRect.size.height*PDFScale);
-            UIGraphicsBeginImageContext(pageRect.size);
-            
-            CGContextRef context = UIGraphicsGetCurrentContext();
-            
-            // First fill the background with white.
-            CGContextSetRGBFillColor(context, 1.0,1.0,1.0,1.0);
-            CGContextFillRect(context,pageRect);
-            
-            CGContextSaveGState(context);
-            // Flip the context so that the PDF page is rendered right side up.
-            CGContextTranslateCTM(context, 0.0, pageRect.size.height);
-            CGContextScaleCTM(context, 1.0, -1.0);
-            
-            // Scale the context so that the PDF page is rendered at the correct size for the zoom level.
-            CGContextScaleCTM(context, PDFScale,PDFScale);
-            CGContextDrawPDFPage(context, PDFPage);
-            CGContextRestoreGState(context);
-            
-            result = UIGraphicsGetImageFromCurrentImageContext();
-        } //end pdfpage
-    }
-    return result;
-} //end getImageFromPDFData
+    UIAlertController *alertController =
+    [UIAlertController alertControllerWithTitle:title
+                                        message:message
+                                 preferredStyle:(UIAlertControllerStyle)UIAlertControllerStyleAlert];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                        style:(UIAlertActionStyle)UIAlertActionStyleCancel
+                                                      handler:nil]];
+    [parent presentViewController:alertController animated:YES completion:nil];
+
+} //end errMsg
+
 
 @end

@@ -24,13 +24,11 @@
 //  https://stackoverflow.com/questions/41546181/how-to-deskew-a-scanned-text-page-with-imagemagick
 //
 //  In Adjust mode, zoom in??
-#import "ViewController.h"
+#import "EditTemplateVC.h"
 
-@interface ViewController ()
+ 
 
-@end
-
-@implementation ViewController
+@implementation EditTemplateVC
 
 //=============OCR VC=====================================================
 -(id)initWithCoder:(NSCoder *)aDecoder {
@@ -567,7 +565,8 @@
                         ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
                         smartp.latestVendor : productName : smartp.latestProcessed :
                         smartp.latestLocal : smartp.latestLineNumber : invoiceNumberString :
-                        [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i]];
+                        [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i] :
+                        @"NoBatch" : @"NoErr" : selectFnameForTemplate];
         } //end analyzeOK
     } //end for loop
     [et saveToParse];
@@ -696,8 +695,8 @@
         [self loadStubbedOCRData];
         [self applyTemplate];
         //Let's try getting a form for pam now...
-//        [self cleanupInvoice];
-//        [self writeEXPToParse];
+        [self cleanupInvoice];
+        [self writeEXPToParse];
     }
     else{
         [self callOCRSpace : selectFnameForTemplate];
@@ -717,7 +716,7 @@
 }
 
 
-//======(Hue-Do-Ku allColorPacks)==========================================
+//=============(OCRTopObject)=====================================================
 // for testing only
 -(NSDictionary*) readTxtToJSON : (NSString *) fname
 {

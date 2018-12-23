@@ -423,7 +423,15 @@
                 [self unpackFromString:ps];
                 break;
             }
-            [self.delegate didReadTemplate];  
+            if (objects.count > 0)
+                [self.delegate didReadTemplate];
+            else
+                [self.delegate errorReadingTemplate : @"Empty table"];
+        }
+        else
+        {
+            NSLog(@" no template / error");//asdf
+            [self.delegate errorReadingTemplate : @"Read Error"];
         }
     }];
 } //end readFromParse

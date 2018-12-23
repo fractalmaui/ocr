@@ -1,4 +1,10 @@
 //
+//   __  __       _    __     ______
+//  |  \/  | __ _(_)_ _\ \   / / ___|
+//  | |\/| |/ _` | | '_ \ \ / / |
+//  | |  | | (_| | | | | \ V /| |___
+//  |_|  |_|\__,_|_|_| |_|\_/  \____|
+//
 //  MainVC.m
 //  testOCR
 //
@@ -22,7 +28,7 @@
     // Do any additional setup after loading the view.
     int xi,yi,xs,ys;
     xs = viewWid;
-    ys = 60;
+    ys = 80;
     xi = 0;
     yi = viewHit - ys;
     nav = [[NavButtons alloc] initWithFrameAndCount: CGRectMake(xi, yi, xs, ys) : 4];
@@ -68,7 +74,7 @@
 
 
 
-   // [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
+   // [self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0
@@ -114,29 +120,6 @@
 }
 
 
-//=============OCR VC=====================================================
--(void) testBatchShite
-{
-    if ([DBClientsManager authorizedClient] || [DBClientsManager authorizedTeamClient])
-    {
-        NSLog(@" dropbox authorized...");
-        DropboxTools *dbt = [DropboxTools sharedInstance];
-        [dbt setParent:self];
-        [dbt getBatchList];
-    }
-    else
-    {
-        NSLog(@" need to be authorized...");
-        [DBClientsManager authorizeFromController:[UIApplication sharedApplication]
-                                       controller:self
-                                          openURL:^(NSURL *url) {
-                                              [[UIApplication sharedApplication] openURL:url];
-                                          }];
-        
-    }
-    
-
-}
 
 
 #pragma mark - NavButtonsDelegate
@@ -148,31 +131,20 @@
     
     if (which == 0) //THis is now a multi-function popup...
     {
-        NSLog(@"b0");
         [self testit];
-
         //[self performSegueWithIdentifier:@"cloudSegue" sender:@"feedCell"];
-        
     }
     else if (which == 1) //THis is now a multi-function popup...
     {
-        NSLog(@"db");
         [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
-        
     }
     else if (which == 2) //Templates / settings?
     {
-        NSLog(@"test");
         [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
-//        [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
-        
     }
     if (which == 3) //batch
     {
-        NSLog(@"batch");
-        [self testBatchShite];
-        
-      //  [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+        [self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
         
     }
 

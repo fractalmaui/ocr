@@ -36,6 +36,9 @@
 @property (nonatomic , strong) NSString* quantity;
 @property (nonatomic , strong) NSString* total;
 @property (nonatomic , strong) NSString* pricePerUOM;
+@property (nonatomic , strong) NSString* batch;
+@property (nonatomic , strong) NSString* errStatus;
+@property (nonatomic , strong) NSString* PDFFile;
 @property (nonatomic , strong) NSString* versionNumber;
 
 

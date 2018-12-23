@@ -1,4 +1,10 @@
 //
+//   __  __       _    __     ______
+//  |  \/  | __ _(_)_ _\ \   / / ___|
+//  | |\/| |/ _` | | '_ \ \ / / |
+//  | |  | | (_| | | | | \ V /| |___
+//  |_|  |_|\__,_|_|_| |_|\_/  \____|
+//
 //  MainVC.h
 //  testOCR
 //
@@ -9,7 +15,7 @@
 #import <UIKit/UIKit.h>
 #import "NavButtons.h"
 #import "SessionManager.h"
-#import "DropboxTools.h"
+
 
 NS_ASSUME_NONNULL_BEGIN
 

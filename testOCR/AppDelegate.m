@@ -39,7 +39,10 @@
     }
     [DBClientsManager setupWithAppKey:appKey];
     NSLog(@" ...logged into dropbox...");
-//    [DBClientsManager setupWithAppKey:@"<APP_KEY>"];
+
+    //Load Vendors from parse db
+    Vendors *v = [Vendors sharedInstance];
+    
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 

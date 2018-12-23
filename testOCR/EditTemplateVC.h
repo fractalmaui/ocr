@@ -55,7 +55,7 @@
 
 
 
-@interface ViewController : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate,
+@interface EditTemplateVC : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate,
                                             invoiceTableDelegate,EXPTableDelegate>
 {
     

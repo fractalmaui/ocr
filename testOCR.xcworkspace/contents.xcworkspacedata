@@ -2,6 +2,12 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:/Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m">
+   </FileRef>
+   <FileRef
       location = "group:testOCR.xcodeproj">
    </FileRef>
    <FileRef

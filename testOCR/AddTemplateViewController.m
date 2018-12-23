@@ -1,9 +1,16 @@
 //
+//      _       _     _ _____                    _       _     __     ______
+//     / \   __| | __| |_   _|__ _ __ ___  _ __ | | __ _| |_ __\ \   / / ___|
+//    / _ \ / _` |/ _` | | |/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \ \ / / |
+//   / ___ \ (_| | (_| | | |  __/ | | | | | |_) | | (_| | ||  __/\ V /| |___
+//  /_/   \_\__,_|\__,_| |_|\___|_| |_| |_| .__/|_|\__,_|\__\___| \_/  \____|
+//                                        |_|
+//
 //  AddTemplateViewController.m
 //  testOCR
 //
 //  Created by Dave Scruton on 12/20/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "AddTemplateViewController.h"
@@ -87,13 +94,7 @@ NSString * steps[] = {
     int iwid = _templateImage.image.size.width;
     int ihit = _templateImage.image.size.height;
     int xi,yi,xs,ys;
-    double desiredAspect = 0.772;   //8.5 x 11 page aspect
-    double aspectFound = (double)iwid / (double)ihit;
     double xscale = (double)viewWid / (double)iwid;
-//    yi = 90;
-//    xs = 0.9*viewWid;
-//    ys = (int)((double)xs /desiredAspect);
-//    xi = viewW2 - xs/2;
     yi = 90;
     xs = xscale * iwid;
     ys = xscale * ihit;
@@ -101,9 +102,7 @@ NSString * steps[] = {
     CGRect rr = CGRectMake(xi, yi, xs, ys);
     NSLog(@" r %@",NSStringFromCGRect(rr));
     _templateImage.frame = rr;
-}
-
-
+} //end scaleImageViewToFitDocument
 
 
 //=============AddTemplate VC=====================================================

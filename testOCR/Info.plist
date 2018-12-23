@@ -26,29 +26,29 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.005</string>
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <string>db-ltqz6bwzqfskfwj</string>
-            </array>
-                <key>CFBundleURLName</key>
-                <string></string>
-            </dict>
-        </array>
-    <key>CFBundleVersion</key>
-	<string>1.0.005</string>
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>dbapi-8-emm</string>
-        <string>dbapi-2</string>
-    </array>
+	<string>1.0.006</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.006</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>db-ltqz6bwzqfskfwj</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string></string>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>dbapi-8-emm</string>
+		<string>dbapi-2</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>BGPCloud uses your photos for OCR templates</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>BGPCloud uses your photos for OCR templates</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
