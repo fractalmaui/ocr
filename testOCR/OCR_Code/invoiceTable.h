@@ -58,6 +58,6 @@
 @optional
 - (void)didReadInvoiceTable;
 - (void)didReadInvoiceTableAsStrings : (NSMutableArray*) a;
-- (void)didSaveInvoiceTable;
+- (void)didSaveInvoiceTable:(NSString *) s;
 @end
 

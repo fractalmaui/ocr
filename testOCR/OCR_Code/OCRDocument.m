@@ -944,6 +944,17 @@
     [self parseJSONfromDict:d];
 }
 
+//=============OCR VC=====================================================
+-(void) setupDocumentWIthImage : (UIImage*) image : (NSDictionary *)d
+{
+    _scannedImage = image;
+    _scannedName  = @"nada";
+    _width        = _scannedImage.size.width;
+    _height       = _scannedImage.size.height;
+    NSLog(@" od setupdoc wh %d %d",_width,_height);
+    [self parseJSONfromDict:d];
+}
+
 //=============(OCRTemplate)=====================================================
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a
 {

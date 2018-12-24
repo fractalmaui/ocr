@@ -30,6 +30,7 @@
 		72183DED21C5FA86005627AB /* squareMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 72183DEC21C5FA86005627AB /* squareMask.png */; };
 		721D9C2021CB122F00D1E78A /* OCRCategories.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C1F21CB122F00D1E78A /* OCRCategories.m */; };
 		721D9C2421CB13E500D1E78A /* CatObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C2321CB13E500D1E78A /* CatObject.m */; };
+		7221543A21D18688007DAAB5 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 7221543921D18688007DAAB5 /* Vendors.m */; };
 		722E08F321BF504700BBD88D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F221BF504700BBD88D /* SystemConfiguration.framework */; };
 		722E08F521BF504E00BBD88D /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F421BF504E00BBD88D /* NetworkExtension.framework */; };
 		722E08F721BF505500BBD88D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F621BF505500BBD88D /* AudioToolbox.framework */; };
@@ -45,8 +46,8 @@
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
-		725662E621CDF8D200295F44 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 725662E421CDF8D200295F44 /* Vendors.m */; };
 		725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* DBViewController.m */; };
+		7279498E21D041670067B636 /* UIImageExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7279498D21D041670067B636 /* UIImageExtras.m */; };
 		7283812021C4A17300A2954B /* NavButtons.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283811E21C4A17300A2954B /* NavButtons.m */; };
 		7283812A21C4A36200A2954B /* dbNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812621C4A36100A2954B /* dbNOT.png */; };
 		7283812B21C4A36200A2954B /* HamburgerNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812721C4A36100A2954B /* HamburgerNOT.png */; };
@@ -115,6 +116,8 @@
 		721D9C1F21CB122F00D1E78A /* OCRCategories.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCategories.m; sourceTree = "<group>"; };
 		721D9C2221CB13E500D1E78A /* CatObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CatObject.h; sourceTree = "<group>"; };
 		721D9C2321CB13E500D1E78A /* CatObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CatObject.m; sourceTree = "<group>"; };
+		7221543821D18687007DAAB5 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/Vendors.h; sourceTree = "<absolute>"; };
+		7221543921D18688007DAAB5 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/Vendors.m; sourceTree = "<absolute>"; };
 		722420F921C854F9002D02A4 /* DBKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBKeys.h; sourceTree = "<group>"; };
 		722E08F221BF504700BBD88D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		722E08F421BF504E00BBD88D /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -133,10 +136,10 @@
 		72435B3821C8E01200620F4B /* cal_kona.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cal_kona.jpg; sourceTree = "<group>"; };
 		72435B3A21C96E8E00620F4B /* loves.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = loves.jpg; sourceTree = "<group>"; };
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
-		725662E421CDF8D200295F44 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m; sourceTree = "<absolute>"; };
-		725662E521CDF8D200295F44 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h; sourceTree = "<absolute>"; };
 		725DA97B21CB53BC0024ECF7 /* DBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBViewController.h; sourceTree = "<group>"; };
 		725DA97C21CB53BC0024ECF7 /* DBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBViewController.m; sourceTree = "<group>"; };
+		7279498C21D041660067B636 /* UIImageExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIImageExtras.h; sourceTree = "<group>"; };
+		7279498D21D041670067B636 /* UIImageExtras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIImageExtras.m; sourceTree = "<group>"; };
 		7283811E21C4A17300A2954B /* NavButtons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavButtons.m; sourceTree = "<group>"; };
 		7283811F21C4A17300A2954B /* NavButtons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NavButtons.h; sourceTree = "<group>"; };
 		7283812621C4A36100A2954B /* dbNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dbNOT.png; path = Resources/dbNOT.png; sourceTree = SOURCE_ROOT; };
@@ -319,27 +322,27 @@
 				72BA4D2721CEFC0100F432E9 /* ActivityTable.m */,
 				721D9C2221CB13E500D1E78A /* CatObject.h */,
 				721D9C2321CB13E500D1E78A /* CatObject.m */,
+				722420F921C854F9002D02A4 /* DBKeys.h */,
 				72435B3221C8C7C600620F4B /* EXPObject.h */,
 				72435B3321C8C7C600620F4B /* EXPObject.m */,
 				72435B3521C8C8EA00620F4B /* EXPTable.h */,
 				72435B3621C8C8EA00620F4B /* EXPTable.m */,
-				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
-				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
-				722420F921C854F9002D02A4 /* DBKeys.h */,
 				729B7A3C21C886590075486C /* invoiceTable.h */,
 				729B7A3D21C886590075486C /* invoiceTable.m */,
 				72ECD04421C88A1000DBD08E /* invoiceObject.h */,
 				72ECD04521C88A1000DBD08E /* invoiceObject.m */,
 				7209609C21B81FDC00D49C63 /* OCRBox.h */,
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
+				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
+				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
 				7209608E21B8173200D49C63 /* OCRDocument.m */,
 				7209609921B81FB900D49C63 /* OCRTemplate.h */,
 				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
 				7209608721B7FBB000D49C63 /* OCRWord.h */,
 				7209608821B7FBB000D49C63 /* OCRWord.m */,
-				725662E521CDF8D200295F44 /* Vendors.h */,
-				725662E421CDF8D200295F44 /* Vendors.m */,
+				7221543821D18687007DAAB5 /* Vendors.h */,
+				7221543921D18688007DAAB5 /* Vendors.m */,
 			);
 			path = OCR_Code;
 			sourceTree = "<group>";
@@ -347,6 +350,8 @@
 		7283813721C4D83100A2954B /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				7279498C21D041660067B636 /* UIImageExtras.h */,
+				7279498D21D041670067B636 /* UIImageExtras.m */,
 				7283811F21C4A17300A2954B /* NavButtons.h */,
 				7283811E21C4A17300A2954B /* NavButtons.m */,
 				7209608A21B8164F00D49C63 /* imageTools.h */,
@@ -492,6 +497,7 @@
 			files = (
 				72DB332021CDC35F00AA44C0 /* DropboxTools.m in Sources */,
 				7209609E21B81FDC00D49C63 /* OCRBox.m in Sources */,
+				7279498E21D041670067B636 /* UIImageExtras.m in Sources */,
 				72B8DEBD21C4642F004ADD79 /* MagnifierView.m in Sources */,
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
@@ -510,8 +516,8 @@
 				72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */,
 				72435B3421C8C7C600620F4B /* EXPObject.m in Sources */,
 				72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */,
-				725662E621CDF8D200295F44 /* Vendors.m in Sources */,
 				7283813621C4A60000A2954B /* MainVC.m in Sources */,
+				7221543A21D18688007DAAB5 /* Vendors.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */,

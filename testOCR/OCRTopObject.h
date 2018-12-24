@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "DBKeys.h"
+#import "EXPTable.h"
+#import "invoiceTable.h"
 #import "OCRWord.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
@@ -35,32 +37,24 @@
 #define VALIGN_TAG_TYPE     @"VALIGN_TAG"
 
 
-@interface OCRTopObject : NSObject
+@interface OCRTopObject : NSObject <invoiceTableDelegate,EXPTableDelegate>
 {
     OCRDocument *od;
+    invoiceTable *it;
+    EXPTable *et;
 
     smartProducts *smartp;
     int smartCount;
 
     //OCR'ed results...
-    NSString *supplierName;
     NSString *fieldName;
     NSString *fieldNameShort;
     NSString *fieldFormat;
-    
+
     UIImage *fastIcon;
     UIImage *slowIcon;
     
-    NSArray *columnHeaders;
     
-    //INvoice-specific fields (MOVE TO SEPARATE OBJECT)
-    long invoiceNumber;
-    NSString *invoiceNumberString;
-    
-    NSDate *invoiceDate;
-    NSString *invoiceCustomer;
-    NSString *invoiceSupplier;
-    float invoiceTotal;
     NSMutableArray *rowItems;
     
     NSString *rawOCRResult;
@@ -76,11 +70,26 @@
 @property (nonatomic , strong) NSString* vendorFileName;
 @property (nonatomic , strong) NSString* imageFileName;
 
+//INvoice-read-in fields
+@property (nonatomic , strong) NSDate* invoiceDate;
+@property (nonatomic , strong) NSString* invoiceNumberString;
+@property (nonatomic , strong) NSString* invoiceCustomer;
+@property (nonatomic , strong) NSString* invoiceVendor;
+@property (nonatomic , assign) float invoiceTotal;
+@property (nonatomic , assign) long invoiceNumber;
+@property (nonatomic , strong) NSArray* columnHeaders;
+
 @property (nonatomic, unsafe_unretained) id <OCRTopObjectDelegate> delegate; // receiver of completion messages
 
 + (id)sharedInstance;
-- (void)performOCROnImage : (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
+- (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
+-(void) setupTestDocumentJSON : (NSDictionary *) json;  //FOR TESTING ONLY
+- (void)applyTemplate : (OCRTemplate *)ot;             //FOR TESTING ONLY
+-(void) cleanupInvoice;                               //FOR TESTING ONLY
+-(void) setupDocument : (UIImage *)imageToOCR;       //FOR TESTING ONLY
+-(void) writeEXPToParse;
+-(NSString *) dumpResults;
 
 
 @end
@@ -90,4 +99,5 @@
 @optional
 - (void)didPerformOCR : (NSString *) result;
 - (void)errorPerformingOCR : (NSString *) errMsg;
+- (void)didSaveOCRDataToParse : (NSString *) s;
 @end

@@ -36,6 +36,10 @@
 
     od = [[OCRDocument alloc] init];
     ot = [[OCRTemplate alloc] init];
+    
+    oto = [OCRTopObject sharedInstance];
+    oto.delegate = self;
+
     ot.delegate = self;
     arrowLHStepSize = 10;
     arrowRHStepSize = 10;
@@ -441,7 +445,8 @@
         {
             [ot addHeaderColumnToSortedArray : i];
         }
-    }
+    }  //end get all boxes...
+
     //We can only do columns after they are all loaded
     [od clearAllColumnStringData];
     NSMutableArray* rowYs; //overkill on rows too!
@@ -693,10 +698,23 @@
     if (OCR_mode == 1)
     {
         [self loadStubbedOCRData];
-        [self applyTemplate];
+        
+        //asdf
+        oto.imageFileName = @"hawaiiBeefInvoice.jpg"; //selectFnameForTemplate;
+        oto.vendor        = @"Hawaii Beef Producers"; //TEST
+        NSDictionary *d = [self readTxtToJSON:@"beef"]; //TEST: only works for beef invoice!
+        [oto setupTestDocumentJSON:d];
+        [oto setupDocument:[UIImage imageNamed:selectFnameForTemplate]];
+        [oto applyTemplate:ot];
+        [oto cleanupInvoice];
+        [oto writeEXPToParse];
+        NSString *OCR_Results_Dump = [oto dumpResults];
+        [self alertMessage:@"Invoice Dump" :OCR_Results_Dump];
+
+//        [self applyTemplate];
         //Let's try getting a form for pam now...
-        [self cleanupInvoice];
-        [self writeEXPToParse];
+//        [self cleanupInvoice];
+       // [self writeEXPToParse];
     }
     else{
         [self callOCRSpace : selectFnameForTemplate];
@@ -1509,7 +1527,7 @@
 
 #pragma mark - invoiceTableDelegate
 //=============OCR VC=====================================================
-- (void)didSaveInvoiceTable
+- (void)didSaveInvoiceTable:(NSString *) s
 {
     NSLog(@" Invoice TABLE SAVED (OCR VC)");
 
@@ -1542,6 +1560,13 @@
     [self mailit: s];
 }
 
+#pragma mark - OCRTopObjectDelegate
+
+//=============OCR VC=====================================================
+- (void)didSaveOCRDataToParse : (NSString *) s
+{
+    NSLog(@" OK: full OCR -> DB done, invoice %@",s);
+}
 
 
 @end

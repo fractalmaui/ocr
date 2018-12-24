@@ -36,9 +36,10 @@ static DropboxTools *sharedInstance = nil;
 {
     if (self = [super init])
     {
-        _batchFileList = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        _batchImages   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        client         = [DBClientsManager authorizedClient];
+        _batchFileList   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        _batchImages     = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        _batchImagePaths = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        client           = [DBClientsManager authorizedClient];
     }
     return self;
 }
@@ -47,7 +48,7 @@ static DropboxTools *sharedInstance = nil;
 //=============(DropboxTools)=====================================================
 -(void) countEntries:(NSString *)batchFolder :(NSString *)vendorFolder
 {
-    NSLog(@" ce %@",vendorFolder);
+    //NSLog(@" ce %@",vendorFolder);
     NSString *searchPath = [NSString stringWithFormat:@"/%@/%@",batchFolder,vendorFolder];
     [[client.filesRoutes listFolder:searchPath]
      setResponseBlock:^(DBFILESListFolderResult *result, DBFILESListFolderError *routeError, DBRequestError *error) {
@@ -73,7 +74,7 @@ static DropboxTools *sharedInstance = nil;
 
 //=============(DropboxTools)=====================================================
 // Must be able to handle multiple pages : adds to internal array...
--(void)addImagesFromPDFData : (NSData *)fileData
+-(void)addImagesFromPDFData : (NSData *)fileData : (NSString *) imagePath
 {
     CFDataRef pdfData = (__bridge CFDataRef) fileData;
     CGDataProviderRef provider = CGDataProviderCreateWithCFData(pdfData);
@@ -81,7 +82,7 @@ static DropboxTools *sharedInstance = nil;
     if (pdf)
     {
         int pageCount = (int)CGPDFDocumentGetNumberOfPages(pdf);
-        NSLog(@" PDF has %d pages",pageCount);
+        //NSLog(@" PDF has %d pages",pageCount);
         for (int i = 1;i<=pageCount;i++) // loop over pages...
         {
             CGPDFPageRef PDFPage = CGPDFDocumentGetPage(pdf, i);
@@ -111,8 +112,13 @@ static DropboxTools *sharedInstance = nil;
                 CGContextRestoreGState(context);
                 
                 nextImage = UIGraphicsGetImageFromCurrentImageContext();
-                if (nextImage != nil)  [_batchImages addObject:nextImage];
-                if (i == pageCount) [self->_delegate didDownloadImages : self->_batchImages];
+                if (nextImage != nil)
+                {
+                    [_batchImages addObject:nextImage];
+                    [_batchImagePaths addObject:imagePath];
+                }
+                if (i == pageCount) [_delegate didDownloadImages];
+
             } //end pdfpage
         } //end for i
     }  //end if pdf
@@ -123,13 +129,18 @@ static DropboxTools *sharedInstance = nil;
 -(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder
 {
     NSString *searchPath = [NSString stringWithFormat:@"/%@/%@",batchFolder,vendorFolder]; //Prepend / to get subfolder
-    NSLog(@"  get batchList from DB [%@]",searchPath);
+    //NSLog(@"  get batchList from DB [%@]",searchPath);
     _prefix = searchPath;
     // list folder metadata contents (folder will be root "/" Dropbox folder if app has permission
     // "Full Dropbox" or "/Apps/<APP_NAME>/" if app has permission "App Folder").
     [[client.filesRoutes listFolder:searchPath]
      setResponseBlock:^(DBFILESListFolderResult *result, DBFILESListFolderError *routeError, DBRequestError *error) {
          if (result) {
+             if (result.entries.count == 0) //Empty folder? No batch!
+             {
+                 [self->_delegate errorGettingBatchList : @"Empty Batch Folder"];
+                 return;
+             }
              self->_entries = result.entries;
              [self loadBatchEntries :result.entries];
              [self->_delegate didGetBatchList : result.entries];
@@ -208,9 +219,10 @@ static DropboxTools *sharedInstance = nil;
 - (void)downloadImages:(NSString *)imagePath
 {
     DBUserClient *client = [DBClientsManager authorizedClient];
-    NSLog(@" dload image %@",imagePath);
+    //NSLog(@" dload image %@",imagePath);
     
     [_batchImages removeAllObjects];
+    [_batchImagePaths removeAllObjects];
     [[client.filesRoutes downloadData:imagePath]
      setResponseBlock:^(DBFILESFileMetadata *result, DBFILESDownloadError *routeError, DBRequestError *error, NSData *fileData) {
          if (result) {
@@ -218,14 +230,18 @@ static DropboxTools *sharedInstance = nil;
              //Got a PDF?
              if ([imagePath.lowercaseString containsString:@"pdf"])
              {
-                 [self addImagesFromPDFData:fileData]; //May add more than one image!
+                 [self addImagesFromPDFData:fileData:imagePath]; //May add more than one image!
              } //end .pdf string
              else //Jpg / PNG file?
              {
                  nextImage = [UIImage imageWithData:fileData];
-                 if (nextImage != nil)  [self->_batchImages addObject:nextImage];
+                 if (nextImage != nil)
+                 {
+                     [self->_batchImages addObject:nextImage];
+                     [self->_batchImagePaths addObject:imagePath];
+                 }
              }
-             [self->_delegate didDownloadImages : self->_batchImages];
+             [self->_delegate didDownloadImages];
          } else {
              NSString *title = @"";
              NSString *message = @"";
@@ -260,8 +276,7 @@ static DropboxTools *sharedInstance = nil;
                      message = [NSString stringWithFormat:@"%@", genericLocalError];
                  }
              }
-             [self errMsg:title :message];
-             
+             [self->_delegate errorDownloadingImages:message];
              //             [self setFinished];
          }
      }];

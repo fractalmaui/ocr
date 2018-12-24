@@ -15,26 +15,49 @@
 
 #import <Foundation/Foundation.h>
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
+#import <Parse/Parse.h>
+#import "ActivityTable.h"
 #import "DropboxTools.h"
 #import "OCRTemplate.h"
 #import "Vendors.h"
 #import "OCRTopObject.h"
+#import "UIImageExtras.h"
 
 @protocol batchObjectDelegate;
 
+
+#define BATCH_STATUS_RUNNING    @"Running"
+#define BATCH_STATUS_HALTED     @"Halted"
+#define BATCH_STATUS_FAILED     @"Failed"
+#define BATCH_STATUS_COMPLETED  @"Completed"
 
 @interface BatchObject : NSObject <DropboxToolsDelegate,OCRTemplateDelegate,OCRTopObjectDelegate>
 {
     DropboxTools *dbt;
     Vendors *vv;
     OCRTemplate *ot;
-    NSString *vendorName;
+    ActivityTable *act;
+    
+    UIViewController *parent;
+    
     BOOL gotTemplate;
     NSString *batchFolder;
+
+    NSString *vendorName; //Whose batch we're running
+    NSString *batchFiles; //CSV list of all files processed
+    NSString *batchStatus;
+    NSString *batchProgress;
+    NSString *batchErrors;
     
     NSMutableArray *vendorFileCounts;
     NSMutableDictionary *vendorFolders;
     OCRTopObject *oto;
+    int batchCount;
+    int batchTotal;
+    int batchPage;
+    int batchTotalPages;
+    NSString *tableName;
+
 
 }
 @property (nonatomic , strong) NSString* batchID;
@@ -47,13 +70,17 @@
 -(int)  getVendorFileCount : (NSString *)vfn;
 
 -(void) runOneOrMoreBatches : (NSString *)vname : (int) index;
+-(void) setParent : (UIViewController*) p;
 
 @end
 
 @protocol batchObjectDelegate <NSObject>
 @required
 @optional
+- (void)batchUpdate : (NSString *) s;
 - (void)didGetBatchCounts;
+- (void)didCompleteBatch;
+- (void)didFailBatch;
 @end
 
 

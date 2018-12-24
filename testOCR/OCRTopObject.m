@@ -28,6 +28,12 @@ static OCRTopObject *sharedInstance = nil;
     if (self = [super init])
     {
         smartp      = [[smartProducts alloc] init];
+        od          = [[OCRDocument alloc] init];
+        rowItems    = [[NSMutableArray alloc] init];
+        it = [[invoiceTable alloc] init];
+        it.delegate = self;
+        et = [[EXPTable alloc] init];
+        et.delegate = self;
 
     }
     return self;
@@ -68,42 +74,44 @@ static OCRTopObject *sharedInstance = nil;
         {
             if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD]) //Looking for a number?
             {
-                invoiceNumber = [od findLongInArrayOfFields:a];
+                _invoiceNumber = [od findLongInArrayOfFields:a];
                 //This will have to be more robust
-                invoiceNumberString = [NSString stringWithFormat:@"%ld",invoiceNumber];
-                NSLog(@" invoice# %ld [%@]",invoiceNumber,invoiceNumberString);
+                _invoiceNumberString = [NSString stringWithFormat:@"%ld",_invoiceNumber];
+                NSLog(@" invoice# %ld [%@]",_invoiceNumber,_invoiceNumberString);
             }
             else if ([fieldName isEqualToString:INVOICE_DATE_FIELD]) //Looking for a date?
             {
-                invoiceDate = [od findDateInArrayOfFields:a]; //Looks for things with slashes in them?
-                NSLog(@" invoice date %@",invoiceDate);
+                _invoiceDate = [od findDateInArrayOfFields:a]; //Looks for things with slashes in them?
+                NSLog(@" invoice date %@",_invoiceDate);
             }
             else if ([fieldName isEqualToString:INVOICE_CUSTOMER_FIELD]) //Looking for Customer?
             {
-                invoiceCustomer = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
-                NSLog(@" Customer %@",invoiceCustomer);
+                _invoiceCustomer = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
+                NSLog(@" Customer %@",_invoiceCustomer);
             }
             else if ([fieldName isEqualToString:INVOICE_SUPPLIER_FIELD]) //Looking for Supplier?
             {
-                invoiceSupplier = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
-                BOOL matches = [ot isSupplierAMatch:invoiceSupplier]; //Check for rough match
-                NSLog(@" Supplier %@, match %d",invoiceSupplier,matches);
+                _invoiceVendor = [od findTopStringInArrayOfFields:a]; //Just get first line of template area
+                BOOL matches = [ot isSupplierAMatch:_invoiceVendor]; //Check for rough match
+                NSLog(@" Supplier %@, match %d",_invoiceVendor,matches);
             }
             else if ([fieldName isEqualToString:INVOICE_HEADER_FIELD]) //Header is SPECIAL!
             {
                 [od parseHeaderColumns : a];
-                columnHeaders = [od getHeaderNames];
-                NSLog(@" headers %@",columnHeaders);
+                _columnHeaders = [od getHeaderNames];
+                NSLog(@" headers %@",_columnHeaders);
             }
             else if ([fieldName isEqualToString:INVOICE_TOTAL_FIELD]) //Looking for a number?
             {
-                invoiceTotal = [od findPriceInArrayOfFields:a];
-                NSLog(@" invoice Total %4.2f [%@]",invoiceTotal,[NSString stringWithFormat:@"%4.2f",invoiceTotal]);
+                _invoiceTotal = [od findPriceInArrayOfFields:a];
+                NSLog(@" invoice Total %4.2f [%@]",_invoiceTotal,[NSString stringWithFormat:@"%4.2f",_invoiceTotal]);
             }
             
         } //end if a.count
         if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD]) //Columns must be resorted from L->R...
         {
+            NSLog(@" column........");
+            [od dumpArray:a];
             [ot addHeaderColumnToSortedArray : i];
         }
     }
@@ -148,7 +156,7 @@ static OCRTopObject *sharedInstance = nil;
     }
     
     
-    NSLog(@" invoice rows %@",rowItems);
+    NSLog(@" OTO:invoice rows %@",rowItems);
     [self dumpResults];
     
 } //end applyTemplate
@@ -158,8 +166,9 @@ static OCRTopObject *sharedInstance = nil;
 -(void) cleanupInvoice
 {
     NSLog(@"cleanupInvoice");
-    if (od.quantityColumn == 0) //Usually this is an error , item should be 0 and descr should be 2 for instance...
-        od.quantityColumn = od.itemColumn + 1;
+//DHS BOGUS!!! works only for HFM invoices!
+    //    if (od.quantityColumn == 0) //Usually this is an error , item should be 0 and descr should be 2 for instance...
+//        od.quantityColumn = od.itemColumn + 1;
     smartCount = 0;
     for (int i=0;i<od.longestColumn;i++)
     {
@@ -171,10 +180,10 @@ static OCRTopObject *sharedInstance = nil;
         }
         NSLog(@" rec[%d] %@",i,ac);
         [smartp clear];
-        [smartp addVendor:supplierName]; //Is this the right string?
+        [smartp addVendor:_vendor]; //Is this the right string?
         NSString *productName = ac[2]; //3rd column?
         [smartp addProductName:productName];
-        [smartp addDate:invoiceDate];
+        [smartp addDate:_invoiceDate];
         [smartp addLineNumber:i+1];
         [smartp addAmount: ac[od.amountColumn]]; //column 5: RH total price
         [smartp addPrice: ac[od.priceColumn]]; //column 5: RH total price
@@ -205,7 +214,7 @@ static OCRTopObject *sharedInstance = nil;
 
 //=============(OCRTopObject)=====================================================
 // Sends a JPG to the OCR server, and receives JSON text data back...
-- (void)performOCROnImage : (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot
+- (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
     // Create URL request
     NSURL *url = [NSURL URLWithString:@"https://api.ocr.space/Parse/Image"];
@@ -227,11 +236,13 @@ static OCRTopObject *sharedInstance = nil;
                                           @"eng", @"language", nil];
     
     // Create multipart form body
+    //NOTE We could be passing PDF directly here, just using the NSData alone!
+    //  the OCR handles raw PDF data too!!!
     NSData *data = [self createBodyWithBoundary:boundary
                                      parameters:parametersDictionary
                                       imageData:imageData
-                                       filename:@"yourImage.jpg"];
-    NSLog(@" send OCR request...");
+                                       filename:@"dog.jpg"]; ///imageName];
+    NSLog(@" send OCR request... %@",_imageFileName);
     [request setHTTPBody:data];
     
     // Start data session
@@ -257,12 +268,26 @@ static OCRTopObject *sharedInstance = nil;
         else
         {
             // Handle result: load up document and apply template here
-            NSLog(@" annnnd result is %@",self->OCRJSONResult);
-            [self setupDocument];
-            [self applyTemplate : ot];
-            [self cleanupInvoice];
-            ///NEED TO WRITE EXP TOO!!
-            [self->_delegate didPerformOCR:@"OCR OK?"];
+            //OUCH! need to look for the IsErroredOnProcessing item here, and  ErrorMessage!
+            //  bad files set this and then have bogus data which crashes OCR below!
+            NSNumber *isErr = [self->OCRJSONResult valueForKey:@"IsErroredOnProcessing"];
+            NSArray* ea = [self->OCRJSONResult valueForKey:@"ErrorMessage"];
+            NSString* errMsg = ea[0];
+            if (isErr.boolValue)
+            {
+                [self->_delegate errorPerformingOCR:errMsg];
+            }
+            else
+            {
+                NSLog(@" annnnd result is %@",self->OCRJSONResult);
+                [self setupDocument : imageToOCR];
+                
+                //Test image from tempoate builder is 1275 × 1650
+                [self applyTemplate : ot];
+                [self cleanupInvoice];
+                ///NEED TO WRITE EXP TOO!!
+                [self->_delegate didPerformOCR:@"OCR OK?"];
+            }
         }
     }];
     [task resume];
@@ -273,7 +298,8 @@ static OCRTopObject *sharedInstance = nil;
 {
     NSString * stubbedDocName = @"beef";
     OCRJSONResult = [self readTxtToJSON:stubbedDocName];
-    [self setupDocument];
+    [self setupDocument : imageToOCR];
+    NSLog(@" template was made w/ image 1275x1650y");
     [self applyTemplate : ot];
 
 }
@@ -323,11 +349,17 @@ static OCRTopObject *sharedInstance = nil;
 }
 
 //=============(OCRTopObject)=====================================================
--(void) setupDocument
+-(void) setupTestDocumentJSON : (NSDictionary *) json
+{
+    OCRJSONResult = json;
+}
+
+//=============(OCRTopObject)=====================================================
+-(void) setupDocument : (UIImage *)imageToOCR
 {
     NSLog(@" setup doc...");
     //Do I need anything but the dictionary here??
-    [od setupDocument : _imageFileName : OCRJSONResult : FALSE];
+    [od setupDocumentWIthImage : imageToOCR : OCRJSONResult ];
     tlRect = [od getTLRect];
     trRect = [od getTRRect];
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
@@ -338,26 +370,98 @@ static OCRTopObject *sharedInstance = nil;
 
 
 //=============(OCRTopObject)=====================================================
--(void) dumpResults
+// Assumes invoice prices are in cleaned-up post OCR area...
+//  also smartCount must be set!
+-(void) writeEXPToParse
+{
+    [et clear];
+    for (int i=0;i<od.longestColumn;i++) //OK this does multiple parse saves at once!
+    {
+        NSMutableArray *ac = [od getRowFromColumnStringData : i];
+        if (ac.count < 5)
+        {
+            NSLog(@" bad row pulled in EXP save!");
+            return;
+        }
+        [smartp clear];
+        [smartp addVendor:_vendor]; //Is this the right string?
+        NSString *productName = ac[od.descriptionColumn]; //3rd column?
+        [smartp addProductName:productName];
+        [smartp addDate:_invoiceDate];
+        [smartp addLineNumber:i+1];
+        [smartp analyzeSimple]; //fills out fields -> smartp.latest...
+        NSLog(@" analyze OK %d",smartp.analyzeOK);
+        if (smartp.analyzeOK) //Only save valid stuff!
+        {
+            [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :
+             ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
+             _vendor : productName : smartp.latestProcessed :
+             smartp.latestLocal : smartp.latestLineNumber : _invoiceNumberString :
+             [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i] :
+             @"NoBatch" : @"NoErr" : _imageFileName];
+        } //end analyzeOK
+    } //end for loop
+    [et saveToParse];
+    
+} //end writeEXPToParse
+
+
+//=============(OCRTopObject)=====================================================
+-(NSString *) dumpResults
 {
     NSString *r = @"Invoice Parsed Results\n";
     r = [r stringByAppendingString:
-         [NSString stringWithFormat:@"Supplier %@\n",invoiceSupplier]];
+         [NSString stringWithFormat:@"Supplier %@\n",_vendor]];
     r = [r stringByAppendingString:
-         [NSString stringWithFormat: @"Number %ld  Date %@\n",invoiceNumber,invoiceDate]];
+         [NSString stringWithFormat: @"Number %ld  Date %@\n",_invoiceNumber,_invoiceDate]];
     r = [r stringByAppendingString:
-         [NSString stringWithFormat:@"Customer %@  Total %f\n",invoiceCustomer,invoiceTotal]];
+         [NSString stringWithFormat:@"Customer %@  Total %f\n",_invoiceCustomer,_invoiceTotal]];
     r = [r stringByAppendingString:
-         [NSString stringWithFormat:@"Columns:%@\n",columnHeaders]];
+         [NSString stringWithFormat:@"Columns:%@\n",_columnHeaders]];
     r = [r stringByAppendingString:@"Invoice Rows:\n"];
     for (NSString *rowi in rowItems)
     {
         r = [r stringByAppendingString:[NSString stringWithFormat:@"[%@]\n",rowi]];
     }
     NSLog(@"dump[%@]",r);
+    return r;
     //[self alertMessage:@"Invoice Dump" :r];
     
 }
+
+#pragma mark - EXPTableDelegate
+//=============(OCRTopObject)=====================================================
+- (void)didSaveEXPTable  : (NSArray *)a
+{
+    NSLog(@" EXP TABLE SAVED (OCR VC), save invoice now...");
+    //Time to setup invoice object too!
+    [it clear];
+    [it setupVendorTableName : _vendor];
+    NSString *its = [NSString stringWithFormat:@"%4.2f",_invoiceTotal];
+    its = [od cleanupPrice:its]; //Make sure total is formatted!
+    [it setupVendorTableName:_vendor];
+    [it setBasicFields:_invoiceDate : _invoiceNumberString : its : _vendor : _invoiceCustomer];
+    for (NSString *objID in a) [it addInvoiceItemByObjectID : objID];
+    [it saveToParse];
+} //end didSaveEXPTable
+
+
+//=============(OCRTopObject)=====================================================
+- (void)didReadEXPTableAsStrings : (NSString *)s
+{
+    //spinner.hidden = TRUE;
+    //[spinner stopAnimating];
+    
+    //[self mailit: s];
+}
+
+#pragma mark - invoiceTableDelegate
+//=============OCR VC=====================================================
+- (void)didSaveInvoiceTable:(NSString *) s
+{
+    [self->_delegate didSaveOCRDataToParse:s];
+}
+
 
 
 @end

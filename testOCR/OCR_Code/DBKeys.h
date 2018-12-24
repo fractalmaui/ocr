@@ -35,15 +35,24 @@
 #define PInv_ErrStatus_key @"ErrStatus"
 #define PInv_PDFFile_key @"PDFFile"
 
+//Batch table...
+#define PInv_BatchID_key @"BatchID"
+#define PInv_BatchFiles_key @"BatchFiles"
+#define PInv_BatchStatus_key @"BatchStatus"
+#define PInv_BatchProgress_key @"BatchProgress"
+#define PInv_BatchErrors_key @"BatchErrors"
 
 
 
 
-#define PInv_VersionNumber @"versionNumber"
+//Activity Table
 #define PInv_ActivityType @"ActivityType"
 #define PInv_ActivityData @"ActivityData"
 
 //Invoice table items...
 #define PInv_EXPObjectID_key @"EXPObjectID"
 #define PInv_CustomerKey @"Customer"
+
+//Generic
+#define PInv_VersionNumber @"versionNumber"
 

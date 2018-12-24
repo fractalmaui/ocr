@@ -73,6 +73,7 @@
     [super viewDidAppear:animated];
 
 
+    [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
    // [self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }

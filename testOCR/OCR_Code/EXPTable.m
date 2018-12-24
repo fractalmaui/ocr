@@ -38,10 +38,37 @@
     [objectIDs removeAllObjects];
 }
 
+#define PInv_Local_key @"Local"
+#define PInv_LineNumber_key @"LineNumber"
+
+
 //=============(EXPTable)=====================================================
 -(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile
 {
-    NSLog(@" addr.. %@",productName);
+    NSString *errstr = @"";
+    //ERR Check! Look for nils! Clumsy but it's all we can do w/ all these args!
+    if (fdate == nil)       errstr = PInv_Date_key;
+    if (category == nil)    errstr = PInv_Category_key;
+    if (month == nil)       errstr = PInv_Month_key;
+    if (item == nil)        errstr = PInv_Item_key;
+    if (uom == nil)         errstr = PInv_UOM_key;
+    if (bulk == nil)        errstr = PInv_Bulk_or_Individual_key;
+    if (vendor == nil)      errstr = PInv_Vendor_key;
+    if (productName == nil) errstr = PInv_ProductName_key;
+    if (processed == nil)   errstr = PInv_Processed_key;
+    if (local == nil)       errstr = PInv_Local_key;
+    if (lineNumber == nil)  errstr = PInv_LineNumber_key;
+    if (pricePerUOM == nil) errstr = PInv_PricePerUOM_key;
+    if (total == nil)       errstr = PInv_TotalPrice_key;
+    if (batch == nil)       errstr = PInv_Batch_key;
+    if (errStatus == nil)   errstr = PInv_ErrStatus_key;
+    if (PDFFile == nil)     errstr = PInv_PDFFile_key;
+    if (errstr.length > 1) //Got an error?
+    {
+        NSLog(@"%@",[NSString stringWithFormat:@"  EXPerr:null(%@)",errstr]);
+        return;
+    }
+    
     EXPObject *exo = [[EXPObject alloc] init];
     exo.expdate = fdate;
     exo.category = category;

@@ -28,7 +28,7 @@
         ocrBoxes      = [[NSMutableArray alloc] init];
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
         recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
-
+        orientationWhenReadable = @"portrait";
         //[self dump];
     }
     return self;
@@ -73,6 +73,58 @@
     }
     return -1;
 }
+
+//=============(OCRTemplate)=====================================================
+-(int) getColumnXRanges
+{
+    int count;
+    //Set up pre-ordered column x expanses...
+    for (count=0;count<32;count++)
+    {
+        cxrange1[count] = cxrange2[count] = cptrs[count] = 0;
+    }
+    int cptr=0;
+    for (count=0;count < ocrBoxes.count;count++)
+    {
+        OCRBox *ob1 = ocrBoxes[count];
+        if ([ob1.fieldName isEqualToString : INVOICE_COLUMN_FIELD])
+        {
+            cxrange1[cptr] = ob1.frame.origin.x;
+            cxrange2[cptr] = ob1.frame.origin.x + ob1.frame.size.width;
+            cptrs[cptr]  = count;
+            cptr++;
+        }
+    }
+    maxcptr = cptr;
+    return cptr; //Return our final column count
+} //end getColumnXRanges
+
+//=============(OCRTemplate)=====================================================
+// Double check column alignment and prevent overlaps... assumes pre-ordered!
+-(void) cleanupColumns
+{
+    return; //THERE IS A BUG; FIX BEFORE USING THIS!
+    //Somehow it had 2 good columns but then collapsed the RH one onto the LH one!
+    //  and the newWid came out NEGATIVE!
+    if ([self getColumnXRanges] < 2) return; //Not enuf columns to check!
+    for (int i=0;i < maxcptr-1;i++)
+    {
+        int testl = cxrange2[i];
+        int testr = cxrange1[i+1];
+        if (testl >= testr) //OVERLAP! fix column to left
+        {
+            //adjust this column!
+            NSLog(@" ....fix overlap! col %d vs %d",i,i+1);
+            int cptr = cptrs[i];
+            OCRBox *ob1 = ocrBoxes[cptr]; //Get box to fix...
+            int xleft = ob1.frame.origin.x;
+            int newWid = testr - 1 - xleft;
+            NSLog(@"  ..fix colunn %d [%d] :x [%d] newwid %d",i,cptr,xleft,newWid);
+            ob1.frame = CGRectMake(ob1.frame.origin.x, ob1.frame.origin.y, newWid, ob1.frame.size.height);
+            ocrBoxes[cptr] = ob1; //Re-insert fixed box
+        }
+    } //end for count
+} //end cleanupColumns
 
 //=============(OCRTemplate)=====================================================
 -(void) addBox : (CGRect) frame : (NSString *)fname : (NSString *)format
@@ -197,10 +249,12 @@
     for (NSString *substr in sitems)
     {
         NSArray *titems =  [substr componentsSeparatedByString:@","];
+        //First we have a header with general info...
         if ([titems[0] isEqualToString:INVOICE_TOP_LIMITS_LABEL]) //Look for top limits
              {
                  NSLog(@" parse rect...");
                  int ptr = 1;
+                 orientationWhenReadable = titems[ptr++];
                  CGRect rr1 = [self getRectFromStringItems:titems :ptr];
                  CGRect rr2 = [self getRectFromStringItems:titems :ptr+4];
                  if (rr1.size.width > 0) //Only handle valid rects?
@@ -255,8 +309,8 @@
 {
     NSString *s = @"";
     //First pack invoice limits...
-    s = [s stringByAppendingString:[NSString stringWithFormat:@"%@,%d,%d,%d,%d,%d,%d,%d,%d;",
-                                    INVOICE_TOP_LIMITS_LABEL,
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"%@,%@,%d,%d,%d,%d,%d,%d,%d,%d;",
+                                    INVOICE_TOP_LIMITS_LABEL,orientationWhenReadable,
                                     (int)tlDocRect.origin.x,(int)tlDocRect.origin.y,
                                     (int)tlDocRect.size.width,(int)tlDocRect.size.height,
                                     (int)trDocRect.origin.x,(int)trDocRect.origin.y,
@@ -397,6 +451,7 @@
 -(void) saveTemplatesToDisk : (NSString *)vendorName
 {
     NSError *err;
+    [self cleanupColumns];
     fileWorkString = [self packToString];
     fileLocation  = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.tmp",vendorName]];
 
@@ -414,6 +469,7 @@
 {
     PFQuery *query = [PFQuery queryWithClassName:@"templates"];
     [query whereKey:@"vendor" equalTo:vendorName];
+    [query orderByDescending:@"createdAt"]; //Get latest saved template (there may be many edits)...
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->ocrBoxes removeAllObjects];
@@ -430,7 +486,7 @@
         }
         else
         {
-            NSLog(@" no template / error");//asdf
+            NSLog(@" no template / error");
             [self.delegate errorReadingTemplate : @"Read Error"];
         }
     }];
@@ -463,6 +519,7 @@
 {
     //NSLog(@" unique User: savetoParse %@ %@ %@ %@",ampUserID,userID,userName,fbID);
     PFObject *templateRecord = [PFObject objectWithClassName:@"templates"];
+    [self cleanupColumns];
     templateRecord[@"vendor"]        = vendorName;
     templateRecord[@"packedString"]  = [self packToString];
     templateRecord[PInv_VersionNumber] = _versionNumber;

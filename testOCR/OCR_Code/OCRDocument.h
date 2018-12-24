@@ -72,6 +72,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray *) cleanUpPriceColumns : (int) index : (NSMutableArray*) a;
 -(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;
+-(void) dumpArray : (NSArray*)a;
+
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
 -(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr;
 -(int) findIntInArrayOfFields : (NSArray*)aof;
@@ -99,6 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
 -(void) setScalingRects;
 -(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
+-(void) setupDocumentWIthImage : (UIImage*) image : (NSDictionary *)d;
 @end
 
 NS_ASSUME_NONNULL_END

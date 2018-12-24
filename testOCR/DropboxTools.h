@@ -30,6 +30,7 @@
 
 @property (nonatomic , strong) NSMutableArray* batchFileList;
 @property (nonatomic , strong) NSMutableArray* batchImages;
+@property (nonatomic , strong) NSMutableArray* batchImagePaths;
 @property (nonatomic , strong) NSString* prefix;
 @property (nonatomic , strong) NSArray* entries;
 
@@ -55,5 +56,6 @@
 - (void)didGetBatchList : (NSArray *)a;
 - (void)didCountEntries : (NSString *)vname : (int) count;
 - (void)errorGettingBatchList : (NSString *)s;
-- (void)didDownloadImages : (NSArray *)a;
+- (void)didDownloadImages;
+- (void)errorDownloadingImages : (NSString *)s;
 @end

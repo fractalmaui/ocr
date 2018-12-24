@@ -39,6 +39,7 @@ static BatchObject *sharedInstance = nil;
 
         dbt = [[DropboxTools alloc] init];
         dbt.delegate = self;
+        [dbt setParent:self];
         
         ot  = [[OCRTemplate alloc] init];
         ot.delegate = self;
@@ -49,6 +50,10 @@ static BatchObject *sharedInstance = nil;
 
         vv  = [Vendors sharedInstance];
 
+        act = [[ActivityTable alloc] init];
+
+        tableName = @"Batch";
+        
         _authorized = FALSE;
         
 //        catCSV = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
@@ -66,6 +71,7 @@ static BatchObject *sharedInstance = nil;
 {
     [vendorFileCounts removeAllObjects];
     [vendorFolders removeAllObjects];
+    
     for (NSString *vn in vv.vFolderNames)
     {
         [dbt countEntries : batchFolder : vn];
@@ -86,12 +92,20 @@ static BatchObject *sharedInstance = nil;
 {
     if (!_authorized) return; //can't get at dropbox w/o login!
     [self getNewBatchID];
+    batchStatus   = BATCH_STATUS_RUNNING;
+    batchErrors   = @"";
+    batchFiles    = @"";
+    batchProgress = @"";
+    [self.delegate batchUpdate : @"Started Batch..."];
 
-    vendorName = vname;
+    vendorName    = vname;
+    [self updateParse];
+    [act saveActivityToParse:@"Batch Started" : vname];
     if (index >= 0)
     {
         gotTemplate = FALSE;
         [ot readFromParse:vendorName]; //Get our template
+        // This performs handoff to the actual running ...
         [dbt getBatchList : batchFolder : vv.vFolderNames[index]];
     }
     else
@@ -100,19 +114,32 @@ static BatchObject *sharedInstance = nil;
     }
 } //end runOneOrMoreBatches
 
+//=============(BatchObject)=====================================================
+-(void) setParent : (UIViewController*) p
+{
+    parent = p;
+    [dbt setParent:p];
+}
+
 
 //=============(BatchObject)=====================================================
 // Given a list of PDF's in one vendor folder, download pDF and
 //  run OCR on all pages...
--(void) downloadAndProcessFiles : (NSArray *)a
+-(void) downloadAndProcessFiles : (NSArray *)pdfEntries
 {
     int i=0;
-    for (DBFILESMetadata *entry in a)
+    batchTotal = (int)pdfEntries.count;
+    batchCount = 1;
+    for (DBFILESMetadata *entry in pdfEntries)
     {
         NSString *itemName = [NSString stringWithFormat:@"%@/%@",dbt.prefix,entry.name];
         //NSLog(@" ...item[%d] %@",i,itemName);
         [dbt downloadImages:itemName]; //Asyncbonous, need to finish before handling results
         i++;
+        batchCount = i;
+        batchProgress = [NSString stringWithFormat:@"Fetch File %d of %d",batchCount,batchTotal];
+        [self.delegate batchUpdate : batchProgress];
+        [self updateParse];
     }
 } //end downloadAndProcessFiles
 
@@ -132,29 +159,77 @@ static BatchObject *sharedInstance = nil;
 
 //=============(BatchObject)=====================================================
 // Handles each page that came back from one PDF as an UIImage...
--(void) processFiles : (NSArray *)a
+-(void) processFiles : (NSArray *)paths : (NSArray *)pdfPages
 {
     if (!gotTemplate)
     {
         NSLog(@" ERROR: tried to process images w/o template");
         return;
     }
-    for (UIImage *ii in a) //Handle all images that came back from latest PDF...
+    batchProgress = [NSString stringWithFormat:@"Process File %d of %d",batchCount,batchTotal];
+    [self.delegate batchUpdate : batchProgress];
+
+    //Template MUST be ready at this point!
+    batchPage = 0;
+    batchTotalPages = (int)pdfPages.count;
+    for (UIImage *nextPageImage in pdfPages) //Handle all images that came back from latest PDF...
     {
-        NSLog(@" ...do OCR on image [%@][%@]",vendorName,ii);
-//        [oto performOCROnImage : @"empty" : ii : ot];
-        [oto stubbedOCR : @"empty" : ii : ot];
-        
-    }
+        NSString *ipath = [paths objectAtIndex:batchPage];
+        //template was made w/ image 1275x1650y, try test scaling for now
+        //KLUGE!!!! this only works for hawaii beef products!
+        UIImage *imageToOCR =  [nextPageImage imageByScalingAndCroppingForSize : CGSizeMake(1650,1275)  ];  //DHS 3/26
+        NSLog(@" ...do OCR on image [%@][%@]",vendorName,imageToOCR);
+        //If filename doesn't have .pdf,.jpg,.png,.jpeg,.bmp,.gif the OCR fails!
+        oto.imageFileName = ipath;
+        [oto performOCROnImage : imageToOCR : ot];
+//        [oto stubbedOCR : ipath : imageToOCR : ot];
+    } //end for nextPageImage
 } //end processFiles
+
+//=============(BatchObject)=====================================================
+-(void) handleBatchError : (NSString *) errstr
+{
+    batchErrors = errstr;
+    [self updateParse];
+    [self.delegate batchUpdate : @"Batch Failed"];
+    [act saveActivityToParse:@"Batch Error" : batchErrors];
+    [dbt errMsg : @"Error getting Batch List" : batchErrors];
+    [self.delegate didFailBatch];
+}
 
 
 //=============(BatchObject)=====================================================
-// Just passes the buck dpown to dropbox, which needs err msg support
--(void) setParent : (UIViewController*) p
+-(void) updateParse
 {
-    [dbt setParent : p];
-}
+    PFQuery *query = [PFQuery queryWithClassName:tableName];
+    [query whereKey:PInv_BatchID_key equalTo:_batchID];   //Look for current batch
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            PFObject *pfo;
+            if (objects.count > 0) //Got something? Update...
+                pfo = objects[0];
+            else
+                pfo = [PFObject objectWithClassName:self->tableName];
+            pfo[PInv_BatchID_key]       = self->_batchID;
+            pfo[PInv_BatchStatus_key]   = self->batchStatus;
+            pfo[PInv_Vendor_key]        = self->vendorName;
+            pfo[PInv_BatchFiles_key]    = self->batchFiles;
+            pfo[PInv_BatchProgress_key] = self->batchProgress;
+            pfo[PInv_BatchErrors_key]   = self->batchErrors;
+            [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
+                if (succeeded)
+                {
+                    NSLog(@" ...batch updated[%@]->parse",self->_batchID);
+                    //                    [self.delegate whateverdoIneedhere?];
+                }
+                else
+                {
+                    NSLog(@" ERROR: updating batch: %@",error.localizedDescription);
+                }
+            }]; //End save
+        } //End !error
+    }]; //End findobjects
+} //end saveToParse
 
 
 #pragma mark - DropboxToolsDelegate
@@ -169,7 +244,7 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 - (void)errorGettingBatchList : (NSString *)s
 {
-    NSLog(@" batch err %@",s);
+    [self handleBatchError : s];
 }
 
 //=============(BatchObject)=====================================================
@@ -182,15 +257,22 @@ static BatchObject *sharedInstance = nil;
     {
         [self->_delegate didGetBatchCounts];
     }
+} //end didCountEntries
+
+
+//=============(BatchObject)=====================================================
+- (void)didDownloadImages
+{
+    //At this point we have all the images for a file, ready to process!
+    NSLog(@" ...downloaded all images? got %d",(int)dbt.batchImages.count);
+    [self processFiles : dbt.batchImagePaths : dbt.batchImages];
 }
 
 
 //=============(BatchObject)=====================================================
-- (void)didDownloadImages : (NSArray *)a
+- (void)errorDownloadingImages : (NSString *)s
 {
-    //At this point we have all the images for a file, ready to process!
-    NSLog(@" ...downloaded all images? %d",(int) a.count);
-    [self processFiles : a];
+    [self handleBatchError : s];
 }
 
 #pragma mark - OCRTemplateDelegate
@@ -206,8 +288,8 @@ static BatchObject *sharedInstance = nil;
 - (void)errorReadingTemplate : (NSString *)errmsg
 {
     NSString *s = [NSString stringWithFormat:@"%@ Template Error [%@]",vendorName,errmsg];
-    [dbt errMsg : @"Error reading template" : s];
     gotTemplate = FALSE;
+    [self handleBatchError : s];
 }
 
 
@@ -216,14 +298,26 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 - (void)didPerformOCR : (NSString *) result
 {
-    NSLog(@" OCR OK");
+    NSLog(@" OCR OK page %d tp %d  count %d total %d",batchPage,batchTotalPages,batchCount,batchTotal);
+    batchPage++;
+    if (batchPage == batchTotalPages)
+    {
+        batchCount++;
+        if (batchCount == batchTotal)
+        {
+            batchStatus = BATCH_STATUS_COMPLETED;
+            [self updateParse];
+            [act saveActivityToParse:@"Batch Completed" : vendorName];
+            [self.delegate didCompleteBatch];
+        }
+    }
 }
 
 
 //=============(BatchObject)=====================================================
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
-    NSLog(@" OCR ERR %@",errMsg);
+    [self handleBatchError : errMsg];
 }
 
 

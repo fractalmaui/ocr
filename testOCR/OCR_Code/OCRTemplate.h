@@ -35,7 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *documentsDirectory;
     
     NSMutableArray *recordStrings;
-
+    NSString * orientationWhenReadable;
+    //Column x ranges and ptrs to box data
+    int cxrange1[32],cxrange2[32],cptrs[32];
+    int maxcptr;
 }
 
 #define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"

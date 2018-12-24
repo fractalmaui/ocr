@@ -126,6 +126,10 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="3WQ-0N-jJ4">
+                                <rect key="frame" x="177" y="323" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -139,6 +143,7 @@
                         <viewLayoutGuide key="safeArea" id="gvF-Lp-2yq"/>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="3WQ-0N-jJ4" id="To1-0j-rze"/>
                         <outlet property="batchTableLabel" destination="OnS-7d-d9N" id="pJZ-RG-a1Y"/>
                         <outlet property="titleLabel" destination="Jdd-jB-2mF" id="vYC-fN-37g"/>
                     </connections>

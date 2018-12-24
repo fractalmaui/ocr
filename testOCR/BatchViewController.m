@@ -26,9 +26,8 @@
 
     bbb = [BatchObject sharedInstance];
     bbb.delegate = self;
+    [bbb setParent:self];
     vv  = [Vendors sharedInstance];
-//    ot  = [[OCRTemplate alloc] init];
-//    ot.delegate = self;
     authorized = FALSE;
     return self;
 }
@@ -39,6 +38,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    _activityIndicator.hidden = FALSE;
+    [_activityIndicator startAnimating];
+    _titleLabel.text = @"Getting Batch Info...";
+    _batchTableLabel.text = @"...";
     [bbb getBatchCounts];
 }
 
@@ -48,7 +51,7 @@
     //Check for authorization...
     if ([DBClientsManager authorizedClient] || [DBClientsManager authorizedTeamClient])
     {
-        NSLog(@" dropbox authorized...");
+        //NSLog(@" dropbox authorized...");
         authorized = TRUE;
         bbb.authorized = TRUE;
         
@@ -56,7 +59,7 @@
     } //end auth OK
     else
     {
-        NSLog(@" need to be authorized...");
+        //NSLog(@" need to be authorized...");
         [DBClientsManager authorizeFromController:[UIApplication sharedApplication]
                                        controller:self
                                           openURL:^(NSURL *url) {
@@ -81,8 +84,8 @@
     NSString *s = @"Staged Files by Vendor:\n\n";
     for (NSString *vn in vv.vFolderNames)
     {
-       int vc = [bbb getVendorFileCount:vn];
-        NSLog(@" v[%@]: %d",vn,vc);
+        int vc = [bbb getVendorFileCount:vn];
+        //NSLog(@" v[%@]: %d",vn,vc);
         s = [s stringByAppendingString:[NSString stringWithFormat:@"%@ :%d\n",vn,vc]];
         
     }
@@ -106,20 +109,30 @@
     UIAlertAction *actions[MAX_POSSIBLE_VENDORS]; //Up to 16 vendors...
 
     int i = 0;
+    int vindex = 0;
     for (NSString *s in vv.vNames)
     {
-        actions[i] = [UIAlertAction actionWithTitle:s
-                                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                                  self->vendorName = s;
-                                                                  [self->bbb runOneOrMoreBatches : s : i];
-                                                              }];
-        i++;
-        if (i >= MAX_POSSIBLE_VENDORS) break;
+        int vc = [bbb getVendorFileCount:vv.vFolderNames[vindex]];
+        if (vc > 0) //Don't add a batch run option for empty batch folders!
+        {
+            actions[i] = [UIAlertAction actionWithTitle:s
+                                                  style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                      self->vendorName = s;
+                                                      self->_activityIndicator.hidden = FALSE;
+                                                      [self->_activityIndicator startAnimating];
+                                                      [self->bbb runOneOrMoreBatches : s : i];
+                                                  }];
+            i++;
+            if (i >= MAX_POSSIBLE_VENDORS) break;
+        }
+        vindex++; //Update vendor index (for checking vendor filecounts)
     }
 #ifdef CAN_RUN_ALL_BATCHES
     UIAlertAction *allAction    = [UIAlertAction actionWithTitle:NSLocalizedString(@"Run All",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               [self runOneOrMoreBatches:-1];
+                                                               self->_activityIndicator.hidden = FALSE;
+                                                               [self->_activityIndicator startAnimating];
+                                                               [self->bbb runOneOrMoreBatches:@"":-1];
                                                            }];
 #endif
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
@@ -140,5 +153,34 @@
 -(void) didGetBatchCounts
 {
     [self updateUI];
+    _activityIndicator.hidden = TRUE;
+    [_activityIndicator stopAnimating];
+    _titleLabel.text = @"Batch Processor Ready";
+
+
 }
+
+//=============Batch VC=====================================================
+- (void)didCompleteBatch
+{
+    _activityIndicator.hidden = TRUE;
+    [_activityIndicator stopAnimating];
+    _titleLabel.text = @"Batch Completed!";
+}
+
+//=============Batch VC=====================================================
+- (void)didFailBatch
+{
+    NSLog(@" batch FAILURE!");
+    _activityIndicator.hidden = TRUE;
+    [_activityIndicator stopAnimating];
+}
+
+//=============Batch VC=====================================================
+- (void)batchUpdate : (NSString *) s
+{
+    _titleLabel.text = s;
+}
+
+
 @end

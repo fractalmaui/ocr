@@ -157,7 +157,7 @@
     [iRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...invoiceTable [vendor:%@] saved to parse",self->_ivendor);
-            [self.delegate didSaveInvoiceTable];
+            [self.delegate didSaveInvoiceTable:_inumber];
         } else {
             NSLog(@" ERROR: saving invoice: %@",error.localizedDescription);
         }

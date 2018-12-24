@@ -26,9 +26,11 @@
     UIViewController *parent;
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *batchTableLabel;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
+
 - (IBAction)cancelSelect:(id)sender;
 - (IBAction)runSelect:(id)sender;
-@property (weak, nonatomic) IBOutlet UILabel *batchTableLabel;
 
 @end
 

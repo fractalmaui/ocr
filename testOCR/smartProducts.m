@@ -323,7 +323,7 @@
             return TRUE;
         }
         else
-            NSLog(@" error matching category for %@",fullProductName);
+            NSLog(@" .. no category found in cat CSV, try builtins...(%@)",fullProductName);
     }
     for (NSString *nextWord in pItems)
     {

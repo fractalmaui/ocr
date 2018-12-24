@@ -19,6 +19,7 @@
 #import "OCRWord.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
+#import "OCRTopObject.h"
 #import "imageTools.h"
 #import "MagnifierView.h"
 #import "smartProducts.h"
@@ -56,7 +57,7 @@
 
 
 @interface EditTemplateVC : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate,
-                                            invoiceTableDelegate,EXPTableDelegate>
+                                            invoiceTableDelegate,EXPTableDelegate,OCRTopObjectDelegate>
 {
     
     UIActivityIndicatorView *spinner;
@@ -66,6 +67,8 @@
     CFDataRef pixelData;
     OCRDocument *od;
     OCRTemplate *ot;
+    OCRTopObject *oto; //Performs OCR using template and document...
+
     UIView *selectBox;
     CGRect selectDocRect;
     CGRect pageRect;
