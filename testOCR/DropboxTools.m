@@ -39,6 +39,7 @@ static DropboxTools *sharedInstance = nil;
         _batchFileList   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImages     = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImagePaths = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        _batchImageData  = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         client           = [DBClientsManager authorizedClient];
     }
     return self;
@@ -76,6 +77,7 @@ static DropboxTools *sharedInstance = nil;
 // Must be able to handle multiple pages : adds to internal array...
 -(void)addImagesFromPDFData : (NSData *)fileData : (NSString *) imagePath
 {
+    [_batchImageData addObject:fileData];
     CFDataRef pdfData = (__bridge CFDataRef) fileData;
     CGDataProviderRef provider = CGDataProviderCreateWithCFData(pdfData);
     CGPDFDocumentRef pdf = CGPDFDocumentCreateWithProvider(provider);
@@ -219,10 +221,11 @@ static DropboxTools *sharedInstance = nil;
 - (void)downloadImages:(NSString *)imagePath
 {
     DBUserClient *client = [DBClientsManager authorizedClient];
-    //NSLog(@" dload image %@",imagePath);
+    NSLog(@" dropbox dload image %@",imagePath);
     
-    [_batchImages removeAllObjects];
+    [_batchImages     removeAllObjects];
     [_batchImagePaths removeAllObjects];
+    [_batchImageData  removeAllObjects];
     [[client.filesRoutes downloadData:imagePath]
      setResponseBlock:^(DBFILESFileMetadata *result, DBFILESDownloadError *routeError, DBRequestError *error, NSData *fileData) {
          if (result) {
@@ -231,6 +234,7 @@ static DropboxTools *sharedInstance = nil;
              if ([imagePath.lowercaseString containsString:@"pdf"])
              {
                  [self addImagesFromPDFData:fileData:imagePath]; //May add more than one image!
+                 return; //Delegate gets called later...
              } //end .pdf string
              else //Jpg / PNG file?
              {
@@ -241,6 +245,7 @@ static DropboxTools *sharedInstance = nil;
                      [self->_batchImagePaths addObject:imagePath];
                  }
              }
+             NSLog(@" ....dropbox delegate...");
              [self->_delegate didDownloadImages];
          } else {
              NSString *title = @"";

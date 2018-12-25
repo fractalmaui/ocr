@@ -83,6 +83,7 @@
 
 + (id)sharedInstance;
 - (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot;
+- (void)performOCROnData : (NSData *)imageDataToOCR : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 -(void) setupTestDocumentJSON : (NSDictionary *) json;  //FOR TESTING ONLY
 - (void)applyTemplate : (OCRTemplate *)ot;             //FOR TESTING ONLY

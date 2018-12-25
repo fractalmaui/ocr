@@ -309,8 +309,12 @@
     _latestCategory = @"EMPTY";
     NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
     
+    //Bail on any weird product names, or obviously NON-product items found in this column...
+    if ([fullProductName containsString:@"SUBTOTAL"]) return FALSE;
+    if ([fullProductName containsString:@"CHARGE"]) return FALSE;
+
     //Try matching with built-in CSV file first...
-    NSMutableArray *a = [occ matchCategory:fullProductName];
+    NSArray *a = [occ matchCategory:fullProductName];
     if (a != nil)  //Match?
     {
         if (a.count >= 4)
@@ -323,7 +327,7 @@
             return TRUE;
         }
         else
-            NSLog(@" .. no category found in cat CSV, try builtins...(%@)",fullProductName);
+            NSLog(@" ...CSV cat miss...(%@)",fullProductName);
     }
     for (NSString *nextWord in pItems)
     {

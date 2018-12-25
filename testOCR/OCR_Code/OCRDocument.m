@@ -301,6 +301,7 @@
 //  are words' origin at top left or bottom left?
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr
 {
+    
     int xi,yi,x2,y2,index;
     xi = (int)rr.origin.x;  //Get bounding box limits...
     yi = (int)rr.origin.y;
@@ -310,8 +311,14 @@
     index = 0;
     for (OCRWord *ow  in allWords)
     {
+        //asdf
         int x = (int)ow.left.intValue; //Get top left corner?
         int y = (int)ow.top.intValue;
+        //DHS CLUGE::: try do template -> document space conversion
+        //  should work for docs of any zoomed size
+        x = [self getConvertedX:x];
+        y = [self getConvertedY:y];
+        
         if (x >= xi && x <= x2 && y >= yi && y <= y2) //Hit!
         {
             NSNumber *n = [NSNumber numberWithInt:index];
@@ -327,7 +334,7 @@
 } //end findAllWordsInRect
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(void) addIgnoreBoxItems  : (CGRect )rr
 {
     useIgnoreList = FALSE;
@@ -338,7 +345,7 @@
     useIgnoreList = TRUE;
 } //end addIgnoreBoxItems
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Look at some random words, get average height thereof
 -(void) getAverageGlyphHeight
 {
@@ -355,7 +362,7 @@
 } //end getAverageGlyphHeight
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
 -(NSArray*)  getHeaderNames
 {
@@ -368,7 +375,7 @@
     return hn;
 } //end getHeaderNames
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Gets sorted array of words as they should appear in a sentence, given
 //  an array of separate words assumed to be in a retangle. Produces a hash
 //  for each word that guarantees proper sentence placement
@@ -398,7 +405,7 @@
     return wordPairs;
 } //end getSortedWordPairsFromArray
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Array of words is coming in from a box, take all words and make a sentence...
 //  Numeric means don't padd with spaces...
 -(NSString *) assembleWordFromArray : (NSMutableArray *) a : (BOOL) numeric
@@ -417,7 +424,7 @@
 
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) index
 {
@@ -449,7 +456,7 @@
     return resultStrings;
 } //end getColumnStrings
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*) getHeaderStringFromRect : (CGRect)rr
 {
     NSString *cname = @"";
@@ -463,12 +470,12 @@
 }
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric
 {
     //Get all content within this rect, assume one item per line!
     NSMutableArray *a = [self findAllWordsInRect:rr];
-    [self dumpArray:a];
+    //[self dumpArray:a];
     //NSLog(@" gcYPs %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
     NSMutableArray *colPairs = [[NSMutableArray alloc] init];
     int oldy = -99999;
@@ -493,7 +500,7 @@
     
 } //end getColumnYPositionsInRect
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Assumes 2D column array fully populated....
 -(NSMutableArray *) getRowFromColumnStringData : (int)index
 {
@@ -508,7 +515,7 @@
     return a;
 } //end getRowFromColumnStringData
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Gets absolute limit for all text found on document, stores in CGRect
 -(CGRect) getDocRect
 {
@@ -531,7 +538,7 @@
     return _docRect;
 } //end getDocRect
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(CGRect) getWordRectByIndex : (int) index
 {
     if (index < 0 || index >= allWords.count) return CGRectMake(0,0, 0, 0);
@@ -540,7 +547,7 @@
                       ow.width.intValue, ow.height.intValue);
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(CGRect) getBLRect
 {
     int minx,maxy,index,foundit;
@@ -562,7 +569,7 @@
     return  [self getWordRectByIndex:foundit];
 } //end getBLRect
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(CGRect) getBRRect
 {
     int maxx,maxy,index,foundit;
@@ -585,7 +592,7 @@
 } //end getBRRect
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(CGRect) getTLRect
 {
     int minx,miny,index,foundit;
@@ -607,7 +614,7 @@
     return  [self getWordRectByIndex:foundit];
 } //end getTLRect
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(CGRect) getTRRect
 {
     int maxx,miny,index,foundit;
@@ -632,7 +639,7 @@
     return  [self getWordRectByIndex:foundit];
 } //end getTRRect
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(BOOL) isStringAnInteger : (NSString *)s
 {
     NSCharacterSet *alphaNums = [NSCharacterSet decimalDigitCharacterSet];
@@ -640,7 +647,7 @@
     return [alphaNums isSupersetOfSet:inStringSet];
 } //end isStringAnInteger
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(BOOL) isStringAnLog : (NSString *)s
 {
     NSCharacterSet *alphaNums = [NSCharacterSet decimalDigitCharacterSet];
@@ -648,7 +655,7 @@
     return [alphaNums isSupersetOfSet:inStringSet];
 } //end isStringAnInteger
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(BOOL) isStringAPrice : (NSString *)s
 {
     NSCharacterSet *alphaNums = [NSCharacterSet characterSetWithCharactersInString:@"0123456789."];
@@ -656,35 +663,35 @@
     return [alphaNums isSupersetOfSet:inStringSet];
 } //end isStringAnInteger
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*)getNthWord : (NSNumber*)n
 {
     OCRWord *ow = [allWords objectAtIndex:n.longValue];
     return ow.wordtext;
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSNumber*)getNthXCoord : (NSNumber*)n
 {
     OCRWord *ow = [allWords objectAtIndex:n.longValue];
     return ow.left;
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSNumber*)getNthXWidth : (NSNumber*)n
 {
     OCRWord *ow = [allWords objectAtIndex:n.longValue];
     return ow.width;
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSNumber*)getNthYCoord : (NSNumber*)n
 {
     OCRWord *ow = [allWords objectAtIndex:n.longValue];
     return ow.top;
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*)getStringStartingAtXY : (NSNumber*)n : (NSNumber*)minx : (NSNumber*)miny
 {
     int lastx   = minx.intValue;
@@ -710,7 +717,7 @@
 } //end getStringStartingAtXY
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSDate *)getGarbledDate : (NSString *) dstr
 {
     //Try to fix garbled date, where slashes are replaced by ones for instance...
@@ -742,7 +749,7 @@
     return nil;
 } //end getGarbledDate
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Given array of field numbers, looks for date-like strings...
 -(NSDate *) findDateInArrayOfFields : (NSArray*)aof
 {    
@@ -760,7 +767,7 @@
 } //end findDateInArrayOfFields
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Given array of field numbers, finds first string which is a legit integer...
 -(int) findIntInArrayOfFields : (NSArray*)aof
 {
@@ -775,7 +782,7 @@
     return foundInt;
 } //end findIntInArrayOfFields
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(long) findLongInArrayOfFields : (NSArray*)aof
 {
     long foundLong = 0;
@@ -788,7 +795,7 @@
     return foundLong;
 } //end findLongInArrayOfFields
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Given array of field numbers, finds first string which is a legit integer...
 -(float) findPriceInArrayOfFields : (NSArray*)aof
 {
@@ -805,7 +812,7 @@
 } //end findIntInArrayOfFields
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString *) findTopStringInArrayOfFields : (NSArray*)aof
 {
     //First make sure we get top field...
@@ -828,7 +835,7 @@
 } //end findTopStringInArrayOfFields
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // From stackoverflow...
 -(NSDate*) parseDateFromString : (NSString*) s
 {
@@ -847,7 +854,7 @@
     return nil;
 } //end parseDateFromString
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 // Sets up internal header column names based on passed array of words forming header
 -(void)  parseHeaderColumns  : (NSMutableArray*)aof
 {
@@ -870,7 +877,7 @@
         int xoff = x - (_width*xc);
         int w = nw.intValue;
         if (firstField) firstX = xoff;
-        NSLog(@" word [%@] xy %d firstx %d",wstr,xoff,firstX);
+        //NSLog(@" parseHeaderColumns word [%@] xy %d firstx %d",wstr,xoff,firstX);
         
         if (xoff - lastX > 2*glyphHeight && (lastX > 0))
         {
@@ -951,11 +958,11 @@
     _scannedName  = @"nada";
     _width        = _scannedImage.size.width;
     _height       = _scannedImage.size.height;
-    NSLog(@" od setupdoc wh %d %d",_width,_height);
+    //NSLog(@" od setupdoc wh %d %d",_width,_height);
     [self parseJSONfromDict:d];
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a
 {
     if (row < 0 || row >= MAX_QPA_ROWS) return;
@@ -964,21 +971,21 @@
     postOCRAmounts[row]     = a;
 } //end setQPA
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*) getPostOCRQuantity : (int) row
 {
     if (row < 0 || row >= MAX_QPA_ROWS)  return @"0.0";
     return postOCRQuantities[row];
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*) getPostOCRPrice : (int) row
 {
     if (row < 0 || row >= MAX_QPA_ROWS) return @"0.0";
     return postOCRPrices[row];
 }
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(NSString*) getPostOCRAmount : (int) row
 {
     if (row < 0 || row >= MAX_QPA_ROWS)  return @"0.0";
@@ -987,38 +994,83 @@
 
 
 
-//=============(OCRTemplate)=====================================================
+//=============(OCRDocument)=====================================================
 -(void) computeScaling:(CGRect )tlr : (CGRect )trr
 {
-    [self setScalingRects];
-    tlOriginalRect = tlr;
-    trOriginalRect = trr;
+//    [self setScalingRects];
+    tlTemplateRect = tlr;
+    trTemplateRect = trr;
     
-    double hsizeOrig   = (double)(trOriginalRect.origin.x + trOriginalRect.size.width) -
-                         (double)(tlOriginalRect.origin.x);
-    double hsizeScaled = (double)(trScalingRect.origin.x + trScalingRect.size.width) -
-                         (double)(tlScalingRect.origin.x);
-    if (hsizeOrig == 0) //error!
+    tlDocumentRect = [self getTLRect];
+    trDocumentRect = [self getTRRect];
+
+    double hsizeTemplate   = (double)(trTemplateRect.origin.x + trTemplateRect.size.width) -
+                         (double)(tlTemplateRect.origin.x);
+    double hsizeDocument = (double)(trDocumentRect.origin.x + trDocumentRect.size.width) -
+                         (double)(tlDocumentRect.origin.x);
+    if (hsizeTemplate == 0) //error!
     {
         hScale = vScale = 1.0;
     }
     else
     {
-        hScale = vScale = hsizeScaled / hsizeOrig;
+        hScale = vScale = hsizeDocument / hsizeTemplate;
     }
-    NSLog(@" sizeorig %f scaled %f  hvScale %f",hsizeOrig,hsizeScaled,hScale);
+    NSLog(@" templateWid %f docWid %f  hvScale %f",hsizeTemplate,hsizeDocument,hScale);
     
-}
+} //end computeScaling
 
 
-//=============(OCRTemplate)=====================================================
--(void) setScalingRects
+
+
+//=============(OCRDocument)=====================================================
+-(int) getConvertedX : (int) x
 {
-    tlScalingRect = [self getTLRect];
-    trScalingRect = [self getTRRect];
+    double bx = (double)x - (double)tlDocumentRect.origin.x;
+    //...convert to template space...
+    double outx;
+    outx = (double)tlTemplateRect.origin.x + bx/hScale;
+    NSLog(@"  convx %f -> %f",bx,outx);
+    return (int)floor(outx + 0.5);  //This is needed to get NEAREST INT!
+}
+
+//=============(OCRDocument)=====================================================
+-(int) getConvertedY : (int) y
+{
+    double by = (double)y - (double)tlDocumentRect.origin.y;
+    //...convert to template space...
+    double outy;
+    outy = (double)tlTemplateRect.origin.y + by/vScale;
+    NSLog(@"   convy %f -> %f",by,outy);
+    return (int)floor(outy + 0.5);  //This is needed to get NEAREST INT!
 }
 
 
+
+//=============(OCRDocument)=====================================================
+// Takes incoming Template box from a newly parsed document: needs to rescale this
+//   box to match the OCR document space of boxes coming in.  Uses the two
+//   Top / Left word boxes found in the Template and Document as anchor points and
+//   the H/V scaling from computeScaling above
+-(CGRect) getConvertedBox  : (CGRect) r
+{
+    // Get box XY offset in document space...
+    double bx = (double)r.origin.x - (double)tlDocumentRect.origin.x;
+    double by = (double)r.origin.y - (double)trDocumentRect.origin.y;
+    //...convert to template space...
+    double outx,outy,outw,outh;
+    outx = (double)tlTemplateRect.origin.x + bx/hScale;
+    outy = (double)tlTemplateRect.origin.y + by/vScale;
+    outw = (double)r.size.width / hScale;
+    outh = (double)r.size.height / vScale;
+    
+    CGRect rout = CGRectMake(outx, outy, outw, outh);
+    
+    //asdf
+    NSLog(@" gcr %@ -> %@",NSStringFromCGRect(r),NSStringFromCGRect(rout));
+    
+    return rout;
+} //end getConvertedBox
 
 
 

@@ -36,9 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray *ignoreList;
     BOOL useIgnoreList;
     //Comes from templated original document...
-    CGRect tlOriginalRect, trOriginalRect;
-    //Comes from each newly scanned document
-    CGRect tlScalingRect,trScalingRect;
+    CGRect tlTemplateRect, trTemplateRect;
+    CGRect tlDocumentRect, trDocumentRect;
     double hScale,vScale; //For document scaling after template is made
     //Groups: Used to try to find fields if templates fail?
     NSMutableSet *gT10;   //Near top,bottom,left,right
@@ -99,7 +98,6 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDate *) isItADate : (NSString *)tstr;
 -(void) parseHeaderColumns : (NSMutableArray*)aof;
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
--(void) setScalingRects;
 -(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
 -(void) setupDocumentWIthImage : (UIImage*) image : (NSDictionary *)d;
 @end

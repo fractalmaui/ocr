@@ -213,7 +213,7 @@
         exoRecord[PInv_ErrStatus_key]           = exo.errStatus;
         exoRecord[PInv_PDFFile_key]             = exo.PDFFile;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
-        NSLog(@" exp savetoParse...");
+        //NSLog(@" exp savetoParse...");
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (succeeded) {
                 NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
@@ -225,7 +225,7 @@
                     [self.delegate didSaveEXPTable : self->objectIDs];
                 }
             } else {
-                NSLog(@" ERROR: saving invoice: %@",error.localizedDescription);
+                NSLog(@" ERROR: saving EXP: %@",error.localizedDescription);
             }
         }];
         i++;

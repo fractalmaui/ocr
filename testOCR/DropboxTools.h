@@ -31,6 +31,7 @@
 @property (nonatomic , strong) NSMutableArray* batchFileList;
 @property (nonatomic , strong) NSMutableArray* batchImages;
 @property (nonatomic , strong) NSMutableArray* batchImagePaths;
+@property (nonatomic , strong) NSMutableArray* batchImageData;
 @property (nonatomic , strong) NSString* prefix;
 @property (nonatomic , strong) NSArray* entries;
 

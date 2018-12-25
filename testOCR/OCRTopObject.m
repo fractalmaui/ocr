@@ -43,15 +43,15 @@ static OCRTopObject *sharedInstance = nil;
 
 //=============(OCRTopObject)=====================================================
 // Loop over template, find stuff in document?
+// DOCUMENT MUST BE LOADED!!!
 - (void)applyTemplate : (OCRTemplate *)ot
 {
     [ot clearHeaders];
     //Get invoice top left / top right limits from document, will be using
     // these to scale invoice by:
-    CGRect tlOriginal = [ot getTLOriginalRect];
-    CGRect trOriginal = [ot getTROriginalRect];
-    [od setScalingRects];
-    [od computeScaling : tlOriginal : trOriginal];
+    CGRect tlTemplate = [ot getTLOriginalRect];
+    CGRect trTemplate = [ot getTROriginalRect];
+    [od computeScaling : tlTemplate : trTemplate];
     
     //First add any boxes of content to ignore...
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
@@ -110,8 +110,8 @@ static OCRTopObject *sharedInstance = nil;
         } //end if a.count
         if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD]) //Columns must be resorted from L->R...
         {
-            NSLog(@" column........");
-            [od dumpArray:a];
+            //NSLog(@" column........");
+            //[od dumpArray:a];
             [ot addHeaderColumnToSortedArray : i];
         }
     }
@@ -165,7 +165,7 @@ static OCRTopObject *sharedInstance = nil;
 // Fix things like missing prices, price typos, etc...
 -(void) cleanupInvoice
 {
-    NSLog(@"cleanupInvoice");
+    //NSLog(@"cleanupInvoice");
 //DHS BOGUS!!! works only for HFM invoices!
     //    if (od.quantityColumn == 0) //Usually this is an error , item should be 0 and descr should be 2 for instance...
 //        od.quantityColumn = od.itemColumn + 1;
@@ -178,7 +178,7 @@ static OCRTopObject *sharedInstance = nil;
             NSLog(@" bad row pulled in EXP save!");
             return;
         }
-        NSLog(@" rec[%d] %@",i,ac);
+        //NSLog(@" rec[%d] %@",i,ac);
         [smartp clear];
         [smartp addVendor:_vendor]; //Is this the right string?
         NSString *productName = ac[2]; //3rd column?
@@ -208,13 +208,22 @@ static OCRTopObject *sharedInstance = nil;
             [od setPostOCRQPA:i :smartp.latestQuantity :smartp.latestPrice :smartp.latestAmount];
         }
     }
-    NSLog(@" dun %@",od);
 } //end cleanupInvoice
 
 
 //=============(OCRTopObject)=====================================================
 // Sends a JPG to the OCR server, and receives JSON text data back...
 - (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot
+{
+    // Image file and parameters, use hi compression quality?
+    NSData *imageData = UIImageJPEGRepresentation(imageToOCR,0.0);
+    [self performOCROnData:imageData :ot];
+} //end performOCROnImage
+
+
+//=============(OCRTopObject)=====================================================
+// Sends a JPG to the OCR server, and receives JSON text data back...
+- (void)performOCROnData : (NSData *)imageDataToOCR : (OCRTemplate *)ot
 {
     // Create URL request
     NSURL *url = [NSURL URLWithString:@"https://api.ocr.space/Parse/Image"];
@@ -225,8 +234,6 @@ static OCRTopObject *sharedInstance = nil;
     
     NSURLSession *session = [NSURLSession sharedSession];
     
-    // Image file and parameters, use hi compression quality?
-    NSData *imageData = UIImageJPEGRepresentation(imageToOCR,0.0);  //[UIImage imageNamed:imageName], 0.8);
     NSDictionary *parametersDictionary = [NSDictionary dictionaryWithObjectsAndKeys:
                                           @"99bb6b410288957", @"apikey",
                                           @"True", @"isOverlayRequired",
@@ -240,8 +247,8 @@ static OCRTopObject *sharedInstance = nil;
     //  the OCR handles raw PDF data too!!!
     NSData *data = [self createBodyWithBoundary:boundary
                                      parameters:parametersDictionary
-                                      imageData:imageData
-                                       filename:@"dog.jpg"]; ///imageName];
+                                      imageData:imageDataToOCR
+                                       filename:_imageFileName ];  //@"dog.jpg"]; ///imageName];
     NSLog(@" send OCR request... %@",_imageFileName);
     [request setHTTPBody:data];
     
@@ -249,10 +256,6 @@ static OCRTopObject *sharedInstance = nil;
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         NSError* myError;
         NSLog(@" got response from server...");
-        self->rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-        self->OCRJSONResult = [NSJSONSerialization JSONObjectWithData:data
-                                                               options:kNilOptions
-                                                                 error:&myError];
         if (error != nil) //Task came back w/ error?
         {
             NSNumber* exitCode     = [self->OCRJSONResult valueForKey:@"OCRExitCode"];
@@ -267,6 +270,10 @@ static OCRTopObject *sharedInstance = nil;
         }
         else
         {
+            self->rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            self->OCRJSONResult = [NSJSONSerialization JSONObjectWithData:data
+                                                                  options:kNilOptions
+                                                                    error:&myError];
             // Handle result: load up document and apply template here
             //OUCH! need to look for the IsErroredOnProcessing item here, and  ErrorMessage!
             //  bad files set this and then have bogus data which crashes OCR below!
@@ -280,7 +287,9 @@ static OCRTopObject *sharedInstance = nil;
             else
             {
                 NSLog(@" annnnd result is %@",self->OCRJSONResult);
-                [self setupDocument : imageToOCR];
+                //STUBBED!!! The document needs to XY limits of the image basically,
+                //  WHERE do they come from? The PDF???
+                [self setupDocument : [UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];//asdf imageToOCR];
                 
                 //Test image from tempoate builder is 1275 × 1650
                 [self applyTemplate : ot];
@@ -297,10 +306,18 @@ static OCRTopObject *sharedInstance = nil;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
     NSString * stubbedDocName = @"beef";
+//    OCRJSONResult = [self readTxtToJSON:stubbedDocName];
+//    [self setupDocument : imageToOCR];
+//    NSLog(@" template was made w/ image 1275x1650y");
+//    [self applyTemplate : ot];
+
+    _imageFileName = imageName; //selectFnameForTemplate;
     OCRJSONResult = [self readTxtToJSON:stubbedDocName];
-    [self setupDocument : imageToOCR];
-    NSLog(@" template was made w/ image 1275x1650y");
-    [self applyTemplate : ot];
+    [self setupTestDocumentJSON:OCRJSONResult];
+    [self setupDocument:[UIImage imageNamed:imageName]];
+    [self applyTemplate:ot];
+    [self cleanupInvoice];
+    [self writeEXPToParse];
 
 }
 
@@ -332,7 +349,9 @@ static OCRTopObject *sharedInstance = nil;
     if (data) {
         [body appendData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
         [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"\r\n", @"file", filename] dataUsingEncoding:NSUTF8StringEncoding]];
-        [body appendData:[@"Content-Type: image/jpeg\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+        //DHS TEST FOR PDF DATA ONLY
+        [body appendData:[@"Content-Type: image/pdf\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
+//        [body appendData:[@"Content-Type: image/jpeg\r\n\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
         [body appendData:data];
         [body appendData:[[NSString stringWithFormat:@"\r\n"] dataUsingEncoding:NSUTF8StringEncoding]];
     }
@@ -365,6 +384,8 @@ static OCRTopObject *sharedInstance = nil;
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
     blRect = [od getBLRect];
     brRect = [od getBRRect];
+    NSLog(@" Top LR from PDF %@ / %@",NSStringFromCGRect(tlRect),NSStringFromCGRect(trRect));
+    
 //    docRect = [od getDocRect]; //Get min/max limits of printed text
 }
 
@@ -433,7 +454,6 @@ static OCRTopObject *sharedInstance = nil;
 //=============(OCRTopObject)=====================================================
 - (void)didSaveEXPTable  : (NSArray *)a
 {
-    NSLog(@" EXP TABLE SAVED (OCR VC), save invoice now...");
     //Time to setup invoice object too!
     [it clear];
     [it setupVendorTableName : _vendor];

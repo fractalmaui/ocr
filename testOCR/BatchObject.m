@@ -159,8 +159,10 @@ static BatchObject *sharedInstance = nil;
 
 //=============(BatchObject)=====================================================
 // Handles each page that came back from one PDF as an UIImage...
--(void) processFiles : (NSArray *)paths : (NSArray *)pdfPages
+-(void) processFiles
 {
+    
+     //: dbt.batchImagePaths : dbt.batchImages
     if (!gotTemplate)
     {
         NSLog(@" ERROR: tried to process images w/o template");
@@ -171,18 +173,26 @@ static BatchObject *sharedInstance = nil;
 
     //Template MUST be ready at this point!
     batchPage = 0;
-    batchTotalPages = (int)pdfPages.count;
-    for (UIImage *nextPageImage in pdfPages) //Handle all images that came back from latest PDF...
+//    batchTotalPages = (int)pdfPages.count;
+//    for (UIImage *nextPageImage in pdfPages) //Handle all images that came back from latest PDF...
+   //try using just data here...
     {
-        NSString *ipath = [paths objectAtIndex:batchPage];
+        NSData *data = dbt.batchImageData[0];  //Only one data set per file?
+        NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
         //template was made w/ image 1275x1650y, try test scaling for now
         //KLUGE!!!! this only works for hawaii beef products!
-        UIImage *imageToOCR =  [nextPageImage imageByScalingAndCroppingForSize : CGSizeMake(1650,1275)  ];  //DHS 3/26
-        NSLog(@" ...do OCR on image [%@][%@]",vendorName,imageToOCR);
+        //UIImage *imageToOCR =  [nextPageImage imageByScalingAndCroppingForSize : CGSizeMake(1650,1275)  ];  //DHS 3/26
+        //NSLog(@" ...do OCR on image [%@][%@]",vendorName,imageToOCR);
         //If filename doesn't have .pdf,.jpg,.png,.jpeg,.bmp,.gif the OCR fails!
-        oto.imageFileName = ipath;
-        [oto performOCROnImage : imageToOCR : ot];
-//        [oto stubbedOCR : ipath : imageToOCR : ot];
+        
+//        oto.imageFileName = @"hawaiiBeefInvoice.jpg"; //selectFnameForTemplate;
+//        [oto setupDocument:[UIImage imageNamed:selectFnameForTemplate]];
+
+        oto.vendor = vendorName;
+        oto.imageFileName = ipath; //@"hawaiiBeefInvoice.jpg"; //ipath;
+        [oto performOCROnData:data : ot];
+//        [oto performOCROnImage : [UIImage imageNamed:oto.imageFileName] : ot];
+//        [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
     } //end for nextPageImage
 } //end processFiles
 
@@ -265,7 +275,7 @@ static BatchObject *sharedInstance = nil;
 {
     //At this point we have all the images for a file, ready to process!
     NSLog(@" ...downloaded all images? got %d",(int)dbt.batchImages.count);
-    [self processFiles : dbt.batchImagePaths : dbt.batchImages];
+    [self processFiles];
 }
 
 
@@ -318,6 +328,12 @@ static BatchObject *sharedInstance = nil;
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
     [self handleBatchError : errMsg];
+}
+
+//=============(BatchObject)=====================================================
+- (void)didSaveOCRDataToParse : (NSString *) s
+{
+    NSLog(@" OK: full OCR -> DB done, invoice %@",s);
 }
 
 

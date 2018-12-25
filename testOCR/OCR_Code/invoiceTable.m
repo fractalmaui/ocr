@@ -153,7 +153,7 @@
     iRecord[PInv_Vendor_key]        = _ivendor;
     iRecord[PInv_EXPObjectID_key]   = packedOIDs;
     iRecord[PInv_VersionNumber]     = _versionNumber;
-    NSLog(@" itable savetoParse...");
+    //NSLog(@" itable savetoParse...");
     [iRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...invoiceTable [vendor:%@] saved to parse",self->_ivendor);
