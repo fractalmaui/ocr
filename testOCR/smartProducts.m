@@ -310,8 +310,8 @@
     NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
     
     //Bail on any weird product names, or obviously NON-product items found in this column...
-    if ([fullProductName containsString:@"SUBTOTAL"]) return FALSE;
-    if ([fullProductName containsString:@"CHARGE"]) return FALSE;
+    if ([fullProductName.lowercaseString containsString:@"subtotal"]) return FALSE;
+    if ([fullProductName.lowercaseString containsString:@"charge"]) return FALSE;
 
     //Try matching with built-in CSV file first...
     NSArray *a = [occ matchCategory:fullProductName];
@@ -409,6 +409,7 @@
     {
         NSLog(@" analyze simple ... no product found %@",fullProductName);
         _analyzeOK = FALSE;
+        return -1;
     }
     
     if ( //Got a product of Hawaii in description? set local flag

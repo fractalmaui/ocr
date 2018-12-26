@@ -63,13 +63,14 @@ static OCRTopObject *sharedInstance = nil;
             [od addIgnoreBoxItems:rr];
         }
     }
-    
+    int headerY = 0;
+    int columnDataTop = 0;
     for (int i=0;i<[ot getBoxCount];i++) //Loop over our boxes...
     {
-        CGRect rr = [ot getBoxRect:i]; //In document coords!
-        NSMutableArray *a = [od findAllWordsInRect:rr];
         //OK, let's go and get the field name to figure out what to do w data...
         NSString* fieldName = [ot getBoxFieldName:i];
+        CGRect rr = [ot getBoxRect:i]; //In document coords!
+        NSMutableArray *a = [od findAllWordsInRect:rr];
         if (a.count > 0) //Found a match!
         {
             if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD]) //Looking for a number?
@@ -97,6 +98,18 @@ static OCRTopObject *sharedInstance = nil;
             }
             else if ([fieldName isEqualToString:INVOICE_HEADER_FIELD]) //Header is SPECIAL!
             {
+                headerY = [od findHeader:rr :100]; //Get header ypos (document coords!!)
+                if (headerY == -1)
+                {
+                    NSLog(@" error: NO HEADER FOUND!");
+                    return;
+                }
+                columnDataTop = [od doc2templateY:headerY] + 1.5*od.glyphHeight;
+                headerY -= 10;  //littie jiggle up...
+                rr.origin.y = [od doc2templateY:headerY];  //Adjust our header rect to new header position!
+                a = [od findAllWordsInRect:rr]; //Do another search now...
+                NSLog(@"1: on headery...%d",(int)rr.origin.y);
+                [od dumpArray:a];
                 [od parseHeaderColumns : a];
                 _columnHeaders = [od getHeaderNames];
                 NSLog(@" headers %@",_columnHeaders);
@@ -110,9 +123,8 @@ static OCRTopObject *sharedInstance = nil;
         } //end if a.count
         if ([fieldName isEqualToString:INVOICE_COLUMN_FIELD]) //Columns must be resorted from L->R...
         {
-            //NSLog(@" column........");
             //[od dumpArray:a];
-            [ot addHeaderColumnToSortedArray : i];
+            [ot addHeaderColumnToSortedArray : i : headerY + od.glyphHeight];
         }
     }
     //We can only do columns after they are all loaded
@@ -122,13 +134,16 @@ static OCRTopObject *sharedInstance = nil;
     //Look at RH most column, that dictates row tops...
     int numCols = [ot getColumnCount];
     CGRect rrright = [ot getColumnByIndex:3];  //][od findPriceColumn]];
+    rrright.origin.y = columnDataTop;
     rowYs = [od getColumnYPositionsInRect:rrright : TRUE];
     CGRect rrright2 = [ot getColumnByIndex:4] ; //[od findAmountColumn]];
+    rrright2.origin.y = columnDataTop;
     rowY2s = [od getColumnYPositionsInRect:rrright2 : TRUE];
     //Assemble our columns...
     for (int i=0;i<numCols;i++)
     {
         CGRect rr = [ot getColumnByIndex:i];
+        rr.origin.y = columnDataTop; //Adjust Y according to found header!
         NSMutableArray *stringArray;
         if (rowY2s.count > rowYs.count) //Get the column using the largest y row array we have
             stringArray = [od getColumnStrings : rr : rowY2s : i];
@@ -271,6 +286,7 @@ static OCRTopObject *sharedInstance = nil;
         else
         {
             self->rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            NSString* stringToZapToTextFile = self->rawOCRResult;
             self->OCRJSONResult = [NSJSONSerialization JSONObjectWithData:data
                                                                   options:kNilOptions
                                                                     error:&myError];
@@ -290,7 +306,6 @@ static OCRTopObject *sharedInstance = nil;
                 //STUBBED!!! The document needs to XY limits of the image basically,
                 //  WHERE do they come from? The PDF???
                 [self setupDocument : [UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];//asdf imageToOCR];
-                
                 //Test image from tempoate builder is 1275 × 1650
                 [self applyTemplate : ot];
                 [self cleanupInvoice];
@@ -300,12 +315,12 @@ static OCRTopObject *sharedInstance = nil;
         }
     }];
     [task resume];
-} //end callOCRSpace
+} //end performOCROnData
 
 //=============(OCRTopObject)=====================================================
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
-    NSString * stubbedDocName = @"beef";
+    NSString * stubbedDocName = @"lilbeef";
 //    OCRJSONResult = [self readTxtToJSON:stubbedDocName];
 //    [self setupDocument : imageToOCR];
 //    NSLog(@" template was made w/ image 1275x1650y");
@@ -411,7 +426,7 @@ static OCRTopObject *sharedInstance = nil;
         [smartp addDate:_invoiceDate];
         [smartp addLineNumber:i+1];
         [smartp analyzeSimple]; //fills out fields -> smartp.latest...
-        NSLog(@" analyze OK %d",smartp.analyzeOK);
+        //NSLog(@" analyze OK %d",smartp.analyzeOK);
         if (smartp.analyzeOK) //Only save valid stuff!
         {
             [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :

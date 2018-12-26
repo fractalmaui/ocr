@@ -159,9 +159,11 @@
 } //end addTag
 
 //=============(OCRTemplate)=====================================================
--(void) addHeaderColumnToSortedArray : (int) index
+// New arg: headerY, just below found position of actual header in doc coords
+-(void) addHeaderColumnToSortedArray : (int) index : (int) y
 {
     //NSLog(@" addhc %d ",index);
+    headerY = y;
     OCRBox *ob = ocrBoxes[index];
     int xleft =  ob.frame.origin.x;
     int whereToAdd = headerColumnCount;
@@ -450,6 +452,7 @@
 //=============(OCRTemplate)=====================================================
 -(void) saveTemplatesToDisk : (NSString *)vendorName
 {
+    return;
     NSError *err;
     [self cleanupColumns];
     fileWorkString = [self packToString];

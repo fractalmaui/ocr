@@ -93,7 +93,8 @@
     if (OCR_mode == 1)
     {
         [self loadStubbedOCRData];
-        [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+        //[ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+        [ot loadTemplatesFromDisk:supplierName];
     }
     
     [self getDocumentLimitsForTemplate]; //Sets fields in template w/ limits found in work document!!!

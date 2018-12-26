@@ -28,6 +28,7 @@
     NSMutableArray *productNames;
     NSString *tableName;
     NSString *EXPDumpCSVList;
+    int returnCount;
 }
 
 @property (nonatomic, unsafe_unretained) id <EXPTableDelegate> delegate; // receiver of completion messages

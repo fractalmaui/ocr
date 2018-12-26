@@ -75,7 +75,7 @@
 
   //  [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
-    [self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
+    //[self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }
 
 #define NAV_HOME_BUTTON 0

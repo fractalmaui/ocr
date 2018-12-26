@@ -190,6 +190,7 @@
     if (expos.count < 1) return; //Nothing to write!
     int i=0;
     int ecount = (int)expos.count;
+    returnCount = 0;
     for (EXPObject *exo in expos)
     {
         
@@ -219,9 +220,10 @@
                 NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
                 NSString *objID = exoRecord.objectId;
                 [self->objectIDs addObject:objID];
-                if (i == ecount-1)
+                self->returnCount++;
+                if (self->returnCount == ecount)
                 {
-                    NSLog(@" ...nextEXP: saved all recs to parse %d",i);
+                    //NSLog(@" ...nextEXP: saved all recs to parse %d %@",i ,self->objectIDs);
                     [self.delegate didSaveEXPTable : self->objectIDs];
                 }
             } else {

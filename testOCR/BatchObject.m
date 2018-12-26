@@ -71,7 +71,7 @@ static BatchObject *sharedInstance = nil;
 {
     [vendorFileCounts removeAllObjects];
     [vendorFolders removeAllObjects];
-    
+    returnCount = 0;
     for (NSString *vn in vv.vFolderNames)
     {
         [dbt countEntries : batchFolder : vn];
@@ -103,8 +103,12 @@ static BatchObject *sharedInstance = nil;
     [act saveActivityToParse:@"Batch Started" : vname];
     if (index >= 0)
     {
-        gotTemplate = FALSE;
-        [ot readFromParse:vendorName]; //Get our template
+        //DHS XMAS BYPASS...  assume template loaded locally
+        gotTemplate = TRUE;
+        [ot loadTemplatesFromDisk:vendorName];
+
+        //gotTemplate = FALSE;
+        //[ot readFromParse:vendorName]; //Get our template
         // This performs handoff to the actual running ...
         [dbt getBatchList : batchFolder : vv.vFolderNames[index]];
     }
@@ -128,6 +132,7 @@ static BatchObject *sharedInstance = nil;
 -(void) downloadAndProcessFiles : (NSArray *)pdfEntries
 {
     int i=0;
+    NSLog(@" batch:downloadAndProcessFiles");
     batchTotal = (int)pdfEntries.count;
     batchCount = 1;
     for (DBFILESMetadata *entry in pdfEntries)
@@ -161,7 +166,7 @@ static BatchObject *sharedInstance = nil;
 // Handles each page that came back from one PDF as an UIImage...
 -(void) processFiles
 {
-    
+    NSLog(@" batch:processFiles");
      //: dbt.batchImagePaths : dbt.batchImages
     if (!gotTemplate)
     {
@@ -190,9 +195,9 @@ static BatchObject *sharedInstance = nil;
 
         oto.vendor = vendorName;
         oto.imageFileName = ipath; //@"hawaiiBeefInvoice.jpg"; //ipath;
-        [oto performOCROnData:data : ot];
+    //    [oto performOCROnData:data : ot];
 //        [oto performOCROnImage : [UIImage imageNamed:oto.imageFileName] : ot];
-//        [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
+        [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
     } //end for nextPageImage
 } //end processFiles
 
@@ -261,9 +266,14 @@ static BatchObject *sharedInstance = nil;
 // coming back from dropbox : # files in a folder
 -(void) didCountEntries:(NSString *)vname :(int)count
 {
-    [vendorFileCounts addObject:@{@"Vendor": vname,@"Count":[NSNumber numberWithInt:count]}];
-    [vendorFolders setObject:dbt.entries forKey:vname];
-    if (vendorFileCounts.count == vv.vFolderNames.count)
+    NSLog(@" didcountp[%@]  %d",vname,count);
+    if (count != 0)
+    {
+        [vendorFileCounts addObject:@{@"Vendor": vname,@"Count":[NSNumber numberWithInt:count]}];
+        [vendorFolders setObject:dbt.entries forKey:vname];
+    }
+    returnCount++; //Count returns, did we hit all the vendors? let delegate know
+    if (returnCount == vv.vFolderNames.count)
     {
         [self->_delegate didGetBatchCounts];
     }

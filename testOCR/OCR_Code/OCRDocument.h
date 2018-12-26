@@ -27,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
     NSString *parsedText;
     NSMutableArray *headerPairs;
     NSMutableArray *columnStringData; //Array of Arrays...
-    int glyphHeight;
     NSString * postOCRQuantities[MAX_QPA_ROWS];
     NSString * postOCRPrices[MAX_QPA_ROWS];
     NSString * postOCRAmounts[MAX_QPA_ROWS];
@@ -38,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
     //Comes from templated original document...
     CGRect tlTemplateRect, trTemplateRect;
     CGRect tlDocumentRect, trDocumentRect;
+    CGRect blDocumentRect, brDocumentRect;
     double hScale,vScale; //For document scaling after template is made
     //Groups: Used to try to find fields if templates fail?
     NSMutableSet *gT10;   //Near top,bottom,left,right
@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic , assign) int width;
 @property (nonatomic , assign) int height;
+@property (nonatomic , assign) int glyphHeight;
 @property (nonatomic , assign) int longestColumn;
 @property (nonatomic , assign) CGRect docRect;
 
@@ -72,9 +73,14 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;
 -(void) dumpArray : (NSArray*)a;
+-(int) doc2templateY : (int) x;
+-(int) doc2templateY : (int) y;
+
+
 
 -(NSMutableArray *) findAllWordsInRect : (CGRect )rr;
 -(NSMutableArray *) findAllWordStringsInRect : (CGRect )rr;
+-(int) findHeader : (CGRect)r : (int) expandYBy;
 -(int) findIntInArrayOfFields : (NSArray*)aof;
 -(long) findLongInArrayOfFields : (NSArray*)aof;
 -(float) findPriceInArrayOfFields : (NSArray*)aof;

@@ -57,7 +57,7 @@
     int batchPage;
     int batchTotalPages;
     NSString *tableName;
-
+    int returnCount;
 
 }
 @property (nonatomic , strong) NSString* batchID;

@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     //Column x ranges and ptrs to box data
     int cxrange1[32],cxrange2[32],cptrs[32];
     int maxcptr;
+    int headerY; 
 }
 
 #define INVOICE_NUMBER_FIELD   @"INVOICE_NUMBER"
@@ -72,7 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(int) getColumnCount;
 -(CGRect) getColumnByIndex : (int) index;
 -(int)  getTagCount : (int) index;
--(void) addHeaderColumnToSortedArray : (int) index;
+-(void) addHeaderColumnToSortedArray : (int) index : (int) y;
 -(void) dump;
 -(void) dumpBox : (int) index;
 -(BOOL) isSupplierAMatch : (NSString *)stest;

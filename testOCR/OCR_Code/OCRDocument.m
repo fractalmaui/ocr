@@ -299,10 +299,15 @@
 //=============OCRDocument=====================================================
 // Assumes r is in document coords, exhaustive search.
 //  are words' origin at top left or bottom left?
--(NSMutableArray *) findAllWordsInRect : (CGRect )rr
+-(NSMutableArray *) findAllWordsInRect : (CGRect )rrIn
 {
     
     int xi,yi,x2,y2,index;
+    //First: Convert from template to document space
+    //  document may be smaller than the one used to
+    //  create the template!!
+    CGRect rr = [self  template2DocRect : rrIn];
+    
     xi = (int)rr.origin.x;  //Get bounding box limits...
     yi = (int)rr.origin.y;
     x2 = xi + (int)rr.size.width;
@@ -311,13 +316,8 @@
     index = 0;
     for (OCRWord *ow  in allWords)
     {
-        //asdf
         int x = (int)ow.left.intValue; //Get top left corner?
         int y = (int)ow.top.intValue;
-        //DHS CLUGE::: try do template -> document space conversion
-        //  should work for docs of any zoomed size
-        x = [self getConvertedX:x];
-        y = [self getConvertedY:y];
         
         if (x >= xi && x <= x2 && y >= yi && y <= y2) //Hit!
         {
@@ -358,7 +358,7 @@
         OCRWord *ow = [allWords objectAtIndex:testIndex];
         sum += ow.height.intValue;
     }
-    glyphHeight = sum / count;
+    _glyphHeight = sum / count;
 } //end getAverageGlyphHeight
 
 
@@ -393,7 +393,7 @@
         int w = ow.width.intValue;
         //Keep a collection of row y values, if we are near an earlier word's y, just use it!
         //  this fixes the problem of slightly staggered words along a line...
-        for (int i=0;i<yptr;i++) if (abs(y-ys[i]) < glyphHeight) y = ys[i];
+        for (int i=0;i<yptr;i++) if (abs(y-ys[i]) < _glyphHeight) y = ys[i];
         ys[yptr++] = y;
         int abspos = _width * y + ow.left.intValue; //Abs pixel position in document
         //NSLog(@" x %d y %d w %@",ow.left.intValue,y,ow.wordtext);
@@ -406,10 +406,62 @@
 } //end getSortedWordPairsFromArray
 
 //=============(OCRDocument)=====================================================
+// Finds header in doc, given r as possible place to start. returns top left ypos
+-(int) findHeader : (CGRect)r : (int) expandYBy
+{
+    CGRect bigr = CGRectMake(r.origin.x, r.origin.y-expandYBy,
+                             r.size.width, r.size.height+2*expandYBy);
+    NSMutableArray *a = [self findAllWordsInRect:bigr];
+    BOOL found = FALSE;
+    int yTest = bigr.origin.y;
+    //NOTE: this will fail if there is an occurrance of Description ABOVE the header!
+    int index = 0;
+    for (NSNumber *n in a) //Look for obvious keyword now
+    {
+        OCRWord *ow = allWords[n.longValue];
+        if ([ow.wordtext.lowercaseString isEqualToString:@"description"])
+            {
+                found = TRUE;
+                yTest = ow.top.intValue;
+                NSLog(@" descr found index %d",index);
+                break;
+            }
+          index++;
+    }
+    if (!found) return -1; //Failure code
+    
+    NSLog(@" foundy %d",yTest);
+    int testy = [self doc2templateY:yTest];
+    NSLog(@" templateY  %d",testy);
+    
+    double by = (double)testy - (double)trTemplateRect.origin.y;
+    by = (double)tlDocumentRect.origin.y + by*vScale;
+    NSLog(@" annnd back again %d",(int)by);
+    
+
+    NSMutableArray *b = [[NSMutableArray alloc] init];
+    for (NSNumber *n in a) //Get every word on the same line as the keyword
+    {
+        OCRWord *ow = allWords[n.longValue];
+        if (abs(ow.top.intValue - yTest) < _glyphHeight ) [b addObject: n];
+    }
+    NSString * hdrSentence =  [self assembleWordFromArray : b : FALSE];
+    NSLog(@" found header %@",hdrSentence);
+    //Check for other keywords...
+    found = FALSE;
+    if ([hdrSentence.lowercaseString containsString:@"price"]) found = TRUE;
+    if ([hdrSentence.lowercaseString containsString:@"item"]) found = TRUE;
+    if ([hdrSentence.lowercaseString containsString:@"amount"]) found = TRUE;
+    if (found) return yTest;
+    return -1;
+} //end findHeader
+
+//=============(OCRDocument)=====================================================
 // Array of words is coming in from a box, take all words and make a sentence...
 //  Numeric means don't padd with spaces...
 -(NSString *) assembleWordFromArray : (NSMutableArray *) a : (BOOL) numeric
 {
+    if (a.count == 0) return @""; //handle edge cases
     NSMutableArray *wordPairs = [self getSortedWordPairsFromArray:a];
     //All sorted! Now pluck'em out!
     NSString *s = @"";
@@ -428,20 +480,27 @@
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
 -(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) index
 {
+    //NOTE the rowYs array is coming in in DOCUMENT coords!!!
     NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
     int yc = (int)rowYs.count;
     for (int i=0;i<yc;i++)
     {
         NSNumber *ny = rowYs[i];
-        int thisY = ny.intValue - glyphHeight/2; //Fudge by half glyph height
+        int thisY = ny.intValue - _glyphHeight/2; //Fudge by half glyph height
+        thisY = [self doc2templateY:thisY];      //Go back to template coords...
         int nextY = rr.origin.y + rr.size.height;
         if (i < yc-1)
         {
             NSNumber *nyy = rowYs[i+1];
             nextY = nyy.intValue - 1;
+            nextY = [self doc2templateY:nextY];
         }
         CGRect cr = CGRectMake(rr.origin.x, thisY, rr.size.width, nextY-thisY);
-        [resultStrings addObject:[self assembleWordFromArray : [self findAllWordsInRect:cr] : FALSE]];
+        NSMutableArray *a = [self findAllWordsInRect:cr];
+        [self dumpArray:a];
+        if (i == 5)
+            NSLog(@" bingasdf");
+        [resultStrings addObject:[self assembleWordFromArray : a : FALSE]];
     }
     
     NSString *headerForThisColumn = [self getHeaderStringFromRect:rr];
@@ -484,7 +543,7 @@
     {
         OCRWord *ow = [allWords objectAtIndex:n.longValue];
         int ty = ow.top.intValue;
-        if (abs(ty - oldy) > glyphHeight) //Check Y for new row? (rows may be out of order)
+        if (abs(ty - oldy) > _glyphHeight) //Check Y for new row? (rows may be out of order)
         {
             oldy = ty;
             NSString *s = ow.wordtext;
@@ -604,7 +663,8 @@
         int x1 = (int)ow.left.intValue;
         int y1 = (int)ow.top.intValue;
         // Look for farthest left near the top
-        if (x1 < minx && y1 < _height/10) {
+        //OUCH! We don't have image height for incoming PDF data!?!?!
+        if (x1 < minx && y1 < 300){  //DHS XMAS CLUGE _height/10) {
             minx = x1;
             miny = y1;
             foundit = index;
@@ -628,7 +688,9 @@
         int y1 = (int)ow.top.intValue;
         //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
         //Look for farthest right near the top!
-        if (x1 > maxx && y1 < _height/10) {
+        //OUCH! We don't have image height for incoming PDF data!?!?!
+        if (x1 > maxx && y1 < 300)  //DHS XMAS CLUGE _height/10)
+        {
             //NSLog(@" bing: Top Right");
             maxx = x1;
             miny = y1;
@@ -858,7 +920,7 @@
 // Sets up internal header column names based on passed array of words forming header
 -(void)  parseHeaderColumns  : (NSMutableArray*)aof
 {
-    if (_width == 0) return; //Avoid error on weird docs
+   //DHS XMAS CLUGE if (_width == 0) return; //Avoid error on weird docs
     BOOL firstField = TRUE;
     int acrossX,lastX;
     NSString *hstr = @"";
@@ -879,7 +941,7 @@
         if (firstField) firstX = xoff;
         //NSLog(@" parseHeaderColumns word [%@] xy %d firstx %d",wstr,xoff,firstX);
         
-        if (xoff - lastX > 2*glyphHeight && (lastX > 0))
+        if (xoff - lastX > 2*_glyphHeight && (lastX > 0))
         {
             firstField = TRUE;
             int aveX = (firstX + (lastX-firstX)/2);
@@ -995,6 +1057,7 @@
 
 
 //=============(OCRDocument)=====================================================
+//  Called from OCR top object...
 -(void) computeScaling:(CGRect )tlr : (CGRect )trr
 {
 //    [self setScalingRects];
@@ -1003,7 +1066,12 @@
     
     tlDocumentRect = [self getTLRect];
     trDocumentRect = [self getTRRect];
-
+    blDocumentRect = [self getBLRect];
+    brDocumentRect = [self getBRRect];
+    _width  = (trDocumentRect.origin.x + trDocumentRect.size.width) - tlDocumentRect.origin.x;
+    _height = (brDocumentRect.origin.y + brDocumentRect.size.height) - tlDocumentRect.origin.y;
+    NSLog(@"w/h computed %d %d",_width,_height);
+    
     double hsizeTemplate   = (double)(trTemplateRect.origin.x + trTemplateRect.size.width) -
                          (double)(tlTemplateRect.origin.x);
     double hsizeDocument = (double)(trDocumentRect.origin.x + trDocumentRect.size.width) -
@@ -1024,7 +1092,7 @@
 
 
 //=============(OCRDocument)=====================================================
--(int) getConvertedX : (int) x
+-(int) doc2templateX : (int) x
 {
     double bx = (double)x - (double)tlDocumentRect.origin.x;
     //...convert to template space...
@@ -1035,7 +1103,7 @@
 }
 
 //=============(OCRDocument)=====================================================
--(int) getConvertedY : (int) y
+-(int) doc2templateY : (int) y
 {
     double by = (double)y - (double)tlDocumentRect.origin.y;
     //...convert to template space...
@@ -1052,7 +1120,7 @@
 //   box to match the OCR document space of boxes coming in.  Uses the two
 //   Top / Left word boxes found in the Template and Document as anchor points and
 //   the H/V scaling from computeScaling above
--(CGRect) getConvertedBox  : (CGRect) r
+-(CGRect) doc2TemplateRect  : (CGRect) r
 {
     // Get box XY offset in document space...
     double bx = (double)r.origin.x - (double)tlDocumentRect.origin.x;
@@ -1066,11 +1134,31 @@
     
     CGRect rout = CGRectMake(outx, outy, outw, outh);
     
-    //asdf
     NSLog(@" gcr %@ -> %@",NSStringFromCGRect(r),NSStringFromCGRect(rout));
     
     return rout;
 } //end getConvertedBox
+
+//=============(OCRDocument)=====================================================
+-(CGRect) template2DocRect  : (CGRect) r
+{
+    // Get box XY offset in template space...
+    double bx = (double)r.origin.x - (double)tlTemplateRect.origin.x;
+    double by = (double)r.origin.y - (double)trTemplateRect.origin.y;
+    //...convert to template space...
+    double outx,outy,outw,outh;
+    outx = (double)tlDocumentRect.origin.x + bx*hScale;
+    outy = (double)tlDocumentRect.origin.y + by*vScale;
+    outw = hScale * (double)r.size.width;
+    outh = vScale * (double)r.size.height;
+    
+    CGRect rout = CGRectMake(outx, outy, outw, outh);
+    
+   // NSLog(@" t2dr %@ -> %@",NSStringFromCGRect(r),NSStringFromCGRect(rout));
+    
+    return rout;
+} //end template2DocRect
+
 
 
 
