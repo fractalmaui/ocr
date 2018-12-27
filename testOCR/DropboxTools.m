@@ -233,19 +233,21 @@ static DropboxTools *sharedInstance = nil;
              //Got a PDF?
              if ([imagePath.lowercaseString containsString:@"pdf"])
              {
+                 NSLog(@" ...found PDF file data");
                  [self addImagesFromPDFData:fileData:imagePath]; //May add more than one image!
                  return; //Delegate gets called later...
              } //end .pdf string
              else //Jpg / PNG file?
              {
+                 NSLog(@" ...found jpg/png file data");
                  nextImage = [UIImage imageWithData:fileData];
                  if (nextImage != nil)
                  {
-                     [self->_batchImages addObject:nextImage];
+                     [self->_batchImages     addObject:nextImage];
                      [self->_batchImagePaths addObject:imagePath];
+                     [self->_batchImageData  addObject:fileData];
                  }
              }
-             NSLog(@" ....dropbox delegate...");
              [self->_delegate didDownloadImages];
          } else {
              NSString *title = @"";

@@ -35,7 +35,7 @@
     NSLog(@" activity savetoParse...");
     [aRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
-            NSLog(@" ...activity[%@] saved to parse",actType );
+            NSLog(@" ...activity[%@]->parse",actType );
             [self.delegate didSaveActivity];
         } else {
             NSLog(@" ERROR: saving activity: %@",error.localizedDescription);

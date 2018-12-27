@@ -36,9 +36,6 @@ static Vendors *sharedInstance = nil;
         _vNames       = [[NSMutableArray alloc] init]; // Vendor names
         _vFolderNames = [[NSMutableArray alloc] init]; //  and matching folder names
         [self readFromParse];
-        //STUB XMAS
-        [_vNames addObject:@"Hawaii Beef Producers"];
-        [_vFolderNames addObject:@"Hawaii_Beef_Producers"];
     }
     return self;
 }
@@ -71,7 +68,7 @@ static Vendors *sharedInstance = nil;
                 [self->_vFolderNames addObject:sf];
 
             }
-            NSLog(@" ....read all vendors");
+            //NSLog(@" ...read all vendors");
             [self.delegate didReadVendorsFromParse];
         }
     }];

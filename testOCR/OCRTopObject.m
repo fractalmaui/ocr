@@ -82,6 +82,7 @@ static OCRTopObject *sharedInstance = nil;
             }
             else if ([fieldName isEqualToString:INVOICE_DATE_FIELD]) //Looking for a date?
             {
+                [od dumpArray:a];
                 _invoiceDate = [od findDateInArrayOfFields:a]; //Looks for things with slashes in them?
                 NSLog(@" invoice date %@",_invoiceDate);
             }

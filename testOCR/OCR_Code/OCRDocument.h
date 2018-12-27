@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     CGRect tlDocumentRect, trDocumentRect;
     CGRect blDocumentRect, brDocumentRect;
     double hScale,vScale; //For document scaling after template is made
+    BOOL unitScale;
     //Groups: Used to try to find fields if templates fail?
     NSMutableSet *gT10;   //Near top,bottom,left,right
     NSMutableSet *gB10;

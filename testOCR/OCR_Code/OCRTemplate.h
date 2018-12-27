@@ -79,6 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(BOOL) isSupplierAMatch : (NSString *)stest;
 -(void) loadTemplatesFromDisk : (NSString *)vendorName;
 -(void) setOriginalRects : (CGRect) tlr : (CGRect) trr;
+-(void) setTemplateOrientation : (int)w : (int) h;
 -(void) saveTemplatesToDisk : (NSString *)vendorName;
 -(void) saveToParse   : (NSString *)vendorName;
 -(void) readFromParse : (NSString *)vendorName;

@@ -67,16 +67,48 @@
     viewH2  = viewHit/2;
     
 }
-//==========feedVC=================================================================
+
+//==========OCR VC=================================================================
 - (void)viewDidAppear:(BOOL)animated {
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
 
 
-  //  [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+ //   [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
     //[self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }
+
+
+//==========OCR VC=================================================================
+-(void) menu
+{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"Main Functions",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"New Template",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Edit Template",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    //DHS 3/13: Add owner's ability to delete puzzle
+    [alert addAction:firstAction];
+    [alert addAction:secondAction];
+    [alert addAction:cancelAction];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+
+} //end menu
+
 
 #define NAV_HOME_BUTTON 0
 #define NAV_DB_BUTTON 1
@@ -87,8 +119,8 @@
 -(void) setupNavBar
 {
     // Menu Button...
-    [nav setHotNot         : NAV_HOME_BUTTON : [UIImage imageNamed:@"HamburgerNOT"]  :
-     [UIImage imageNamed:@"HamburgerHOT"] ];
+    [nav setHotNot         : NAV_HOME_BUTTON : [UIImage imageNamed:@"HamburgerHOT"]  :
+     [UIImage imageNamed:@"HamburgerNOT"] ];
     [nav setLabelText      : NAV_HOME_BUTTON : NSLocalizedString(@"MENU",nil)];
     [nav setLabelTextColor : NAV_HOME_BUTTON : [UIColor blackColor]];
     [nav setHidden         : NAV_HOME_BUTTON : FALSE];
@@ -132,7 +164,7 @@
     
     if (which == 0) //THis is now a multi-function popup...
     {
-        [self testit];
+        [self menu];
         //[self performSegueWithIdentifier:@"cloudSegue" sender:@"feedCell"];
     }
     else if (which == 1) //THis is now a multi-function popup...

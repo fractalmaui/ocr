@@ -29,6 +29,7 @@
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
         recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
         orientationWhenReadable = @"portrait";
+        NSLog(@" init template, orient %@",orientationWhenReadable);
         //[self dump];
     }
     return self;
@@ -245,7 +246,7 @@
 // assumes string is OK!
 -(void) unpackFromString : (NSString *)s
 {
-    NSLog(@" unpack [%@]",s);
+    //NSLog(@" unpack [%@]",s);
     [ocrBoxes removeAllObjects];
     NSArray *sitems =  [s componentsSeparatedByString:@";"];
     for (NSString *substr in sitems)
@@ -264,7 +265,7 @@
                      tlDocRect = rr1;
                      trDocRect = rr2;
                  }
-                 NSLog(@"  tl/tr rects %@ to %@",NSStringFromCGRect(rr1),NSStringFromCGRect(rr2));
+                 //NSLog(@"  tl/tr rects %@ to %@",NSStringFromCGRect(rr1),NSStringFromCGRect(rr2));
              }
         else if (titems.count >= 6) //Legal only please...
         {
@@ -285,7 +286,7 @@
             if (![self isDupeFrame:ob.frame]) [ocrBoxes addObject:ob];
         }
     }
-    NSLog(@" unpacked %d items",(int)ocrBoxes.count);
+    //NSLog(@" unpacked %d items",(int)ocrBoxes.count);
 } //end unpackFromString
 
 //=============(OCRTemplate)=====================================================
@@ -528,7 +529,7 @@
     templateRecord[PInv_VersionNumber] = _versionNumber;
     [templateRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
-            NSLog(@" ...OCRTemplate [vendor:%@] saved to parse",vendorName);
+            NSLog(@" ...OCRTemplate [vendor:%@]->parse",vendorName);
             [self.delegate didSaveTemplate];
         } else {
             NSLog(@" ERROR: saving temlate to parse!");
@@ -541,6 +542,17 @@
 {
     tlDocRect = tlr;
     trDocRect = trr;
+}
+
+
+//=============(OCRTemplate)=====================================================
+-(void) setTemplateOrientation : (int)w : (int) h
+{
+    if (w > h) //Landscape?
+        orientationWhenReadable = @"landscape";
+    else
+        orientationWhenReadable = @"portrait";
+    NSLog(@" set orient %@",orientationWhenReadable);
 }
 
 //=============(OCRTemplate)=====================================================

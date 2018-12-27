@@ -104,11 +104,11 @@ static BatchObject *sharedInstance = nil;
     if (index >= 0)
     {
         //DHS XMAS BYPASS...  assume template loaded locally
-        gotTemplate = TRUE;
-        [ot loadTemplatesFromDisk:vendorName];
+        //gotTemplate = TRUE;
+        //[ot loadTemplatesFromDisk:vendorName];
 
-        //gotTemplate = FALSE;
-        //[ot readFromParse:vendorName]; //Get our template
+        gotTemplate = FALSE;
+        [ot readFromParse:vendorName]; //Get our template
         // This performs handoff to the actual running ...
         [dbt getBatchList : batchFolder : vv.vFolderNames[index]];
     }
@@ -266,7 +266,7 @@ static BatchObject *sharedInstance = nil;
 // coming back from dropbox : # files in a folder
 -(void) didCountEntries:(NSString *)vname :(int)count
 {
-    NSLog(@" didcountp[%@]  %d",vname,count);
+    //NSLog(@" didcountp[%@]  %d",vname,count);
     if (count != 0)
     {
         [vendorFileCounts addObject:@{@"Vendor": vname,@"Count":[NSNumber numberWithInt:count]}];

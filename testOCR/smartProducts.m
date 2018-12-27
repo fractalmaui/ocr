@@ -407,7 +407,7 @@
     BOOL found = [self analyzeProductName];
     if (!found)
     {
-        NSLog(@" analyze simple ... no product found %@",fullProductName);
+        //NSLog(@" analyze simple ... no product found %@",fullProductName);
         _analyzeOK = FALSE;
         return -1;
     }

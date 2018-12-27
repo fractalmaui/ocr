@@ -91,7 +91,8 @@
     NSString *fieldName;
     NSString *fieldNameShort;
     NSString *fieldFormat;
-    
+    NSString *stubbedDocName;
+
     UIImage *fastIcon;
     UIImage *slowIcon;
     

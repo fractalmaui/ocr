@@ -41,6 +41,9 @@
         [df setDateFormat:@"yyyy"];
         NSString *ystr = [df stringFromDate:[NSDate date]];
         currentYear = ystr.intValue;
+        
+        unitScale = TRUE;
+        hScale = vScale = 1.0;
     }
     return self;
 }
@@ -428,17 +431,15 @@
             }
           index++;
     }
-    if (!found) return -1; //Failure code
-    
-    NSLog(@" foundy %d",yTest);
+    if (!found)
+    {
+        NSLog(@" Error: no header found!");
+        return -1; //Failure code
+    }
     int testy = [self doc2templateY:yTest];
-    NSLog(@" templateY  %d",testy);
     
     double by = (double)testy - (double)trTemplateRect.origin.y;
     by = (double)tlDocumentRect.origin.y + by*vScale;
-    NSLog(@" annnd back again %d",(int)by);
-    
-
     NSMutableArray *b = [[NSMutableArray alloc] init];
     for (NSNumber *n in a) //Get every word on the same line as the keyword
     {
@@ -446,7 +447,7 @@
         if (abs(ow.top.intValue - yTest) < _glyphHeight ) [b addObject: n];
     }
     NSString * hdrSentence =  [self assembleWordFromArray : b : FALSE];
-    NSLog(@" found header %@",hdrSentence);
+    //NSLog(@" found header %@",hdrSentence);
     //Check for other keywords...
     found = FALSE;
     if ([hdrSentence.lowercaseString containsString:@"price"]) found = TRUE;
@@ -478,7 +479,7 @@
 
 //=============(OCRDocument)=====================================================
 // Uses rr to get column L/R boundary, uses rowY's to get top area to look at...
--(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) index
+-(NSMutableArray*)  getColumnStrings: (CGRect)rr : (NSMutableArray*)rowYs : (int) column
 {
     //NOTE the rowYs array is coming in in DOCUMENT coords!!!
     NSMutableArray *resultStrings = [[NSMutableArray alloc] init];
@@ -497,20 +498,19 @@
         }
         CGRect cr = CGRectMake(rr.origin.x, thisY, rr.size.width, nextY-thisY);
         NSMutableArray *a = [self findAllWordsInRect:cr];
+        NSLog(@" getColumnString:(col %d row %d)",column,i);
         [self dumpArray:a];
-        if (i == 5)
-            NSLog(@" bingasdf");
         [resultStrings addObject:[self assembleWordFromArray : a : FALSE]];
     }
     
     NSString *headerForThisColumn = [self getHeaderStringFromRect:rr];
     headerForThisColumn = headerForThisColumn.lowercaseString;
     //let's see what it contains:
-    if ([headerForThisColumn containsString:@"item"]) _itemColumn = index;
-    if ([headerForThisColumn containsString:@"quantity"]) _quantityColumn = index;
-    if ([headerForThisColumn containsString:@"description"]) _descriptionColumn = index;
-    if ([headerForThisColumn containsString:@"price"]) _priceColumn = index;
-    if ([headerForThisColumn containsString:@"amount"]) _amountColumn = index;
+    if ([headerForThisColumn containsString:@"item"]) _itemColumn = column;
+    if ([headerForThisColumn containsString:@"quantity"]) _quantityColumn = column;
+    if ([headerForThisColumn containsString:@"description"]) _descriptionColumn = column;
+    if ([headerForThisColumn containsString:@"price"]) _priceColumn = column;
+    if ([headerForThisColumn containsString:@"amount"]) _amountColumn = column;
 
     return resultStrings;
 } //end getColumnStrings
@@ -650,10 +650,26 @@
     return  [self getWordRectByIndex:foundit];
 } //end getBRRect
 
+//=============(OCRDocument)=====================================================
+-(void) fixBogusWHIfNeeded
+{
+    if (_height == 0)
+    {
+        NSLog(@" ERROR: zero doc height: stubbing in 1500");
+        _height = 1500;
+    }
+    if (_width == 0)
+    {
+        NSLog(@" ERROR: zero doc width: stubbing in 1000");
+        _width = 1000;
+    }
+
+}
 
 //=============(OCRDocument)=====================================================
 -(CGRect) getTLRect
 {
+    [self fixBogusWHIfNeeded];
     int minx,miny,index,foundit;
     minx = miny = 99999;
     index   = 0;
@@ -664,7 +680,7 @@
         int y1 = (int)ow.top.intValue;
         // Look for farthest left near the top
         //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 < minx && y1 < 300){  //DHS XMAS CLUGE _height/10) {
+        if (x1 < minx && y1 < _height/10) {
             minx = x1;
             miny = y1;
             foundit = index;
@@ -677,7 +693,8 @@
 //=============(OCRDocument)=====================================================
 -(CGRect) getTRRect
 {
-    int maxx,miny,index,foundit;
+    [self fixBogusWHIfNeeded];
+   int maxx,miny,index,foundit;
     maxx = -99999;
     miny = 99999;
     index   = 0;
@@ -689,7 +706,7 @@
         //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
         //Look for farthest right near the top!
         //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 > maxx && y1 < 300)  //DHS XMAS CLUGE _height/10)
+        if (x1 > maxx && y1 < _height/10)
         {
             //NSLog(@" bing: Top Right");
             maxx = x1;
@@ -782,6 +799,7 @@
 //=============(OCRDocument)=====================================================
 -(NSDate *)getGarbledDate : (NSString *) dstr
 {
+    if (dstr.length < 8) return nil; //Too short!
     //Try to fix garbled date, where slashes are replaced by ones for instance...
     NSString *tmonth = [dstr substringToIndex:2];
     int imon,iday,iyear;
@@ -822,6 +840,7 @@
         {
             return [self parseDateFromString:testText];
         }
+        //asdf
         NSDate *dgarbled = [self getGarbledDate:testText];
         if (dgarbled != nil) return dgarbled;
     }
@@ -920,7 +939,7 @@
 // Sets up internal header column names based on passed array of words forming header
 -(void)  parseHeaderColumns  : (NSMutableArray*)aof
 {
-   //DHS XMAS CLUGE if (_width == 0) return; //Avoid error on weird docs
+    [self fixBogusWHIfNeeded];
     BOOL firstField = TRUE;
     int acrossX,lastX;
     NSString *hstr = @"";
@@ -1020,7 +1039,7 @@
     _scannedName  = @"nada";
     _width        = _scannedImage.size.width;
     _height       = _scannedImage.size.height;
-    //NSLog(@" od setupdoc wh %d %d",_width,_height);
+    NSLog(@" od setupdoc wh %d %d",_width,_height);
     [self parseJSONfromDict:d];
 }
 
@@ -1076,13 +1095,16 @@
                          (double)(tlTemplateRect.origin.x);
     double hsizeDocument = (double)(trDocumentRect.origin.x + trDocumentRect.size.width) -
                          (double)(tlDocumentRect.origin.x);
-    if (hsizeTemplate == 0) //error!
+    if (hsizeTemplate == 0 ||
+        (hsizeTemplate != 0 && hsizeDocument == hsizeTemplate)) //unit scale or error!
     {
         hScale = vScale = 1.0;
+        unitScale = TRUE;
     }
     else
     {
         hScale = vScale = hsizeDocument / hsizeTemplate;
+        unitScale = FALSE;
     }
     NSLog(@" templateWid %f docWid %f  hvScale %f",hsizeTemplate,hsizeDocument,hScale);
     
@@ -1094,6 +1116,7 @@
 //=============(OCRDocument)=====================================================
 -(int) doc2templateX : (int) x
 {
+    if (unitScale) return x;
     double bx = (double)x - (double)tlDocumentRect.origin.x;
     //...convert to template space...
     double outx;
@@ -1105,11 +1128,12 @@
 //=============(OCRDocument)=====================================================
 -(int) doc2templateY : (int) y
 {
+    if (unitScale) return y;
     double by = (double)y - (double)tlDocumentRect.origin.y;
     //...convert to template space...
     double outy;
     outy = (double)tlTemplateRect.origin.y + by/vScale;
-    NSLog(@"   convy %f -> %f",by,outy);
+    //NSLog(@"   convy %f -> %f",by,outy);
     return (int)floor(outy + 0.5);  //This is needed to get NEAREST INT!
 }
 
@@ -1122,6 +1146,7 @@
 //   the H/V scaling from computeScaling above
 -(CGRect) doc2TemplateRect  : (CGRect) r
 {
+    if (unitScale) return r;
     // Get box XY offset in document space...
     double bx = (double)r.origin.x - (double)tlDocumentRect.origin.x;
     double by = (double)r.origin.y - (double)trDocumentRect.origin.y;
@@ -1142,9 +1167,10 @@
 //=============(OCRDocument)=====================================================
 -(CGRect) template2DocRect  : (CGRect) r
 {
+    if (unitScale) return r;
     // Get box XY offset in template space...
     double bx = (double)r.origin.x - (double)tlTemplateRect.origin.x;
-    double by = (double)r.origin.y - (double)trTemplateRect.origin.y;
+    double by = (double)r.origin.y - (double)tlTemplateRect.origin.y;
     //...convert to template space...
     double outx,outy,outw,outh;
     outx = (double)tlDocumentRect.origin.x + bx*hScale;

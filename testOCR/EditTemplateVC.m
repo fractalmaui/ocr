@@ -45,7 +45,7 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 2;
+    docnum = 1;
     OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
@@ -60,7 +60,7 @@
     et = [[EXPTable alloc] init];
     et.delegate = self;
     
-    clugey = 39; //Magnifying glass image pixel offsets!
+    clugey = 30; //Magnifying glass image pixel offsets!
     clugex = 84;
     
     smartCount = 0;
@@ -88,16 +88,13 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     //parse test
-    [self getStubbedDocument]; //also loads doc image
-    ot.supplierName = supplierName; //Pass along supplier name to template
-    if (OCR_mode == 1)
+    if (OCR_mode == 1) //Stubbed mode vs live OCR
     {
         [self loadStubbedOCRData];
-        //[ot readFromParse:supplierName]; //Unpacks template and loads it from DB
-        [ot loadTemplatesFromDisk:supplierName];
+        [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
+        //XMAS STUB [ot loadTemplatesFromDisk:supplierName];
     }
     
-    [self getDocumentLimitsForTemplate]; //Sets fields in template w/ limits found in work document!!!
     
     _LHArrowView.hidden = TRUE;
     _RHArrowView.hidden = TRUE;
@@ -183,18 +180,7 @@
 -(void) setupMagView : (int) x : (int) y
 {
     //WHY DO I NEED the xy cluge!??
-    //    CGPoint tl2 = CGPointMake(x + 17, y+17 );
-    //    CGPoint tl2 = CGPointMake(x+1 , y-40 ); ///WHY O WHY??  for 120x120, radius,radius
-    //clugex = 60; //For bulls-eye
-    //clugey = 19;
-    
     CGPoint tl2 = CGPointMake(x + clugex , y + clugey ); ///WHY O WHY??  for 120x120, radius,radius
-    //This is for the bulls eye
-    //    CGPoint tl2 = CGPointMake(x + 60 , y + 19 ); ///WHY O WHY??  for 120x120, radius,radius
-    
-    //    CGRect magFrame = CGRectMake(0,0,240,120); //This goes with 2*radius,radius in magview frame setup!
-    //    CGRect magFrame = CGRectMake(0,0,120,120);
-    
     magView.hidden     = FALSE;
     
     BOOL below = FALSE;
@@ -308,12 +294,16 @@
     }
 } //end refreshOCRBoxes
 
+
+
 //=============OCR VC=====================================================
--(void) getStubbedDocument
+-(void) loadStubbedOCRData
 {
-    
+    NSLog(@" Load stubbed OCR data...");
+
     if (docnum == 1)
     {
+        stubbedDocName = @"hfm";
         supplierName   = @"HFM";
         selectFname    = @"hfm.jpg";
         selectFnameForTemplate = @"hfm90.jpg"; //This should be rotated for user
@@ -321,6 +311,7 @@
     }
     if (docnum == 2)
     {
+        stubbedDocName = @"beef";
         supplierName   = @"Hawaii Beef Producers";
         selectFname    = @"hawaiiBeefInvoice.jpg";
         selectFnameForTemplate = @"hawaiiBeefInvoice.jpg";  //This should be rotated for user
@@ -328,6 +319,7 @@
     }
     if (docnum == 3)
     {
+        stubbedDocName = @"meadow";
         supplierName   = @"Meadow Gold";
         selectFname    = @"meadow";
         selectFnameForTemplate = @"meadow.jpg";  //This should be rotated for user
@@ -335,45 +327,27 @@
     }
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
-    
-} //end getStubbedDocument
 
-//=============OCR VC=====================================================
--(void) loadStubbedOCRData
-{
-    NSLog(@" Load stubbed OCR data...");
-    NSString *stubbedDocName;
-    if (docnum == 1)
-    {
-        stubbedDocName = @"hfm";
-    }
-    if (docnum == 2)
-    {
-        stubbedDocName = @"beef";
-    }
-    if (docnum == 3)
-    {
-        stubbedDocName = @"meadow";
-    }
-
-    [self getStubbedDocument];
-    ot.supplierName = supplierName; //Pass along supplier name to template
     NSDictionary *d = [self readTxtToJSON:stubbedDocName];
     [od setupDocument : selectFnameForTemplate : d : docFlipped90];
     
-    //    NSDictionary *d = [self readTxtToJSON:@"beef"];
-    //    supplierName = @"Hawaii Beef Producers";
-    //    selectFname  = @"hawaiiBeefInvoice.jpg";
     tlRect = [od getTLRect];
     trRect = [od getTRRect];
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
     blRect = [od getBLRect];
     brRect = [od getBRRect];
     docRect = [od getDocRect]; //Get min/max limits of printed text
+    [ot setOriginalRects : tlRect : trRect];
+    ot.supplierName = supplierName; //Pass along supplier name to template
+
+    //Set unit scaling
+    [od computeScaling : tlRect : trRect];
+
     CGRect r = _inputImage.frame;
     //Screen -> Document conversion
-    docXConv = (double)od.width  / (double)r.size.width;
-    docYConv = (double)od.height / (double)r.size.height;
+    //MUST HAVE image loaded correctly at this point!
+    docXConv = (double)_inputImage.image.size.width  / (double)r.size.width;
+    docYConv = (double)_inputImage.image.size.height / (double)r.size.height;
     NSLog(@" duhhh");
 }
 
@@ -392,10 +366,10 @@
     OCR_mode = 1;
     if (OCR_mode == 1)
     {
-        [self loadStubbedOCRData];
-        oto.imageFileName = @"hawaiiBeefInvoice.jpg"; //selectFnameForTemplate;
-        oto.vendor        = @"Hawaii Beef Producers"; //TEST
-        NSDictionary *d = [self readTxtToJSON:@"beef"]; //TEST: only works for beef invoice!
+        [self loadStubbedOCRData]; //asdf
+        oto.imageFileName = selectFname; //selectFnameForTemplate;
+        oto.vendor        = supplierName; //TEST
+        NSDictionary *d = [self readTxtToJSON:stubbedDocName]; //TEST: only works for beef invoice!
         [oto setupTestDocumentJSON:d];
         [oto setupDocument:[UIImage imageNamed:selectFnameForTemplate]];
         [oto applyTemplate:ot];
@@ -426,26 +400,6 @@
     
 }
 
-//=============(OCRTopObject)=====================================================
-// Missing link: This needs to look at document OCR result and find top LR
-//  corners.  These are needed for OCR box-matching scaling later on ...
-//  AND should be saved in template's header
--(void) getDocumentLimitsForTemplate
-{
-    //asdf
-    NSString * stubbedDocName = @"beef";
-    [self getStubbedDocument];
-    NSDictionary *d = [self readTxtToJSON:stubbedDocName];
-    [od setupDocument : selectFnameForTemplate : d : docFlipped90];
-    tlRect = [od getTLRect];
-    trRect = [od getTRRect];
-    //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
-    blRect = [od getBLRect];
-    brRect = [od getBRRect];
-    docRect = [od getDocRect]; //Get min/max limits of printed text
-    [ot setOriginalRects : tlRect : trRect];
-
-}
 
 
 //=============(OCRTopObject)=====================================================
@@ -481,8 +435,6 @@
 -(void) clearFields
 {
     [ot clearFields];
-    [self getDocumentLimitsForTemplate]; //Sets fields in template w/ limits found in work document!!!
-
     [ot saveToParse:self->supplierName];
     // Set limits where text was found at top / left / right,
     //  used for re-scaling if invoice was shrunk or whatever
@@ -1029,15 +981,19 @@
     yi = [self screenToDocumentY:r.origin.y];
     xs = [self screenToDocumentW :r.size.width];
     ys = [self screenToDocumentH :r.size.height];
-    
+    NSLog(@" xywh %d %d : %d %d",xi,yi,xs,ys);
     CGRect r2 =CGRectMake(xi, yi, xs, ys);
     //NSLog(@" ...docrect %@",NSStringFromCGRect(r2));
     NSMutableArray *a = [od findAllWordStringsInRect:r2];
     NSString* wstr = @"";
+    int count = 0;
     for (NSString *s in a)
     {
         wstr = [wstr stringByAppendingString:[NSString stringWithFormat:@"%@,",s]];
+        count++;
     }
+    if (count == 0) wstr = @"no text...";
+    NSLog(@" wordsinbox %@",wstr);
     [_wordsLabel setText:wstr];
     //NSLog(@" annnd array %@",wstr);
 }
@@ -1050,8 +1006,6 @@
     [self clearOverlay];
     if (OCR_mode == 1) //Get stubbed data...
     {
-        [self getStubbedDocument]; //also loads doc image
-        ot.supplierName = supplierName; //Pass along supplier name to template
         NSLog(@" ocrmode 1:  nextdoc[%d] %@",docnum,supplierName);
         [self loadStubbedOCRData];
         spinner.hidden = FALSE;
@@ -1059,7 +1013,6 @@
         [ot readFromParse:supplierName]; //Unpacks template and loads it from DB
     }
     else{ //Do Full OCR
-       [self getStubbedDocument];
         NSLog(@" ocrmode 2: nextdoc[%d] %@",docnum,supplierName);
 
     }
@@ -1072,7 +1025,7 @@
     if (b.tag > 100) //LH arrows
         [self moveOrResizeSelectBox:0 :arrowLHStepSize:0:0];
     else{
-        clugey++;
+        //FOR MAGVIEW CALIBRATION clugey++;
         [self moveOrResizeSelectBox:0:0:0 :arrowRHStepSize];
     }
 }
@@ -1085,7 +1038,7 @@
         [self moveOrResizeSelectBox:0 :-arrowLHStepSize:0:0];
     else
     {
-        clugey--;
+        //FOR MAGVIEW CALIBRATION clugey--;
         [self moveOrResizeSelectBox:0:0:0 :-arrowRHStepSize];
     }
 }
@@ -1098,7 +1051,7 @@
         [self moveOrResizeSelectBox:-arrowLHStepSize:0:0:0];
     else
     {
-        clugex--;
+        //FOR MAGVIEW CALIBRATION clugex--;
         [self moveOrResizeSelectBox:0:0:-arrowRHStepSize:0 ];
     }
 }
@@ -1110,7 +1063,7 @@
         [self moveOrResizeSelectBox:arrowLHStepSize:0:0:0];
     else
     {
-        clugex++;
+        //FOR MAGVIEW CALIBRATION clugex++;
         [self moveOrResizeSelectBox:0:0:arrowRHStepSize:0 ];
     }
 }
@@ -1227,6 +1180,13 @@
 {
     NSLog(@" didReadTemplate...");
     [self refreshOCRBoxes];
+    //look at our image, is it portrait or landscape?
+    [ot setTemplateOrientation:(int)_inputImage.image.size.width :(int)_inputImage.image.size.height ];
+    CGRect tlDocumentRect = [od getTLRect];
+    CGRect trDocumentRect = [od getTRRect];
+    //Force scaling to 1:1, since the template document IS the same as the scanned document
+    [od computeScaling : tlDocumentRect : trDocumentRect];
+
     spinner.hidden = TRUE;
     [spinner stopAnimating];
 }
