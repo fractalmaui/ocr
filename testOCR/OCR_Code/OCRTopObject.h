@@ -59,6 +59,7 @@
     
     NSString *rawOCRResult;
     NSDictionary *OCRJSONResult;
+    NSString *parsedText;
 
     CGRect tlRect,trRect;  //Absolute document boundary rects for text
     CGRect blRect,brRect;
@@ -82,6 +83,8 @@
 @property (nonatomic, unsafe_unretained) id <OCRTopObjectDelegate> delegate; // receiver of completion messages
 
 + (id)sharedInstance;
+-(NSString *) getRawResult;
+-(NSString *) getParsedText;
 - (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 - (void)performOCROnData : (NSData *)imageDataToOCR : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;

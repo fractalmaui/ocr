@@ -228,6 +228,19 @@ static OCRTopObject *sharedInstance = nil;
 
 
 //=============(OCRTopObject)=====================================================
+-(NSString *) getParsedText
+{
+    return parsedText;
+}
+
+//=============(OCRTopObject)=====================================================
+-(NSString *) getRawResult
+{
+    return rawOCRResult;
+}
+
+
+//=============(OCRTopObject)=====================================================
 // Sends a JPG to the OCR server, and receives JSON text data back...
 - (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
@@ -304,13 +317,16 @@ static OCRTopObject *sharedInstance = nil;
             else
             {
                 NSLog(@" annnnd result is %@",self->OCRJSONResult);
-                //STUBBED!!! The document needs to XY limits of the image basically,
-                //  WHERE do they come from? The PDF???
-                [self setupDocument : [UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];//asdf imageToOCR];
-                //Test image from tempoate builder is 1275 × 1650
-                [self applyTemplate : ot];
-                [self cleanupInvoice];
-                ///NEED TO WRITE EXP TOO!!
+                NSArray* pta = [self->OCRJSONResult valueForKey:@"ParsedText"];
+                if (pta.count > 0) self->parsedText = pta[0];
+                if (ot != nil) //Template needs to be applied?
+                {
+                    //STUBBED!!! The document needs to XY limits of the image basically,
+                    //  WHERE do they come from? The PDF???
+                    [self setupDocument : [UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];//asdf imageToOCR];
+                    [self applyTemplate : ot];
+                    [self cleanupInvoice];
+                }
                 [self->_delegate didPerformOCR:@"OCR OK?"];
             }
         }

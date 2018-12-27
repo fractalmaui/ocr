@@ -15,6 +15,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "CheckTemplateVC.h"
 #import "ImageTools.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -22,13 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AddTemplateViewController : UIViewController <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 {
     int viewWid,viewHit,viewW2,viewH2;
-
-
     int photoPixWid,photoPixHit;
     int photoScreenWid,photoScreenHit;
     float photoToUIX,photoToUIY;
     BOOL gotPhoto;
-    int step;
     double rotAngle;
     double rotAngleRadians;
     BOOL showRotatedImage;
@@ -44,9 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 }
 // UI stuff
 @property (weak, nonatomic) IBOutlet UIImageView *gridOverlay;
-@property (nonatomic , strong) UIImage *photo;
-@property (nonatomic , strong) UIImage *rphoto;
-@property (nonatomic , strong) UIImage *prphoto;
 @property (weak, nonatomic) IBOutlet UILabel *titeLabel;
 @property (weak, nonatomic) IBOutlet UIButton *nextButton;
 @property (weak, nonatomic) IBOutlet UIImageView *templateImage;
@@ -62,6 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UILabel *conLabel;
 
 // sharable properties...
+@property (nonatomic , strong) UIImage *photo;
+@property (nonatomic , strong) UIImage *rphoto;
+@property (nonatomic , strong) UIImage *prphoto;
+@property (nonatomic , assign) int step;
 
 
 - (IBAction)resetSelect:(id)sender;

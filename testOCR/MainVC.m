@@ -23,6 +23,20 @@
 
 @implementation MainVC
 
+//=============OCR MainVC=====================================================
+-(id)initWithCoder:(NSCoder *)aDecoder {
+    if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
+    act = [[ActivityTable alloc] init];
+    act.delegate = self;
+    emptyIcon = [UIImage imageNamed:@"emptyDoc.jpg"];
+    dbIcon = [UIImage imageNamed:@"dbNOT.png"];
+    batchIcon = [UIImage imageNamed:@"multiNOT.png"];
+    versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+    
+    return self;
+}
+
+//=============OCR MainVC=====================================================
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -36,6 +50,9 @@
     [self.view addSubview: nav];
     [self setupNavBar];
 
+    _table.delegate = self;
+    _table.dataSource = self;
+    [act readActivitiesFromParse:nil :nil];
     
     // if you're going to use local notifications, you must request permission
     
@@ -45,18 +62,9 @@
 
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 
-//=============OCR VC=====================================================
+//=============OCR MainVC=====================================================
 -(void) loadView
 {
     [super loadView];
@@ -68,19 +76,19 @@
     
 }
 
-//==========OCR VC=================================================================
+//=============OCR MainVC=====================================================
 - (void)viewDidAppear:(BOOL)animated {
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
-
-
+    _versionLabel.text = [NSString stringWithFormat:@"version %@",versionNumber];
+    
  //   [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
     //[self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }
 
 
-//==========OCR VC=================================================================
+//=============OCR MainVC=====================================================
 -(void) menu
 {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
@@ -89,7 +97,7 @@
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     
     
-    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"New Template",nil)
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Template",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
                                                           }];
@@ -115,7 +123,7 @@
 #define NAV_SETTINGS_BUTTON 2
 #define NAV_BATCH_BUTTON 3
 
-//=============OCR VC=====================================================
+//=============OCR MainVC=====================================================
 -(void) setupNavBar
 {
     // Menu Button...
@@ -153,10 +161,65 @@
 }
 
 
+//=============OCR MainVC=====================================================
+// Handles last minute VC property setups prior to segues
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    //NSLog(@" prepareForSegue: %@ sender %@",[segue identifier], sender);
+    if([[segue identifier] isEqualToString:@"addTemplateSegue"])
+    {
+        AddTemplateViewController *vc = (AddTemplateViewController*)[segue destinationViewController];
+        vc.step = 0;
+    }
+}
+
+
+#pragma mark - UITableViewDelegate
+
+//=============OCR MainVC=====================================================
+-(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString *CellIdentifier = @"Cell";
+    int row = (int)indexPath.row;
+    activityCell *cell = (activityCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil)
+    {
+        cell = [[activityCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+
+    NSString *atype = [act getType:row];
+    NSString *adata = [act getData:row];
+
+    UIImage *ii = emptyIcon;
+    if ([atype.lowercaseString containsString:@"batch"]) ii = batchIcon;
+    
+    NSDate *adate = [act getDate:row];
+    NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"MM/dd/yyyy  HH:mmv:SS"];
+    NSString *sfd = [formatter stringFromDate:adate];
+
+    cell.topLabel.text    = atype;
+    cell.bottomLabel.text = adata;
+    cell.icon.image       = ii;
+    cell.dateLabel.text   = sfd;
+    return cell;
+} //end cellForRowAtIndexPath
+
+
+//=============OCR MainVC=====================================================
+- (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return [act getReadCount];
+}
+
+//=============OCR MainVC=====================================================
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 80;
+}
 
 
 #pragma mark - NavButtonsDelegate
-//==========FeedVC=========================================================================
+//=============OCR MainVC=====================================================
 -(void)  didSelectNavButton: (int) which
 {
     NSLog(@"   didselectNavButton %d",which);
@@ -183,6 +246,7 @@
 
 } //end didSelectNavButton
 
+//=============OCR MainVC=====================================================
 -(void) testit
 {
   //  NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
@@ -203,6 +267,7 @@
 // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_pdf/dq_pdf.html
 
 
+//=============OCR MainVC=====================================================
 // This produces a file but it doesn't open up in acrobat
 -(void) downloadPDF : (NSString *) urlString
 {
@@ -210,6 +275,21 @@
     NSLog(@" download PDF from [%@]",urlString);
     [[SessionManager sharedSession] startDownload:url];
     
+}
+
+#pragma mark - ActivityTableDelegate
+
+//=============OCR MainVC=====================================================
+- (void)didReadActivityTable
+{
+    NSLog(@" got act table...");
+    [_table reloadData];
+}
+
+//=============OCR MainVC=====================================================
+- (void)errorReadingActivities : (NSString *)errmsg
+{
+    NSLog(@" act table err %@",errmsg);
 }
 
 

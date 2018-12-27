@@ -339,7 +339,8 @@
     docRect = [od getDocRect]; //Get min/max limits of printed text
     [ot setOriginalRects : tlRect : trRect];
     ot.supplierName = supplierName; //Pass along supplier name to template
-
+    ot.pdfFile      = selectFnameForTemplate;
+    
     //Set unit scaling
     [od computeScaling : tlRect : trRect];
 
@@ -1180,6 +1181,7 @@
 {
     NSLog(@" didReadTemplate...");
     [self refreshOCRBoxes];
+    
     //look at our image, is it portrait or landscape?
     [ot setTemplateOrientation:(int)_inputImage.image.size.width :(int)_inputImage.image.size.height ];
     CGRect tlDocumentRect = [od getTLRect];

@@ -308,18 +308,18 @@
             minbin = bval;
         }
     }
-    for (int i=0;i<bcount;i++)
-       if (bins[i] != -1) NSLog(@" fbin [%d] = %d",i,bins[i]);
+//    for (int i=0;i<bcount;i++)
+//       if (bins[i] != -1) NSLog(@" fbin [%d] = %d",i,bins[i]);
 
-    NSLog(@" start/end bins %d %d  vals %d %d",sbin,ebin,bins[sbin],bins[ebin]);
+//    NSLog(@" start/end bins %d %d  vals %d %d",sbin,ebin,bins[sbin],bins[ebin]);
     double ddx = (double)(ebin - sbin);
     double ddy = (double)(bins[ebin] - bins[sbin]);
     double angle2 = atan2f(ddy, ddx);
     _skewAngleFound = angle2;
     //float adeg  = 360.0 * (angle / (2 * 3.14159));
-    NSLog(@"  dxy %f %f : skew %f deg %f",ddx,ddy,angle2,180.0 * angle2 / 3.141592627);
+//    NSLog(@"  dxy %f %f : skew %f deg %f",ddx,ddy,angle2,180.0 * angle2 / 3.141592627);
     // Rotates in place?
-    NSLog(@" done rotated by %f degrees",180.0 * angle2 / 3.141592627);
+//    NSLog(@" done rotated by %f degrees",180.0 * angle2 / 3.141592627);
     return [self imageRotatedByRadians:angle2 img:workImage];
 } //end deskew
 

@@ -46,8 +46,9 @@
 
 
 //Activity Table
-#define PInv_ActivityType @"ActivityType"
-#define PInv_ActivityData @"ActivityData"
+#define PInv_ActivityType_key     @"ActivityType"
+#define PInv_ActivityData_key     @"ActivityData"
+#define PInv_ActivityObjectId_key @"ACTObjectID"
 
 //Invoice table items...
 #define PInv_EXPObjectID_key @"EXPObjectID"

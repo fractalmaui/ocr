@@ -18,13 +18,26 @@
 {
     NSMutableArray *recordStrings;
     NSString *tableName;
+    NSMutableArray *typeStrings;
+    NSMutableArray *dataStrings;
+    NSMutableArray *objectIDStrings;
+    NSMutableArray *dates;
 }
 
 //@property (nonatomic , strong) NSString* itotal;
 
 @property (nonatomic, unsafe_unretained) id <ActivityTableDelegate> delegate; // receiver of completion messages
+@property (nonatomic , strong) NSString* objectID;
 @property (nonatomic , strong) NSString* versionNumber;
 
+
+-(NSString *) getType : (int) index;
+-(NSString *) getData : (int) index;
+-(NSString *) getObjIDs : (int) index;
+-(NSDate *)   getDate : (int) index;
+-(int) getReadCount;
+
+-(void) readActivitiesFromParse : (NSString*) actType : (NSString *)vendor;
 
 //-(void) readFromParseAsStrings : (NSString *)vendor;
 -(void) saveActivityToParse : (NSString*) actType : (NSString *)actData;
@@ -35,5 +48,6 @@
 @required
 @optional
 - (void)didReadActivityTable;
+- (void)errorReadingActivities : (NSString *)errmsg;
 - (void)didSaveActivity;
 @end

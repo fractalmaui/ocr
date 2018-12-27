@@ -17,21 +17,92 @@
 {
     if (self = [super init])
     {
-        tableName = @"activity";
-        recordStrings = [[NSMutableArray alloc] init]; //output area for table dump
-        _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+        tableName       = @"activity";
+        recordStrings   = [[NSMutableArray alloc] init]; //output area for table dump
+        objectIDStrings = [[NSMutableArray alloc] init]; //output area for table dump
+        typeStrings     = [[NSMutableArray alloc] init]; //output area for table dump
+        dataStrings     = [[NSMutableArray alloc] init]; //output area for table dump
+        dates           = [[NSMutableArray alloc] init]; //output area for table dump
+        _objectID       = @"";
+        _versionNumber  = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
     return self;
 }
+
+//=============(ActivityTable)=====================================================
+-(NSString *) getType : (int) index
+{
+    if (index < 0 || index >= typeStrings.count) return @"";
+    return typeStrings[index];
+}
+
+//=============(ActivityTable)=====================================================
+-(NSString *) getData : (int) index
+{
+    if (index < 0 || index >= typeStrings.count) return @"";
+    return dataStrings[index];
+}
+
+//=============(ActivityTable)=====================================================
+-(NSDate *) getDate : (int) index
+{
+    if (index < 0 || index >= typeStrings.count) return [NSDate date];
+    return dates[index];
+}
+
+
+//=============(ActivityTable)=====================================================
+-(NSString *) getObjIDs : (int) index
+{
+    if (index < 0 || index >= typeStrings.count) return @"";
+    return objectIDStrings[index];
+}
+
+//=============(ActivityTable)=====================================================
+-(int) getReadCount
+{
+    return (int)typeStrings.count;
+}
+
+//=============(ActivityTable)=====================================================
+// Gets up to latest 100 records, loads into class members
+-(void) readActivitiesFromParse : (NSString*) actType : (NSString *)vendor
+{
+    PFQuery *query = [PFQuery queryWithClassName:tableName];
+    if (actType != nil) [query whereKey:PInv_ActivityType_key equalTo:actType];
+    if (vendor != nil)  [query whereKey:PInv_ActivityData_key equalTo:vendor];
+    [query orderByAscending:@"createdAt"];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->typeStrings      removeAllObjects];
+            [self->dataStrings      removeAllObjects];
+            [self->objectIDStrings  removeAllObjects];
+            [self->dates            removeAllObjects];
+            for (PFObject *pfo in objects)
+            {
+                [self->typeStrings addObject:[pfo objectForKey:PInv_ActivityType_key]];
+                [self->dataStrings addObject:[pfo objectForKey:PInv_ActivityData_key]];
+                [self->dates       addObject:[pfo createdAt]];
+                NSString *wstr = [pfo objectForKey:PInv_ActivityObjectId_key];
+                if (wstr != nil) [self->objectIDStrings addObject:wstr];
+            } //end for pfo...
+            [self.delegate didReadActivityTable];
+        }    //end !error
+        else{ //Error?
+            [self.delegate errorReadingActivities:error.localizedDescription];
+        } //end error
+    }];     //end query find...
+} //end readActivitiesFromParse
 
 
 //=============(ActivityTable)=====================================================
 -(void) saveActivityToParse : (NSString*) actType : (NSString *)actData
 {
     PFObject *aRecord = [PFObject objectWithClassName:tableName];
-    aRecord[PInv_ActivityType]  = actType;
-    aRecord[PInv_ActivityData]  = actData;
-    aRecord[PInv_VersionNumber] = _versionNumber;
+    aRecord[PInv_ActivityType_key]     = actType;
+    aRecord[PInv_ActivityData_key]     = actData;
+    aRecord[PInv_ActivityObjectId_key] = _objectID;
+    aRecord[PInv_VersionNumber    ]    = _versionNumber;
     NSLog(@" activity savetoParse...");
     [aRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
@@ -42,6 +113,7 @@
         }
     }];
 } //end saveToParse
+
 
 
 @end

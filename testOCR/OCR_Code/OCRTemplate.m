@@ -29,6 +29,7 @@
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
         recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
         orientationWhenReadable = @"portrait";
+        _pdfFile = @"";
         NSLog(@" init template, orient %@",orientationWhenReadable);
         //[self dump];
     }
@@ -481,6 +482,8 @@
             {
                 NSString *ps = [pfo objectForKey:@"packedString"];
                 [self unpackFromString:ps];
+                ps = [pfo objectForKey:PInv_PDFFile_key];
+                if (ps != nil) self->_pdfFile = ps;
                 break;
             }
             if (objects.count > 0)
@@ -526,6 +529,7 @@
     [self cleanupColumns];
     templateRecord[@"vendor"]        = vendorName;
     templateRecord[@"packedString"]  = [self packToString];
+    if (_pdfFile != nil) templateRecord[PInv_PDFFile_key] = _pdfFile;
     templateRecord[PInv_VersionNumber] = _versionNumber;
     [templateRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {

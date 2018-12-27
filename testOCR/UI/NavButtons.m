@@ -80,7 +80,7 @@
     if (iphoneX)
         buttonWid = viewHit * 0.58; //DHS 2/9/18 for iphone X
     else
-        buttonWid = viewHit * 0.65; //smaller buttons
+        buttonWid = viewHit * 0.50; //smaller buttons
 
     buttonCount = bcount;
     if (self) {
@@ -141,7 +141,7 @@
         int lilyi;
         //DHS 2/9/18 handle iphoneX
         if (iphoneX) lilyi = fieldWid - 2.2*lilys;
-        else         lilyi = fieldWid - 1.6*lilys;
+        else         lilyi = buttonWid * 1.25;
         labelArray[i] = [[UILabel alloc] initWithFrame:  CGRectMake(0,lilyi,fieldWid,lilys)];
         [labelArray[i] setFont:[UIFont fontWithName:defaultFont size:1*lilys]];
         labelArray[i].text            = @"";

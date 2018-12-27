@@ -13,21 +13,30 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ActivityTable.h"
+#import "activityCell.h"
+#import "AddTemplateViewController.h"
 #import "NavButtons.h"
 #import "SessionManager.h"
 
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MainVC : UIViewController <NavButtonsDelegate>
+@interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
+                    UITableViewDelegate,UITableViewDataSource>
 {
     NavButtons *nav;
     int viewWid,viewHit,viewW2,viewH2;
-
+    ActivityTable *act;
+    NSString *versionNumber;
+    UIImage *emptyIcon;
+    UIImage *dbIcon;
+    UIImage *batchIcon;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 
+@property (weak, nonatomic) IBOutlet UITableView *table;
 
+@property (weak, nonatomic) IBOutlet UILabel *versionLabel;
 
 @end
 

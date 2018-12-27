@@ -66,12 +66,16 @@ NSString * steps[] = {
 //=============AddTemplate VC=====================================================
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    if (!gotPhoto)
+    
+    //First, are we coming back from something??
+    if (_step != 0)
     {
-        step = 0;
+        _step = 1; //Set back to deskew...
+    }
+    else if (_step == 0)
+    {
         [self displayPhotoPicker];
     }
-    showRotatedImage = FALSE;
 
     [self updateUI];
 }
@@ -109,7 +113,7 @@ NSString * steps[] = {
 - (IBAction)resetSelect:(id)sender
 {
     [self resetRotation];
-    step = 1;
+    _step = 1;
     rotAngle = rotAngleRadians = 0.0;
     showRotatedImage = FALSE;
     [self updateUI];
@@ -198,14 +202,14 @@ NSString * steps[] = {
 //=============AddTemplate VC=====================================================
 - (IBAction)nextSelect:(id)sender
 {
-    if (step == 1)
+    if (_step == 1)
     {
-        step = 2;
+        _step = 2;
     }
-    else if (step == 2)
+    else if (_step == 2)
     {
-        step = 3;
-        NSLog(@" ready to DO OCR!!");
+        //_step = 3;
+        [self performSegueWithIdentifier:@"checkTemplateSegue" sender:@"addTemplateVC"];
     }
     [self updateUI];
 }
@@ -219,20 +223,33 @@ NSString * steps[] = {
 }
 
 //=============AddTemplate VC=====================================================
+// Handles last minute VC property setups prior to segues
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    //NSLog(@" prepareForSegue: %@ sender %@",[segue identifier], sender);
+    if([[segue identifier] isEqualToString:@"checkTemplateSegue"])
+    {
+        CheckTemplateVC *vc = (CheckTemplateVC*)[segue destinationViewController];
+        vc.photo = _templateImage.image;
+    }
+}
+
+
+//=============AddTemplate VC=====================================================
 -(void) updateUI
 {
-    NSLog(@" updateui step %d showr %d",step,showRotatedImage);
-    if (step == 1)  //Rotate: two possible states here...
+    NSLog(@" updateui step %d showr %d",_step,showRotatedImage);
+    if (_step == 1)  //Rotate: two possible states here...
     {
         if (showRotatedImage)
             _titeLabel.text = [NSString stringWithFormat:@"Rotated by %f degrees",rotAngle];
         else
-            _titeLabel.text = steps[step];
+            _titeLabel.text = steps[_step];
     }
     else //other steps...
     {
-        _titeLabel.text = _titeLabel.text = steps[step];
-        if (step == 2) //enhance?
+        _titeLabel.text = _titeLabel.text = steps[_step];
+        if (_step == 2) //enhance?
         {
             _bSlider.value = brightness;
             _cSlider.value = contrast;
@@ -252,11 +269,11 @@ NSString * steps[] = {
     
 
     //Show / hide stuff based on step and states...
-    _rotateView.hidden  = (step != 1);
-    _loadButton.hidden  = (step < 1);
-    _nextButton.hidden  = (step < 1);
-    _gridOverlay.hidden = !(showRotatedImage && step == 1);
-    _enhanceView.hidden = (step < 2);
+    _rotateView.hidden  = (_step != 1);
+    _loadButton.hidden  = (_step < 1);
+    _nextButton.hidden  = (_step < 1);
+    _gridOverlay.hidden = !(showRotatedImage && _step == 1);
+    _enhanceView.hidden = (_step < 2);
 
     if (!showRotatedImage)
     {
@@ -287,7 +304,7 @@ NSString * steps[] = {
     
     _rphoto =  [it imageRotatedByRadians:rotAngleRadians img:_photo];
     showRotatedImage = TRUE;
-    step = 1;
+    _step = 1;
     [self updateUI];
 
 }
@@ -312,6 +329,7 @@ NSString * steps[] = {
 {
     //Makes poppy squirrel sound!
     NSLog(@" ok...");
+    _step = 1;
     //[_sfx makeTicSoundWithPitchandLevel:7 :70 : 40];
     [Picker dismissViewControllerAnimated:NO completion:^{
         self->_photo = (UIImage *)[info objectForKey:UIImagePickerControllerOriginalImage ];
@@ -322,7 +340,6 @@ NSString * steps[] = {
         self->photoToUIX = (float)self->photoScreenWid/(float)self->_photo.size.width;
         self->photoToUIY = (float)self->photoScreenHit/(float)self->_photo.size.height;
 //        NSLog(@" set img");
-        self->step = 1;  //Go to 2nd step (0-based)
         [self resetRotation];
         [self updateUI];
     }];

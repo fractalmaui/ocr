@@ -53,6 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic , strong) NSString* versionNumber;
 @property (nonatomic , strong) NSString* supplierName;
+@property (nonatomic , strong) NSString* pdfFile;
 
 @property (nonatomic, unsafe_unretained) id <OCRTemplateDelegate> delegate; // receiver of completion messages
 
