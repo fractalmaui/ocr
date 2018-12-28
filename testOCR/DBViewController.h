@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UITableView *table;
 
+@property (weak, nonatomic) IBOutlet NSString *soids;
+
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)menuSelect:(id)sender;
 

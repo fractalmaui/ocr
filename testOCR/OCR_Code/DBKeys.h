@@ -54,6 +54,10 @@
 #define PInv_EXPObjectID_key @"EXPObjectID"
 #define PInv_CustomerKey @"Customer"
 
+//Batch table...
+#define PInv_BatchSOIDs_key     @"BatchSOIDs"
+
+
 //Generic
 #define PInv_VersionNumber @"versionNumber"
 

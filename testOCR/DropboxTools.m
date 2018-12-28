@@ -39,6 +39,7 @@ static DropboxTools *sharedInstance = nil;
         _batchFileList   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImages     = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImagePaths = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        _batchImageRects = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         _batchImageData  = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
         client           = [DBClientsManager authorizedClient];
     }
@@ -116,8 +117,10 @@ static DropboxTools *sharedInstance = nil;
                 nextImage = UIGraphicsGetImageFromCurrentImageContext();
                 if (nextImage != nil)
                 {
-                    [_batchImages addObject:nextImage];
+                    NSValue *rectObj = [NSValue valueWithCGRect:pageRect];
+                    [_batchImages     addObject:nextImage];
                     [_batchImagePaths addObject:imagePath];
+                    [_batchImageRects addObject:rectObj];
                 }
                 if (i == pageCount) [_delegate didDownloadImages];
 
@@ -226,6 +229,7 @@ static DropboxTools *sharedInstance = nil;
     [_batchImages     removeAllObjects];
     [_batchImagePaths removeAllObjects];
     [_batchImageData  removeAllObjects];
+    [_batchImageRects removeAllObjects];
     [[client.filesRoutes downloadData:imagePath]
      setResponseBlock:^(DBFILESFileMetadata *result, DBFILESDownloadError *routeError, DBRequestError *error, NSData *fileData) {
          if (result) {

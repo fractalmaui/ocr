@@ -47,6 +47,8 @@
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
 		725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* DBViewController.m */; };
+		7272C5ED21D5EE050094D7D1 /* bgpBkgd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */; };
+		7272C5F021D6ABFE0094D7D1 /* OCRCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */; };
 		7279498E21D041670067B636 /* UIImageExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7279498D21D041670067B636 /* UIImageExtras.m */; };
 		7283812021C4A17300A2954B /* NavButtons.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283811E21C4A17300A2954B /* NavButtons.m */; };
 		7283812A21C4A36200A2954B /* dbNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283812621C4A36100A2954B /* dbNOT.png */; };
@@ -140,6 +142,9 @@
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
 		725DA97B21CB53BC0024ECF7 /* DBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBViewController.h; sourceTree = "<group>"; };
 		725DA97C21CB53BC0024ECF7 /* DBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBViewController.m; sourceTree = "<group>"; };
+		7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bgpBkgd.png; path = Resources/bgpBkgd.png; sourceTree = SOURCE_ROOT; };
+		7272C5EE21D6ABFE0094D7D1 /* OCRCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRCache.h; sourceTree = "<group>"; };
+		7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCache.m; sourceTree = "<group>"; };
 		7279498C21D041660067B636 /* UIImageExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIImageExtras.h; sourceTree = "<group>"; };
 		7279498D21D041670067B636 /* UIImageExtras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIImageExtras.m; sourceTree = "<group>"; };
 		7283811E21C4A17300A2954B /* NavButtons.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NavButtons.m; sourceTree = "<group>"; };
@@ -269,6 +274,7 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */,
 				7207078521CD88EE00DB8CAD /* tgrid50.png */,
 				72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */,
 				7283813221C4A54500A2954B /* binonion.png */,
@@ -326,6 +332,8 @@
 				72BA4D2721CEFC0100F432E9 /* ActivityTable.m */,
 				72BA4D2921CF52B600F432E9 /* BatchObject.h */,
 				72BA4D2A21CF52B600F432E9 /* BatchObject.m */,
+				72BA4D2C21CF644A00F432E9 /* OCRTopObject.h */,
+				72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */,
 				721D9C2221CB13E500D1E78A /* CatObject.h */,
 				721D9C2321CB13E500D1E78A /* CatObject.m */,
 				722420F921C854F9002D02A4 /* DBKeys.h */,
@@ -339,14 +347,14 @@
 				72ECD04521C88A1000DBD08E /* invoiceObject.m */,
 				7209609C21B81FDC00D49C63 /* OCRBox.h */,
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
+				7272C5EE21D6ABFE0094D7D1 /* OCRCache.h */,
+				7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */,
 				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
 				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
 				7209608E21B8173200D49C63 /* OCRDocument.m */,
 				7209609921B81FB900D49C63 /* OCRTemplate.h */,
 				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
-				72BA4D2C21CF644A00F432E9 /* OCRTopObject.h */,
-				72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */,
 				7209608721B7FBB000D49C63 /* OCRWord.h */,
 				7209608821B7FBB000D49C63 /* OCRWord.m */,
 				7221543821D18687007DAAB5 /* Vendors.h */,
@@ -451,6 +459,7 @@
 				722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */,
 				7283813321C4A54600A2954B /* binonion.png in Resources */,
 				72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */,
+				7272C5ED21D5EE050094D7D1 /* bgpBkgd.png in Resources */,
 				7283812C21C4A36200A2954B /* dbHOT.png in Resources */,
 				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
 				72E5D31121B6DE4C005AF869 /* txt in Resources */,
@@ -524,6 +533,7 @@
 				72BA4D2821CEFC0100F432E9 /* ActivityTable.m in Sources */,
 				729C592C21C1D08900F4C695 /* smartProducts.m in Sources */,
 				721D9C2421CB13E500D1E78A /* CatObject.m in Sources */,
+				7272C5F021D6ABFE0094D7D1 /* OCRCache.m in Sources */,
 				72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */,
 				72435B3421C8C7C600620F4B /* EXPObject.m in Sources */,
 				72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */,

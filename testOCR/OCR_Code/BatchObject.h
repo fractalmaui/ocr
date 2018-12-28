@@ -20,8 +20,8 @@
 #import "DropboxTools.h"
 #import "OCRTemplate.h"
 #import "Vendors.h"
-#import "OCRTopObject.h"
 #import "UIImageExtras.h"
+#import "OCRTopObject.h"
 
 @protocol batchObjectDelegate;
 
@@ -51,6 +51,8 @@
     
     NSMutableArray *vendorFileCounts;
     NSMutableDictionary *vendorFolders;
+    NSArray *pdfEntries;  //Fetched list of PDF files from batch folder
+    
     OCRTopObject *oto;
     int batchCount;
     int batchTotal;
@@ -58,14 +60,19 @@
     int batchTotalPages;
     NSString *tableName;
     int returnCount;
-
+    //Long string of returning object IDs from OCR invoice processing
+    //Format: (Initial)_ParseID, where Initial is E for Exp, I for Invoice, etc
+    NSString *soids;
 }
 @property (nonatomic , strong) NSString* batchID;
 @property (nonatomic , assign) BOOL authorized;
+@property (nonatomic , strong) NSString* versionNumber;
 
 @property (nonatomic, unsafe_unretained) id <batchObjectDelegate> delegate; // receiver of completion messages
 
 + (id)sharedInstance;
+-(void) addOID : (NSString *) oid : (NSString *) tableName;
+
 -(void) getBatchCounts;
 -(int)  getVendorFileCount : (NSString *)vfn;
 

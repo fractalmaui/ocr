@@ -16,9 +16,10 @@
 #import "ActivityTable.h"
 #import "activityCell.h"
 #import "AddTemplateViewController.h"
+#import "DBViewController.h"
 #import "NavButtons.h"
 #import "SessionManager.h"
-
+#import "OCRCache.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
@@ -31,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
     UIImage *emptyIcon;
     UIImage *dbIcon;
     UIImage *batchIcon;
+    int selectedRow;
+    NSString* stype;
+    NSString* sdata;
+    NSString* soids;
+    
+    OCRCache *oc;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 

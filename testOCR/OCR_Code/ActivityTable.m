@@ -39,14 +39,14 @@
 //=============(ActivityTable)=====================================================
 -(NSString *) getData : (int) index
 {
-    if (index < 0 || index >= typeStrings.count) return @"";
+    if (index < 0 || index >= dataStrings.count) return @"";
     return dataStrings[index];
 }
 
 //=============(ActivityTable)=====================================================
 -(NSDate *) getDate : (int) index
 {
-    if (index < 0 || index >= typeStrings.count) return [NSDate date];
+    if (index < 0 || index >= dates.count) return [NSDate date];
     return dates[index];
 }
 
@@ -54,7 +54,7 @@
 //=============(ActivityTable)=====================================================
 -(NSString *) getObjIDs : (int) index
 {
-    if (index < 0 || index >= typeStrings.count) return @"";
+    if (index < 0 || index >= objectIDStrings.count) return @"";
     return objectIDStrings[index];
 }
 

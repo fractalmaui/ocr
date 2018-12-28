@@ -32,7 +32,11 @@
     dbIcon = [UIImage imageNamed:@"dbNOT.png"];
     batchIcon = [UIImage imageNamed:@"multiNOT.png"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
-    
+    oc = [OCRCache sharedInstance];
+
+    //Test only, built-in OCR crap...
+    [self loadBuiltinOCRToCache];
+
     return self;
 }
 
@@ -58,7 +62,7 @@
     
    //DO I NEED THIS? UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert categories:nil];
    //DO I NEED THIS? [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
-
+    
 
 }
 
@@ -105,6 +109,41 @@
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
                                                           }];
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Clear OCR Cache",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self clearCacheMenu];
+                                                           }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    //DHS 3/13: Add owner's ability to delete puzzle
+    [alert addAction:firstAction];
+    [alert addAction:secondAction];
+    [alert addAction:thirdAction];
+    [alert addAction:cancelAction];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+
+} //end menu
+
+//=============OCR MainVC=====================================================
+// if you click on a batch item, this gets invoked
+-(void) batchListChoiceMenu
+{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"Batch Retreival",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get EXP records",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Invoices",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -114,8 +153,35 @@
     [alert addAction:cancelAction];
     
     [self presentViewController:alert animated:YES completion:nil];
-
+    
 } //end menu
+
+
+//=============OCR MainVC=====================================================
+// Yes/No for cache clear...
+-(void) clearCacheMenu
+{
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"Clear Cache? (Cannot be undone!)",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    
+    UIAlertAction *yesAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"YES",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self->oc clearHardCore];
+                                                          }];
+    UIAlertAction *noAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"NO",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    //DHS 3/13: Add owner's ability to delete puzzle
+    [alert addAction:yesAction];
+    [alert addAction:noAction];
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end menu
+
+
 
 
 #define NAV_HOME_BUTTON 0
@@ -171,6 +237,11 @@
         AddTemplateViewController *vc = (AddTemplateViewController*)[segue destinationViewController];
         vc.step = 0;
     }
+    else if([[segue identifier] isEqualToString:@"dbSegue"])
+    {
+        DBViewController *vc = (DBViewController*)[segue destinationViewController];
+        vc.soids = soids; //Pass selected objectID's from activity, if any...
+    }
 }
 
 
@@ -217,12 +288,20 @@
     return 80;
 }
 
+//==========FeedVC=========================================================================
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    int row = (int)indexPath.row;
+    stype  = [act getType:row];
+    sdata  = [act getData:row];
+    soids  = [act getObjIDs:row];
+    [self batchListChoiceMenu];
+}
 
 #pragma mark - NavButtonsDelegate
 //=============OCR MainVC=====================================================
 -(void)  didSelectNavButton: (int) which
 {
-    NSLog(@"   didselectNavButton %d",which);
+    //NSLog(@"   didselectNavButton %d",which);
     // [_sfx makeTicSoundWithPitch : 8 : 50 + which];
     
     if (which == 0) //THis is now a multi-function popup...
@@ -232,6 +311,7 @@
     }
     else if (which == 1) //THis is now a multi-function popup...
     {
+        soids = @""; //No special objects to look up...
         [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
     }
     else if (which == 2) //Templates / settings?
@@ -247,8 +327,32 @@
 } //end didSelectNavButton
 
 //=============OCR MainVC=====================================================
+-(void) loadBuiltinOCRToCache
+{
+    NSString *fname = @"beef";
+    NSError *error;
+    NSString *path = [[NSBundle mainBundle] pathForResource:fname ofType:@"txt" inDirectory:@"txt"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    NSString *fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    NSString *fullImageFname = @"hawaiiBeefInvoice.jpg";
+    [oc addOCRTxtWithRect : fullImageFname : CGRectMake(0, 0, 1275, 1650) : fileContentsAscii];
+
+    fname = @"hfm";
+    path = [[NSBundle mainBundle] pathForResource:fname ofType:@"txt" inDirectory:@"txt"];
+    url = [NSURL fileURLWithPath:path];
+    fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    fullImageFname = @"hfm90.jpg";
+    [oc addOCRTxtWithRect : fullImageFname : CGRectMake(0, 0, 1777, 1181) : fileContentsAscii];
+}
+
+//=============OCR MainVC=====================================================
 -(void) testit
 {
+    
+    
+    
+    
+    
   //  NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
 //    [self downloadPDF:gd];
     // Get the PDF Data from the url in a NSData Object
@@ -282,7 +386,7 @@
 //=============OCR MainVC=====================================================
 - (void)didReadActivityTable
 {
-    NSLog(@" got act table...");
+    //NSLog(@"  MainVC:got act table...");
     [_table reloadData];
 }
 

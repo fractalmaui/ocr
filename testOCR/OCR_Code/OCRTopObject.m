@@ -5,6 +5,11 @@
 //  Created by Dave Scruton on 12/22/18.
 //  Copyright © 2018 huedoku. All rights reserved.
 //
+//  This all revolves around OCR Space, an online free OCR system.
+//   At higher data rates there is a fee, need more details
+//   https://ocr.space/
+//
+//  12/28 integrated ocr cache
 
 #import "OCRTopObject.h"
 
@@ -27,12 +32,14 @@ static OCRTopObject *sharedInstance = nil;
 {
     if (self = [super init])
     {
-        smartp      = [[smartProducts alloc] init];
-        od          = [[OCRDocument alloc] init];
-        rowItems    = [[NSMutableArray alloc] init];
-        it = [[invoiceTable alloc] init];
+        smartp      = [[smartProducts alloc] init];    // Product categorization / error checks
+        od          = [[OCRDocument alloc] init];     // Document object: handles OCR searches/parsing
+        rowItems    = [[NSMutableArray alloc] init]; // Invoice rows end up here
+        oc          = [OCRCache sharedInstance];    // Cache: local OCR storage
+
+        it = [[invoiceTable alloc] init];     // Parse DB: invoice storage
         it.delegate = self;
-        et = [[EXPTable alloc] init];
+        et = [[EXPTable alloc] init];   // Parse DB: EXP line item storage
         et.delegate = self;
 
     }
@@ -242,18 +249,32 @@ static OCRTopObject *sharedInstance = nil;
 
 //=============(OCRTopObject)=====================================================
 // Sends a JPG to the OCR server, and receives JSON text data back...
-- (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot
+- (void)performOCROnImage : (NSString *)fname : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
     // Image file and parameters, use hi compression quality?
     NSData *imageData = UIImageJPEGRepresentation(imageToOCR,0.0);
-    [self performOCROnData:imageData :ot];
+    CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
+    [self performOCROnData: fname : imageData : r : ot];
 } //end performOCROnImage
 
 
 //=============(OCRTopObject)=====================================================
 // Sends a JPG to the OCR server, and receives JSON text data back...
-- (void)performOCROnData : (NSData *)imageDataToOCR : (OCRTemplate *)ot
+- (void)performOCROnData : (NSString *)fname : (NSData *)imageDataToOCR : (CGRect) r :  (OCRTemplate *)ot
 {
+    //First, check cache: may already have downloaded OCR raw txt for this file...
+    if ([oc txtExistsByID:fname])
+    {
+        NSLog(@" Cache HIT: perform OCR on cached file...%@",fname);
+        rawOCRResult  = [oc getTxtByID:fname];  //Raw OCR'ed text, needs to goto JSON
+        r             = [oc getRectByID:fname]; //Get cached image size too...
+        NSData *jsonData = [rawOCRResult dataUsingEncoding:NSUTF8StringEncoding];
+        NSError *e;
+        OCRJSONResult = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&e];
+        if (e != nil) NSLog(@" ....json err? %@",e.localizedDescription);
+        [self performFinalOCROnDocument : r : ot ]; //This calls delegate when done
+        return; //Bail!
+    }
     // Create URL request
     NSURL *url = [NSURL URLWithString:@"https://api.ocr.space/Parse/Image"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
@@ -300,7 +321,7 @@ static OCRTopObject *sharedInstance = nil;
         else
         {
             self->rawOCRResult = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            NSString* stringToZapToTextFile = self->rawOCRResult;
+            [self->oc addOCRTxtWithRect:fname :r:self->rawOCRResult];
             self->OCRJSONResult = [NSJSONSerialization JSONObjectWithData:data
                                                                   options:kNilOptions
                                                                     error:&myError];
@@ -316,18 +337,8 @@ static OCRTopObject *sharedInstance = nil;
             }
             else
             {
-                NSLog(@" annnnd result is %@",self->OCRJSONResult);
-                NSArray* pta = [self->OCRJSONResult valueForKey:@"ParsedText"];
-                if (pta.count > 0) self->parsedText = pta[0];
-                if (ot != nil) //Template needs to be applied?
-                {
-                    //STUBBED!!! The document needs to XY limits of the image basically,
-                    //  WHERE do they come from? The PDF???
-                    [self setupDocument : [UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];//asdf imageToOCR];
-                    [self applyTemplate : ot];
-                    [self cleanupInvoice];
-                }
-                [self->_delegate didPerformOCR:@"OCR OK?"];
+                NSLog(@" annnnd result from OCR server is %@",self->OCRJSONResult);
+                [self performFinalOCROnDocument : r : ot]; //This calls delegate when done
             }
         }
     }];
@@ -335,18 +346,36 @@ static OCRTopObject *sharedInstance = nil;
 } //end performOCROnData
 
 //=============(OCRTopObject)=====================================================
+// JSON result may be from OCR server return OR from cache hit. needs template.
+//  informs delegate when done...
+-(void) performFinalOCROnDocument : (CGRect) r : (OCRTemplate *)ot
+{
+    NSArray* pta = [self->OCRJSONResult valueForKey:@"ParsedText"];
+    if (pta.count > 0) self->parsedText = pta[0];
+    if (ot != nil) //Template needs to be applied?
+    {
+        NSLog(@" ...final OCR");
+        //STUBBED!!! The document needs to XY limits of the image basically,
+        //  WHERE do they come from? The PDF???
+        [self setupDocument : r];    //Document page size, etc...
+        [self applyTemplate : ot];   //Does OCR analysis
+        [self cleanupInvoice];       //Fixes weird numbers, typos, etc...
+        [self writeEXPToParse];      //Saves all EXP rows, then invoice as well
+    }
+    [self->_delegate didPerformOCR:@"OCR OK?"];
+
+}
+
+//=============(OCRTopObject)=====================================================
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
     NSString * stubbedDocName = @"lilbeef";
-//    OCRJSONResult = [self readTxtToJSON:stubbedDocName];
-//    [self setupDocument : imageToOCR];
-//    NSLog(@" template was made w/ image 1275x1650y");
-//    [self applyTemplate : ot];
-
     _imageFileName = imageName; //selectFnameForTemplate;
     OCRJSONResult = [self readTxtToJSON:stubbedDocName];
     [self setupTestDocumentJSON:OCRJSONResult];
-    [self setupDocument:[UIImage imageNamed:imageName]];
+    //asdf
+    CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
+    [self setupDocument : r];
     [self applyTemplate:ot];
     [self cleanupInvoice];
     [self writeEXPToParse];
@@ -406,11 +435,11 @@ static OCRTopObject *sharedInstance = nil;
 }
 
 //=============(OCRTopObject)=====================================================
--(void) setupDocument : (UIImage *)imageToOCR
+-(void) setupDocument : (CGRect) r
 {
     NSLog(@" setup doc...");
     //Do I need anything but the dictionary here??
-    [od setupDocumentWIthImage : imageToOCR : OCRJSONResult ];
+    [od setupDocumentWithRect : r : OCRJSONResult ];
     tlRect = [od getTLRect];
     trRect = [od getTRRect];
     //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
@@ -428,6 +457,7 @@ static OCRTopObject *sharedInstance = nil;
 -(void) writeEXPToParse
 {
     [et clear];
+    NSLog(@"  writeEXP...");
     for (int i=0;i<od.longestColumn;i++) //OK this does multiple parse saves at once!
     {
         NSMutableArray *ac = [od getRowFromColumnStringData : i];

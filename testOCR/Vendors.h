@@ -33,7 +33,6 @@
 -(NSString *) getFolderName : (NSString *)vmatch;
 -(int) stringHasVendorName : (NSString *)s;
 
-
 @end
 
 @protocol VendorsDelegate <NSObject>

@@ -48,6 +48,7 @@ static Vendors *sharedInstance = nil;
     return @"";
 }
 
+
 //=============(Vendors)=====================================================
 -(void) readFromParse
 {

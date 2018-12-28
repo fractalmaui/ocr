@@ -678,9 +678,10 @@
     {
         int x1 = (int)ow.left.intValue;
         int y1 = (int)ow.top.intValue;
+        NSLog(@" xy %d %d",x1,y1);
         // Look for farthest left near the top
         //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 < minx && y1 < _height/10) {
+        if (x1 < minx && y1 < miny) {
             minx = x1;
             miny = y1;
             foundit = index;
@@ -706,7 +707,7 @@
         //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
         //Look for farthest right near the top!
         //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 > maxx && y1 < _height/10)
+        if (x1 > maxx && y1 < 99999)
         {
             //NSLog(@" bing: Top Right");
             maxx = x1;
@@ -1033,12 +1034,11 @@
 }
 
 //=============OCR VC=====================================================
--(void) setupDocumentWIthImage : (UIImage*) image : (NSDictionary *)d
+-(void) setupDocumentWithRect : (CGRect) r : (NSDictionary *)d
 {
-    _scannedImage = image;
     _scannedName  = @"nada";
-    _width        = _scannedImage.size.width;
-    _height       = _scannedImage.size.height;
+    _width        = r.size.width;
+    _height       = r.size.height;
     NSLog(@" od setupdoc wh %d %d",_width,_height);
     [self parseJSONfromDict:d];
 }
@@ -1121,7 +1121,7 @@
     //...convert to template space...
     double outx;
     outx = (double)tlTemplateRect.origin.x + bx/hScale;
-    NSLog(@"  convx %f -> %f",bx,outx);
+    //NSLog(@"  convx %f -> %f",bx,outx);
     return (int)floor(outx + 0.5);  //This is needed to get NEAREST INT!
 }
 
@@ -1159,7 +1159,7 @@
     
     CGRect rout = CGRectMake(outx, outy, outw, outh);
     
-    NSLog(@" gcr %@ -> %@",NSStringFromCGRect(r),NSStringFromCGRect(rout));
+    //NSLog(@" gcr %@ -> %@",NSStringFromCGRect(r),NSStringFromCGRect(rout));
     
     return rout;
 } //end getConvertedBox

@@ -41,7 +41,11 @@
     NSLog(@" ...logged into dropbox...");
 
     //Load Vendors from parse db
-    Vendors *v = [Vendors sharedInstance];
+    [Vendors sharedInstance];
+    
+    //Batch Object
+    _bbb = [BatchObject sharedInstance];
+
     
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
@@ -98,5 +102,7 @@
     
     return NO;
 }
+
+
 
 @end

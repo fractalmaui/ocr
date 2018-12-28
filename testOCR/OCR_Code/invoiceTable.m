@@ -25,6 +25,8 @@
         iobjs = [[NSMutableArray alloc] init]; //Invoice Objects
         tableName = @"";
         recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
+       // bbb = [BatchObject sharedInstance];
+
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
     return self;
@@ -157,7 +159,12 @@
     [iRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...invoiceTable [vendor:%@]->parse",self->_ivendor);
-            [self.delegate didSaveInvoiceTable:_inumber];
+            NSString *objID = iRecord.objectId;
+            // HMM this is broken. maybe we need to use NSNotification to send
+            //  objectID's across objects over to the batchObject singleton.
+            //AppDelegate *gappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            //[gappDelegate.bbb addOID:objID : self->tableName]; //Links current batcself->h to this record
+            [self.delegate didSaveInvoiceTable:self->_inumber];
         } else {
             NSLog(@" ERROR: saving invoice: %@",error.localizedDescription);
         }

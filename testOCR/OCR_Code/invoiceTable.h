@@ -15,6 +15,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
+//#import "AppDelegate.h"
+//#import "BatchObject.h"
 #import "DBKeys.h"
 #import "invoiceObject.h"
 
@@ -29,6 +31,8 @@
     int dog;
     NSString *tableName;
     NSString *packedOIDs;
+    //BatchObject *bbb;
+
 }
 
 @property (nonatomic , strong) NSDate* idate;

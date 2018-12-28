@@ -56,14 +56,21 @@ static BatchObject *sharedInstance = nil;
         
         _authorized = FALSE;
         
-//        catCSV = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-//        _catProducts = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-//        [self loadCategoriesFile];
-        //        tableName = @"";
-        //        _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+        _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+
     }
     return self;
 }
+
+
+//=============(BatchObject)=====================================================
+-(void) addOID : (NSString *) oid : (NSString *) tableName
+{
+    //asdf
+    NSString *firstLetter = [tableName substringFromIndex:1];
+    soids = [soids stringByAppendingString:[NSString stringWithFormat:@"%@_%@,",firstLetter,oid]];
+}
+
 
 //=============(BatchObject)=====================================================
 // Loop over vendors, get counts...
@@ -92,6 +99,7 @@ static BatchObject *sharedInstance = nil;
 {
     if (!_authorized) return; //can't get at dropbox w/o login!
     [self getNewBatchID];
+    soids = @"";  //Batch saved objectID table
     batchStatus   = BATCH_STATUS_RUNNING;
     batchErrors   = @"";
     batchFiles    = @"";
@@ -129,24 +137,38 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 // Given a list of PDF's in one vendor folder, download pDF and
 //  run OCR on all pages...
--(void) downloadAndProcessFiles : (NSArray *)pdfEntries
+-(void) startProcessingFiles
 {
-    int i=0;
-    NSLog(@" batch:downloadAndProcessFiles");
     batchTotal = (int)pdfEntries.count;
-    batchCount = 1;
-    for (DBFILESMetadata *entry in pdfEntries)
+    batchCount = 0;
+    [self processNextFile];
+} //end startProcessingFiles
+
+
+//=============(BatchObject)=====================================================
+-(void) processNextFile
+{
+    batchCount++;
+    NSLog(@" processNextFile %d",batchCount);
+    if (batchCount > batchTotal) //Hit last file? Complete batch, inform delegate
     {
-        NSString *itemName = [NSString stringWithFormat:@"%@/%@",dbt.prefix,entry.name];
-        //NSLog(@" ...item[%d] %@",i,itemName);
-        [dbt downloadImages:itemName]; //Asyncbonous, need to finish before handling results
-        i++;
-        batchCount = i;
-        batchProgress = [NSString stringWithFormat:@"Fetch File %d of %d",batchCount,batchTotal];
-        [self.delegate batchUpdate : batchProgress];
+        batchStatus = BATCH_STATUS_COMPLETED;
         [self updateParse];
+        [act saveActivityToParse:@"Batch Completed" : vendorName];
+        [self.delegate didCompleteBatch];
+        return;
     }
-} //end downloadAndProcessFiles
+
+    int i = batchCount-1; //Batch Count is 1...n
+    if (i < 0 || i >= pdfEntries.count) return; //Out of bounds!
+    DBFILESMetadata *entry = pdfEntries[i];
+    NSString *itemName = [NSString stringWithFormat:@"%@/%@",dbt.prefix,entry.name];
+    //Check for "skip" string, ignore file if so...
+    if ([itemName.lowercaseString containsString:@"skip"]) //Skip this file?
+        [self processNextFile];                           //Re-entrant call, should be OK
+    else
+        [dbt downloadImages:itemName];                   //Asyncbonous, need to finish before handling results
+} //end processNextFile
 
 //=============(BatchObject)=====================================================
 -(int) getVendorFileCount : (NSString *)vfn
@@ -160,13 +182,14 @@ static BatchObject *sharedInstance = nil;
         }
     }
     return 0;
-}
+} //end getVendorFileCount
 
 //=============(BatchObject)=====================================================
-// Handles each page that came back from one PDF as an UIImage...
--(void) processFiles
+// Handles each page that came back, sends data to OCR scanner, called
+//  asynchronously when dropboxTools calls delegate method didDownloadImages below
+-(void) processPDFPages
 {
-    NSLog(@" batch:processFiles");
+    NSLog(@" batch:processPDFPages");
      //: dbt.batchImagePaths : dbt.batchImages
     if (!gotTemplate)
     {
@@ -178,28 +201,18 @@ static BatchObject *sharedInstance = nil;
 
     //Template MUST be ready at this point!
     batchPage = 0;
-//    batchTotalPages = (int)pdfPages.count;
-//    for (UIImage *nextPageImage in pdfPages) //Handle all images that came back from latest PDF...
-   //try using just data here...
-    {
-        NSData *data = dbt.batchImageData[0];  //Only one data set per file?
-        NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
-        //template was made w/ image 1275x1650y, try test scaling for now
-        //KLUGE!!!! this only works for hawaii beef products!
-        //UIImage *imageToOCR =  [nextPageImage imageByScalingAndCroppingForSize : CGSizeMake(1650,1275)  ];  //DHS 3/26
-        //NSLog(@" ...do OCR on image [%@][%@]",vendorName,imageToOCR);
-        //If filename doesn't have .pdf,.jpg,.png,.jpeg,.bmp,.gif the OCR fails!
-        
-//        oto.imageFileName = @"hawaiiBeefInvoice.jpg"; //selectFnameForTemplate;
-//        [oto setupDocument:[UIImage imageNamed:selectFnameForTemplate]];
-
-        oto.vendor = vendorName;
-        oto.imageFileName = ipath; //@"hawaiiBeefInvoice.jpg"; //ipath;
-    //    [oto performOCROnData:data : ot];
-//        [oto performOCROnImage : [UIImage imageNamed:oto.imageFileName] : ot];
-        [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
-    } //end for nextPageImage
-} //end processFiles
+    NSData *data = dbt.batchImageData[0];  //Only one data set per file?
+    NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
+    NSValue *rectObj = dbt.batchImageRects[0]; //PDF size (hopefully!)
+    CGRect imageFrame = [rectObj CGRectValue];
+    NSLog(@"  ...PDF imageXYWH %d %d, %d %d",
+          (int)imageFrame.origin.x,(int)imageFrame.origin.y,
+          (int)imageFrame.size.width,(int)imageFrame.size.height);
+    oto.vendor = vendorName;
+    oto.imageFileName = ipath; //@"hawaiiBeefInvoice.jpg"; //ipath;
+    [oto performOCROnData : ipath : data : imageFrame : ot];
+    //  [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
+} //end processPDFPages
 
 //=============(BatchObject)=====================================================
 -(void) handleBatchError : (NSString *) errstr
@@ -231,6 +244,7 @@ static BatchObject *sharedInstance = nil;
             pfo[PInv_BatchFiles_key]    = self->batchFiles;
             pfo[PInv_BatchProgress_key] = self->batchProgress;
             pfo[PInv_BatchErrors_key]   = self->batchErrors;
+            pfo[PInv_VersionNumber]     = self->_versionNumber;
             [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (succeeded)
                 {
@@ -253,7 +267,8 @@ static BatchObject *sharedInstance = nil;
 // Returns with a list of all PDF's in the vendor folder
 - (void)didGetBatchList : (NSArray *)a
 {
-    [self downloadAndProcessFiles : a];
+    pdfEntries = a;
+    [self startProcessingFiles];
 }
 
 //=============(BatchObject)=====================================================
@@ -283,9 +298,12 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 - (void)didDownloadImages
 {
-    //At this point we have all the images for a file, ready to process!
     NSLog(@" ...downloaded all images? got %d",(int)dbt.batchImages.count);
-    [self processFiles];
+    batchProgress = [NSString stringWithFormat:@"Fetch File %d of %d",batchCount,batchTotal];
+    //At this point we have all the images for a file, ready to process!
+    [self.delegate batchUpdate : batchProgress];
+    [self updateParse];
+    [self processPDFPages];
 }
 
 
@@ -320,16 +338,9 @@ static BatchObject *sharedInstance = nil;
 {
     NSLog(@" OCR OK page %d tp %d  count %d total %d",batchPage,batchTotalPages,batchCount,batchTotal);
     batchPage++;
-    if (batchPage == batchTotalPages)
+    if (batchPage >= batchTotalPages)
     {
-        batchCount++;
-        if (batchCount == batchTotal)
-        {
-            batchStatus = BATCH_STATUS_COMPLETED;
-            [self updateParse];
-            [act saveActivityToParse:@"Batch Completed" : vendorName];
-            [self.delegate didCompleteBatch];
-        }
+        [self processNextFile];
     }
 }
 

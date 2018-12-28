@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) parseHeaderColumns : (NSMutableArray*)aof;
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
 -(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
--(void) setupDocumentWIthImage : (UIImage*) image : (NSDictionary *)d;
+-(void) setupDocumentWithRect : (CGRect) r : (NSDictionary *)d;
 @end
 
 NS_ASSUME_NONNULL_END

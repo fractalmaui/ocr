@@ -8,9 +8,10 @@
 //  12/21 add dropbox SDK
 
 #import <UIKit/UIKit.h>
-#import <Parse/Parse.h>
-#import "SessionManager.h"
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
+#import <Parse/Parse.h>
+#import "BatchObject.h"
+#import "SessionManager.h"
 #import "Vendors.h"
 
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
@@ -19,6 +20,7 @@
 }
 
 @property(nonatomic) BOOL authSuccessful;
+@property (strong, nonatomic) BatchObject *bbb;
 
 @property (strong, nonatomic) UIWindow *window;
 

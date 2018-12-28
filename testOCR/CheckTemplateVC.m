@@ -32,7 +32,8 @@
     _imageView.image = _photo;
     _scrollView.delegate=self;
     oto.imageFileName = @"test.jpg";
-    [oto performOCROnImage:_photo :nil];
+    NSLog(@" NOTE: Filename needs to be added here at OCR call for cacheing!!");
+    [oto performOCROnImage : oto.imageFileName : _photo : nil];
 }
 
 //=============CheckTemplate VC=====================================================

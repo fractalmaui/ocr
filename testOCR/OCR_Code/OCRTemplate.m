@@ -18,6 +18,8 @@
 @implementation OCRTemplate
 
 #define INVOICE_TOP_LIMITS_LABEL @"INVOICE_TOP_LIMITS"
+
+
 //=============(OCRTemplate)=====================================================
 -(instancetype) init
 {
@@ -30,7 +32,7 @@
         recordStrings = [[NSMutableArray alloc] init]; //Invoice string results
         orientationWhenReadable = @"portrait";
         _pdfFile = @"";
-        NSLog(@" init template, orient %@",orientationWhenReadable);
+        //NSLog(@" init template, orient %@",orientationWhenReadable);
         //[self dump];
     }
     return self;

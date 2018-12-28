@@ -9,11 +9,12 @@
 #import <Foundation/Foundation.h>
 #import "DBKeys.h"
 #import "EXPTable.h"
-#import "invoiceTable.h"
 #import "OCRWord.h"
+#import "OCRCache.h"
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
 #import "smartProducts.h"
+#import "invoiceTable.h"
 
 @protocol OCRTopObjectDelegate;
 
@@ -63,7 +64,8 @@
 
     CGRect tlRect,trRect;  //Absolute document boundary rects for text
     CGRect blRect,brRect;
-    
+    OCRCache *oc;
+
     
 }
 
@@ -85,13 +87,13 @@
 + (id)sharedInstance;
 -(NSString *) getRawResult;
 -(NSString *) getParsedText;
-- (void)performOCROnImage : (UIImage *)imageToOCR : (OCRTemplate *)ot;
-- (void)performOCROnData : (NSData *)imageDataToOCR : (OCRTemplate *)ot;
+- (void)performOCROnImage : (NSString *)fname : (UIImage *)imageToOCR : (OCRTemplate *)ot;
+- (void)performOCROnData : (NSString *)fname : (NSData *)imageDataToOCR : (CGRect) r : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 -(void) setupTestDocumentJSON : (NSDictionary *) json;  //FOR TESTING ONLY
+-(void) setupDocument : (CGRect) r;
 - (void)applyTemplate : (OCRTemplate *)ot;             //FOR TESTING ONLY
 -(void) cleanupInvoice;                               //FOR TESTING ONLY
--(void) setupDocument : (UIImage *)imageToOCR;       //FOR TESTING ONLY
 -(void) writeEXPToParse;
 -(NSString *) dumpResults;
 

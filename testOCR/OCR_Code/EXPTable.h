@@ -14,8 +14,10 @@
 
 #import <Foundation/Foundation.h>
 #import <Parse/Parse.h>
+//#import "AppDelegate.h"
 #import "EXPObject.h"
 #import "DBKeys.h"
+//#import "BatchObject.h"
 
 @protocol EXPTableDelegate;
 
@@ -29,6 +31,10 @@
     NSString *tableName;
     NSString *EXPDumpCSVList;
     int returnCount;
+    //BatchObject *bbb;
+
+    
+    
 }
 
 @property (nonatomic, unsafe_unretained) id <EXPTableDelegate> delegate; // receiver of completion messages
@@ -41,6 +47,7 @@
 
 -(void) saveToParse;
 -(void) readFromParse : (NSString *) invoiceNumberstring;
+-(void) readFromParseByObjIDs : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)soids;
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor;
 -(NSString *)getRecord : (int) index;
 -(NSMutableArray *)getAllRecords;

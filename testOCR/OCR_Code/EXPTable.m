@@ -26,6 +26,9 @@
         recordStrings = [[NSMutableArray alloc] init]; //Invoice Objects
         productNames  = [[NSMutableArray alloc] init]; //Invoice Objects
         tableName = @"EXPFullTable";
+
+        //bbb = [BatchObject sharedInstance];
+
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
     return self;
@@ -93,7 +96,7 @@
     
 } //end addRecord
 
-//=============OCR VC=====================================================
+//=============(EXPTable)=====================================================
 -(NSString *) stringFromKeyedItems : (PFObject *)pfo : (NSArray *)kitems
 {
     NSString *s = @"";
@@ -112,13 +115,13 @@
 }
 
 
-//=============OCR VC=====================================================
+//=============(EXPTable)=====================================================
 -(NSMutableArray *)getAllRecords
 {
     return recordStrings;
 }
 
-//=============OCR VC=====================================================
+//=============(EXPTable)=====================================================
 -(NSString *)getRecord : (int) index
 {
     if (index < 0 || index >= recordStrings.count) return @"";
@@ -126,11 +129,79 @@
 }
 
 
-//=============OCR VC=====================================================
--(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
+//=============(EXPTable)=====================================================
+-(void) handleCSVInit : (BOOL) dumptoCSV
 {
     if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
     else EXPDumpCSVList = @"";
+} //end handleCSVInit
+
+//=============(EXPTable)=====================================================
+-(void) handleCSVAdd : (BOOL) dumptoCSV : (NSString *)s
+{
+    if (dumptoCSV)
+    {
+        self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
+        //if (i < count-1) //Not at end? add LF
+        self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
+    }
+} //end handleCSVAdd
+
+
+//=============(EXPTable)=====================================================
+-(NSString *) getCSVFromObject : (PFObject *)pfo
+{
+    NSArray *sitems1 = [NSArray arrayWithObjects:
+                        PInv_Category_key,PInv_Month_key,PInv_Quantity_key,PInv_Item_key,
+                        PInv_UOM_key,PInv_Bulk_or_Individual_key,PInv_Vendor_key,PInv_TotalPrice_key,
+                        PInv_PricePerUOM_key,PInv_Processed_key,PInv_Local_key,PInv_LineNumber_key,
+                        PInv_InvoiceNumber_key,
+                        nil];
+    NSString *s = [self stringFromKeyedItems : pfo :sitems1];
+    //Inject date into this mess (it's special!)
+    NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"MM/dd/yy"];
+    NSString *sfd = [formatter stringFromDate:[pfo objectForKey:PInv_Date_key]];
+    s = [s stringByAppendingString:
+         [NSString stringWithFormat:@"%@,",sfd]];
+    NSArray *sitems2 = [NSArray arrayWithObjects:
+                        PInv_LineNumber_key,PInv_InvoiceNumber_key,
+                        nil];
+    s = [s stringByAppendingString:
+         [NSString stringWithFormat:@",%@",[self stringFromKeyedItems : pfo :sitems2]]];
+    return s;
+}
+
+//=============OCR VC=====================================================
+-(void) readFromParseByObjIDs : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)soids
+{
+    [self handleCSVInit:dumptoCSV];
+    NSMutableArray *a = [[NSMutableArray alloc] init];
+    NSArray *sitems =  [soids componentsSeparatedByString:@","];
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    for (NSString *s in sitems)  //incoming should look like X_OBJID,X_OBJID, etc
+    {
+        NSArray *s2 =  [s componentsSeparatedByString:@"_"];
+        if (s2.count == 2)
+        {
+            NSString *oid = s2[1];  //THis should be the object ID
+            [a addObject:oid];
+            NSLog(@" .. fetch objid [%@]",oid);
+            PFObject *pfo = [query getObjectWithId:oid];  //Fetch by object ID,
+            NSString *s = [self getCSVFromObject:pfo];    // handle as usual...
+            [self->recordStrings addObject:s];
+            [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
+            [self handleCSVAdd : dumptoCSV : s];
+        }
+    }
+    [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
+}
+
+
+//=============OCR VC=====================================================
+-(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
+{
+    [self handleCSVInit:dumptoCSV];
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
     if (![vendor isEqualToString:@"*"]) //Wildcard means get everything...
         [query whereKey:PInv_Vendor_key equalTo:vendor];
@@ -139,36 +210,14 @@
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
             [self->productNames  removeAllObjects];
-            int i     = 0;
+//            int i     = 0;
             for( PFObject *pfo in objects)
             {
-                NSArray *sitems1 = [NSArray arrayWithObjects:
-                                   PInv_Category_key,PInv_Month_key,PInv_Quantity_key,PInv_Item_key,
-                                   PInv_UOM_key,PInv_Bulk_or_Individual_key,PInv_Vendor_key,PInv_TotalPrice_key,
-                                   PInv_PricePerUOM_key,PInv_Processed_key,PInv_Local_key,PInv_LineNumber_key,
-                                   PInv_InvoiceNumber_key,
-                                   nil];
-                NSString *s = [self stringFromKeyedItems : pfo :sitems1];
-                //Inject date into this mess (it's special!)
-                NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
-                [formatter setDateFormat:@"MM/dd/yy"];
-                NSString *sfd = [formatter stringFromDate:[pfo objectForKey:PInv_Date_key]];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@"%@,",sfd]];
-                NSArray *sitems2 = [NSArray arrayWithObjects:
-                                    PInv_LineNumber_key,PInv_InvoiceNumber_key,
-                                    nil];
-                s = [s stringByAppendingString:
-                     [NSString stringWithFormat:@",%@",[self stringFromKeyedItems : pfo :sitems2]]];
+                NSString *s = [self getCSVFromObject:pfo];
                 [self->recordStrings addObject:s];
                 [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
-                if (dumptoCSV)
-                {
-                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
-                    //if (i < count-1) //Not at end? add LF
-                    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
-                }
-                i++;
+                [self handleCSVAdd : dumptoCSV : s];
+ //               i++;
             }
             NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
@@ -219,6 +268,8 @@
             if (succeeded) {
                 NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
                 NSString *objID = exoRecord.objectId;
+                //AppDelegate *gappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+                //[gappDelegate.bbb addOID:objID : self->tableName]; //Links current batcself->h to this record
                 [self->objectIDs addObject:objID];
                 self->returnCount++;
                 if (self->returnCount == ecount)

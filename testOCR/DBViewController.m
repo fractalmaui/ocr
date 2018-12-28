@@ -48,6 +48,11 @@
     _table.dataSource = self;
     // Do any additional setup after loading the view.
     _titleLabel.text = @"Touch Menu to perform query...";
+    if (_soids.length > 1) //No special lookup
+    {
+        if ([_soids containsString:@"E_"])
+            [et readFromParseByObjIDs:FALSE :  @"*" : _soids];
+    }
 
 }
 

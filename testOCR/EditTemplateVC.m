@@ -372,7 +372,10 @@
         oto.vendor        = supplierName; //TEST
         NSDictionary *d = [self readTxtToJSON:stubbedDocName]; //TEST: only works for beef invoice!
         [oto setupTestDocumentJSON:d];
-        [oto setupDocument:[UIImage imageNamed:selectFnameForTemplate]];
+        UIImage *imageToOCR = [UIImage imageNamed:selectFnameForTemplate];
+        CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
+        //We only need the frame now!
+        [oto setupDocument : r];
         [oto applyTemplate:ot];
         [oto cleanupInvoice];
         [oto writeEXPToParse];
@@ -385,7 +388,7 @@
        // [self writeEXPToParse];
     }
     else{   //Better make sure template is set up here!!!
-        [oto performOCROnImage : [UIImage imageNamed:selectFnameForTemplate] : ot ];
+        [oto performOCROnImage : selectFnameForTemplate : [UIImage imageNamed:selectFnameForTemplate] : ot ];
     }
     
     //    [self callOCRSpace : @"hawaiiBeefInvoice.jpg"];
