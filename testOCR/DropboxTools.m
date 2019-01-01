@@ -37,10 +37,10 @@ static DropboxTools *sharedInstance = nil;
     if (self = [super init])
     {
         _batchFileList   = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        _batchImages     = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        _batchImagePaths = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        _batchImageRects = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
-        _batchImageData  = [[NSMutableArray alloc] init]; //CSV data as read in from csv.txt
+        _batchImages     = [[NSMutableArray alloc] init]; // Images coming in from one PDF file
+        _batchImagePaths = [[NSMutableArray alloc] init]; // Filepaths for each PDF
+        _batchImageRects = [[NSMutableArray alloc] init]; // Size info for each PDF
+        _batchImageData  = [[NSMutableArray alloc] init]; // PDF raw data, goes into OCR
         client           = [DBClientsManager authorizedClient];
     }
     return self;
@@ -68,6 +68,7 @@ static DropboxTools *sharedInstance = nil;
 } //end countEntries
 
 //=============(DropboxTools)=====================================================
+// This is in case we need to produce an error popup
 -(void) setParent : (UIViewController*) p
 {
     parent = p;

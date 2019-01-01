@@ -25,7 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
     const UInt8* idata;
     int iwid,ihit;
     int bins[MAXBINS];
-    int leftVline[MAXBINS];
     int binclumpaves[MAXBINS];
     int bgrad[MAXBINS];
     int absgrad[MAXBINS];

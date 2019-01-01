@@ -3,7 +3,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/22/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 //  This all revolves around OCR Space, an online free OCR system.
 //   At higher data rates there is a fee, need more details
@@ -82,6 +82,7 @@ static OCRTopObject *sharedInstance = nil;
         {
             if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD]) //Looking for a number?
             {
+                [od dumpArray:a];
                 _invoiceNumber = [od findLongInArrayOfFields:a];
                 //This will have to be more robust
                 _invoiceNumberString = [NSString stringWithFormat:@"%ld",_invoiceNumber];
@@ -252,8 +253,9 @@ static OCRTopObject *sharedInstance = nil;
 - (void)performOCROnImage : (NSString *)fname : (UIImage *)imageToOCR : (OCRTemplate *)ot
 {
     // Image file and parameters, use hi compression quality?
-    NSData *imageData = UIImageJPEGRepresentation(imageToOCR,0.0);
+    NSData *imageData = UIImagePNGRepresentation(imageToOCR);
     CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
+    _imageFileName = fname;
     [self performOCROnData: fname : imageData : r : ot];
 } //end performOCROnImage
 
@@ -316,6 +318,7 @@ static OCRTopObject *sharedInstance = nil;
                 case 3: errDesc = @"OCR failed to parse image";break;
                 case 4: errDesc = @"OCR internal error";break;
             }
+            if (errDesc == nil)errDesc = error.localizedDescription;
             [self->_delegate errorPerformingOCR:errDesc];
         }
         else
@@ -348,6 +351,7 @@ static OCRTopObject *sharedInstance = nil;
 //=============(OCRTopObject)=====================================================
 // JSON result may be from OCR server return OR from cache hit. needs template.
 //  informs delegate when done...
+// NOTE: document may have multiple pages!
 -(void) performFinalOCROnDocument : (CGRect) r : (OCRTemplate *)ot
 {
     NSArray* pta = [self->OCRJSONResult valueForKey:@"ParsedText"];
@@ -355,12 +359,15 @@ static OCRTopObject *sharedInstance = nil;
     if (ot != nil) //Template needs to be applied?
     {
         NSLog(@" ...final OCR");
-        //STUBBED!!! The document needs to XY limits of the image basically,
-        //  WHERE do they come from? The PDF???
-        [self setupDocument : r];    //Document page size, etc...
-        [self applyTemplate : ot];   //Does OCR analysis
-        [self cleanupInvoice];       //Fixes weird numbers, typos, etc...
-        [self writeEXPToParse];      //Saves all EXP rows, then invoice as well
+        [od setupDocumentWithRect : r : OCRJSONResult ];
+        for (int page =0;page<od.numPages;page++)
+        {
+            NSLog(@" Final OCR Page %d",page);
+            [od setupPage:page];
+            [self applyTemplate : ot];   //Does OCR analysis
+            [self cleanupInvoice];       //Fixes weird numbers, typos, etc...
+            [self writeEXPToParse];      //Saves all EXP rows, then invoice as well
+        }
     }
     [self->_delegate didPerformOCR:@"OCR OK?"];
 
@@ -375,7 +382,7 @@ static OCRTopObject *sharedInstance = nil;
     [self setupTestDocumentJSON:OCRJSONResult];
     //asdf
     CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
-    [self setupDocument : r];
+    [od setupDocumentWithRect : r : OCRJSONResult ];
     [self applyTemplate:ot];
     [self cleanupInvoice];
     [self writeEXPToParse];
@@ -435,19 +442,11 @@ static OCRTopObject *sharedInstance = nil;
 }
 
 //=============(OCRTopObject)=====================================================
--(void) setupDocument : (CGRect) r
+// Just a handoff to outer objects that don't have the json result...
+-(void) setupDocumentFrameAndParseJSON : (CGRect) r
 {
     NSLog(@" setup doc...");
-    //Do I need anything but the dictionary here??
     [od setupDocumentWithRect : r : OCRJSONResult ];
-    tlRect = [od getTLRect];
-    trRect = [od getTRRect];
-    //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
-    blRect = [od getBLRect];
-    brRect = [od getBRRect];
-    NSLog(@" Top LR from PDF %@ / %@",NSStringFromCGRect(tlRect),NSStringFromCGRect(trRect));
-    
-//    docRect = [od getDocRect]; //Get min/max limits of printed text
 }
 
 

@@ -56,7 +56,6 @@
 
     _table.delegate = self;
     _table.dataSource = self;
-    [act readActivitiesFromParse:nil :nil];
     
     // if you're going to use local notifications, you must request permission
     
@@ -81,12 +80,21 @@
 }
 
 //=============OCR MainVC=====================================================
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    [act readActivitiesFromParse:nil :nil];
+}
+
+
+//=============OCR MainVC=====================================================
 - (void)viewDidAppear:(BOOL)animated {
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
     _versionLabel.text = [NSString stringWithFormat:@"version %@",versionNumber];
-    
- //   [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+   // [self testit];
+
+    //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
     //[self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
 }
@@ -128,6 +136,11 @@
 
 //=============OCR MainVC=====================================================
 // if you click on a batch item, this gets invoked
+// TRY CHANGING TITLE FONT SIZE AND COLOR
+//   https://stackoverflow.com/questions/31662591/swift-how-to-change-uialertcontrollers-title-color
+//   https://exceptionshub.com/uialertcontroller-change-font-color.html
+//  This looks the best
+//    https://stackoverflow.com/questions/26460706/uialertcontroller-custom-font-size-color
 -(void) batchListChoiceMenu
 {
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
@@ -138,10 +151,12 @@
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get EXP records",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              self->stype = @"E";
                                                               [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Invoices",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               self->stype = @"I";
                                                                [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
                                                            }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
@@ -236,11 +251,13 @@
     {
         AddTemplateViewController *vc = (AddTemplateViewController*)[segue destinationViewController];
         vc.step = 0;
+        vc.needPicker = TRUE;	
     }
     else if([[segue identifier] isEqualToString:@"dbSegue"])
     {
         DBViewController *vc = (DBViewController*)[segue destinationViewController];
-        vc.soids = soids; //Pass selected objectID's from activity, if any...
+        vc.actData    = sdata; //Pass selected objectID's from activity, if any...
+        vc.searchType = stype;
     }
 }
 
@@ -291,9 +308,7 @@
 //==========FeedVC=========================================================================
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     int row = (int)indexPath.row;
-    stype  = [act getType:row];
     sdata  = [act getData:row];
-    soids  = [act getObjIDs:row];
     [self batchListChoiceMenu];
 }
 
@@ -311,7 +326,7 @@
     }
     else if (which == 1) //THis is now a multi-function popup...
     {
-        soids = @""; //No special objects to look up...
+        sdata = @""; //No special objects to look up...
         [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
     }
     else if (which == 2) //Templates / settings?
@@ -346,12 +361,56 @@
 }
 
 //=============OCR MainVC=====================================================
+-(NSDictionary*) readTxtToJSON : (NSString *) fname
+{
+    NSError *error;
+    NSArray *sItems;
+    NSString *fileContentsAscii;
+    NSString *path = [[NSBundle mainBundle] pathForResource:fname ofType:@"txt" inDirectory:@"txt"];
+    //NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    if (fileContentsAscii == nil) return nil;
+    sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
+    NSData *jsonData = [fileContentsAscii dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *e;
+    NSDictionary *jdict = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&e];
+    if (e != nil) NSLog(@" Error: %@",e.localizedDescription);
+    return jdict;
+}
+
+//=============OCR MainVC=====================================================
 -(void) testit
 {
-    
-    
-    
-    
+    NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
+    OCRDocument *od = [[OCRDocument alloc] init];
+    [od setupDocumentAndParseJDON : @"hfmpages" :d :FALSE];
+    return;
+
+   // NSDictionary *d    = [self readTxtToJSON:@"beef"];  //hfmpages"];
+    NSArray *pr   = [d valueForKey:@"ParsedResults"];
+    for (NSDictionary *dd in pr)
+    {
+        NSString *parsedText = [dd valueForKey:@"ParsedText"]; //Everything lumped together...
+        NSDictionary *to     = [dd valueForKey:@"TextOverlay"];
+        NSArray *lines       = [to valueForKey:@"Lines"]; //array of "Words"
+        NSLog(@" duh");
+        for (NSDictionary *ddd in lines)
+        {
+            //NSLog(@"duhh: %@",ddd);
+            NSArray *words = [ddd valueForKey:@"Words"];
+            for (NSDictionary *w in words) //loop over each word
+            {
+                OCRWord *ow = [[OCRWord alloc] init];
+                [ow packFromDictionary:w];
+                //NSLog(@" w %@",ow.wordtext);
+                [ow dump];
+               // [allWords addObject:ow];
+            }
+        }
+
+    }
+
     
   //  NSString *gd = @"https://drive.google.com/open?id=1UF9Yh7kRNX8EuSzrLSSdCN00QO9TzVb4";
 //    [self downloadPDF:gd];

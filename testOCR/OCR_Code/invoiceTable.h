@@ -15,8 +15,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <Parse/Parse.h>
-//#import "AppDelegate.h"
-//#import "BatchObject.h"
+#import "AppDelegate.h"
 #import "DBKeys.h"
 #import "invoiceObject.h"
 
@@ -31,8 +30,6 @@
     int dog;
     NSString *tableName;
     NSString *packedOIDs;
-    //BatchObject *bbb;
-
 }
 
 @property (nonatomic , strong) NSDate* idate;
@@ -50,7 +47,7 @@
 -(void) clear;
 -(int) getItemCount;
 -(void) readFromParse : (NSString *)vendor : (NSString *)invoiceNumberstring;
--(void) readFromParseAsStrings : (NSString *)vendor;
+-(void) readFromParseAsStrings : (NSString *)vendor : batch;
 -(void) saveToParse;
 -(void) setupVendorTableName : (NSString *)vname;
 

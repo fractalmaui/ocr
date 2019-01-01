@@ -40,12 +40,11 @@
     [DBClientsManager setupWithAppKey:appKey];
     NSLog(@" ...logged into dropbox...");
 
+    //Settings...
+    _settings = [OCRSettings sharedInstance];
+    
     //Load Vendors from parse db
     [Vendors sharedInstance];
-    
-    //Batch Object
-    _bbb = [BatchObject sharedInstance];
-
     
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];

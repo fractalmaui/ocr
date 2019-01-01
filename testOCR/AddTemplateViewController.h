@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , strong) UIImage *rphoto;
 @property (nonatomic , strong) UIImage *prphoto;
 @property (nonatomic , assign) int step;
+@property (nonatomic , assign) BOOL needPicker;
 
 
 - (IBAction)resetSelect:(id)sender;

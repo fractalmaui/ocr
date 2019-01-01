@@ -12,6 +12,7 @@
 //  Created by Dave Scruton on 12/22/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+// Pull OIDs stuff asap
 
 #import "BatchObject.h"
 
@@ -39,11 +40,12 @@ static BatchObject *sharedInstance = nil;
 
         dbt = [[DropboxTools alloc] init];
         dbt.delegate = self;
-        [dbt setParent:self];
+        [dbt setParent:parent];
         
         ot  = [[OCRTemplate alloc] init];
         ot.delegate = self;
-        batchFolder = @"latestBatch";
+        AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        batchFolder = bappDelegate.settings.batchFolder;        //@"latestBatch";
         
         oto = [OCRTopObject sharedInstance];
         oto.delegate = self;
@@ -66,7 +68,6 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 -(void) addOID : (NSString *) oid : (NSString *) tableName
 {
-    //asdf
     NSString *firstLetter = [tableName substringFromIndex:1];
     soids = [soids stringByAppendingString:[NSString stringWithFormat:@"%@_%@,",firstLetter,oid]];
 }
@@ -94,21 +95,34 @@ static BatchObject *sharedInstance = nil;
 }
 
 //=============(BatchObject)=====================================================
-// index -1 means run ALL
--(void) runOneOrMoreBatches : (NSString *)vname : (int) index
+// vendor vindex -1 means run ALL
+-(void) runOneOrMoreBatches : (int) vindex
 {
+    if (vindex < 0)
+    {
+        NSLog(@" all vendors not implemented yet!");
+        return;
+    }
+    if (vindex >= vv.vFolderNames.count)
+    {
+        NSLog(@" ERROR: illegal vendor index");
+        return;
+    }
     if (!_authorized) return; //can't get at dropbox w/o login!
     [self getNewBatchID];
-    soids = @"";  //Batch saved objectID table
+    AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    bappDelegate.batchID = _batchID; //This way everyone can see the batch
     batchStatus   = BATCH_STATUS_RUNNING;
     batchErrors   = @"";
     batchFiles    = @"";
     batchProgress = @"";
     [self.delegate batchUpdate : @"Started Batch..."];
 
-    vendorName    = vname;
+    vendorName     = vv.vNames[vindex];
+    vendorRotation = vv.vRotations[vindex];
     [self updateParse];
-    [act saveActivityToParse:@"Batch Started" : vname];
+    NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
+    [act saveActivityToParse:@"Batch Started" : actData];
     if (index >= 0)
     {
         //DHS XMAS BYPASS...  assume template loaded locally
@@ -118,7 +132,7 @@ static BatchObject *sharedInstance = nil;
         gotTemplate = FALSE;
         [ot readFromParse:vendorName]; //Get our template
         // This performs handoff to the actual running ...
-        [dbt getBatchList : batchFolder : vv.vFolderNames[index]];
+        [dbt getBatchList : batchFolder : vv.vFolderNames[vindex]];
     }
     else
     {
@@ -154,7 +168,8 @@ static BatchObject *sharedInstance = nil;
     {
         batchStatus = BATCH_STATUS_COMPLETED;
         [self updateParse];
-        [act saveActivityToParse:@"Batch Completed" : vendorName];
+        NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
+        [act saveActivityToParse:@"Batch Completed" : actData];
         [self.delegate didCompleteBatch];
         return;
     }
@@ -185,12 +200,61 @@ static BatchObject *sharedInstance = nil;
 } //end getVendorFileCount
 
 //=============(BatchObject)=====================================================
-// Handles each page that came back, sends data to OCR scanner, called
-//  asynchronously when dropboxTools calls delegate method didDownloadImages below
+// We have to pre-process PDF pages, one by one, assuming a different
+//  skew per page. OUCH
 -(void) processPDFPages
 {
+    if (!gotTemplate) //Handle obvious errors
+    {
+        NSLog(@" ERROR: tried to process images w/o template");
+        return;
+    }
+    //Notify UI of progress...
+    batchProgress = [NSString stringWithFormat:@"Process File %d of %d",batchCount,batchTotal];
+    [self.delegate batchUpdate : batchProgress];
+    imageTools *it = [[imageTools alloc] init];
+    
+    int MustUseImagesBecauseWeCantDeskewData = 0;
+    if (MustUseImagesBecauseWeCantDeskewData!=0)
+    {
+        int numPages = 1; //(int)dbt.batchImages.count;
+        for (int page=0;page<numPages;page++)
+        {
+            NSLog(@" OCR Image(not pdf) page %d of %d",page,numPages);
+            UIImage *ii =  dbt.batchImages[page];
+            if ([vendorRotation isEqualToString:@"-90"]) //Stupid, make this better!
+                ii = [it rotate90CCW:ii];
+            UIImage *deskewedImage = [it deskew:ii];
+            //OUCH! THis has to be decoupled to handle the OCR returning on each image!
+            [oto performOCROnImage:@"test.png" :ii :ot];
+        }
+
+    }
+    else //OLD PDF DATA, potentially skewed!
+    {
+        NSData *data = dbt.batchImageData[0];  //Raw PDF data, need to process...
+        NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
+        NSValue *rectObj = dbt.batchImageRects[0]; //PDF size (hopefully!)
+        CGRect imageFrame = [rectObj CGRectValue];
+        NSLog(@"  ...PDF imageXYWH %d %d, %d %d",
+              (int)imageFrame.origin.x,(int)imageFrame.origin.y,
+              (int)imageFrame.size.width,(int)imageFrame.size.height);
+        oto.vendor = vendorName;
+        oto.imageFileName = ipath; //@"hawaiiBeefInvoice.jpg"; //ipath;
+        [oto performOCROnData : ipath : data : imageFrame : ot];
+
+    }
+    
+
+
+} //end processPDFPages
+
+//=============(BatchObject)=====================================================
+// Handles each page that came back, sends data to OCR scanner, called
+//  asynchronously when dropboxTools calls delegate method didDownloadImages below
+-(void) processPDFPagesOLD
+{
     NSLog(@" batch:processPDFPages");
-     //: dbt.batchImagePaths : dbt.batchImages
     if (!gotTemplate)
     {
         NSLog(@" ERROR: tried to process images w/o template");
@@ -201,7 +265,7 @@ static BatchObject *sharedInstance = nil;
 
     //Template MUST be ready at this point!
     batchPage = 0;
-    NSData *data = dbt.batchImageData[0];  //Only one data set per file?
+    NSData *data = dbt.batchImageData[0];  //Only one data set per file: MULTIPAGE!
     NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
     NSValue *rectObj = dbt.batchImageRects[0]; //PDF size (hopefully!)
     CGRect imageFrame = [rectObj CGRectValue];
@@ -220,7 +284,8 @@ static BatchObject *sharedInstance = nil;
     batchErrors = errstr;
     [self updateParse];
     [self.delegate batchUpdate : @"Batch Failed"];
-    [act saveActivityToParse:@"Batch Error" : batchErrors];
+    NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,batchErrors];
+    [act saveActivityToParse:@"Batch Error" : actData];
     [dbt errMsg : @"Error getting Batch List" : batchErrors];
     [self.delegate didFailBatch];
 }

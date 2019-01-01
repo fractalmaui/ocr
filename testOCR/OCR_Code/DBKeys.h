@@ -57,6 +57,8 @@
 //Batch table...
 #define PInv_BatchSOIDs_key     @"BatchSOIDs"
 
+//Vendor table...
+#define PInv_Rotated_key     @"Rotated"
 
 //Generic
 #define PInv_VersionNumber @"versionNumber"

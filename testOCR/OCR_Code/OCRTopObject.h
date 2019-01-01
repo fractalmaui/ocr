@@ -3,7 +3,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/22/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -62,8 +62,8 @@
     NSDictionary *OCRJSONResult;
     NSString *parsedText;
 
-    CGRect tlRect,trRect;  //Absolute document boundary rects for text
-    CGRect blRect,brRect;
+    //CGRect tlRect,trRect;  //Absolute document boundary rects for text
+    //CGRect blRect,brRect;
     OCRCache *oc;
 
     
@@ -91,7 +91,7 @@
 - (void)performOCROnData : (NSString *)fname : (NSData *)imageDataToOCR : (CGRect) r : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 -(void) setupTestDocumentJSON : (NSDictionary *) json;  //FOR TESTING ONLY
--(void) setupDocument : (CGRect) r;
+-(void) setupDocumentFrameAndParseJSON : (CGRect) r;
 - (void)applyTemplate : (OCRTemplate *)ot;             //FOR TESTING ONLY
 -(void) cleanupInvoice;                               //FOR TESTING ONLY
 -(void) writeEXPToParse;

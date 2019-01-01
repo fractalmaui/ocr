@@ -20,6 +20,7 @@
 #import "NavButtons.h"
 #import "SessionManager.h"
 #import "OCRCache.h"
+#import "OCRDocument.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
@@ -35,8 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     int selectedRow;
     NSString* stype;
     NSString* sdata;
-    NSString* soids;
-    
+
     OCRCache *oc;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;

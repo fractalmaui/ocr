@@ -35,6 +35,7 @@ static Vendors *sharedInstance = nil;
     {
         _vNames       = [[NSMutableArray alloc] init]; // Vendor names
         _vFolderNames = [[NSMutableArray alloc] init]; //  and matching folder names
+        _vRotations   = [[NSMutableArray alloc] init]; //  invoices rotated?
         [self readFromParse];
     }
     return self;
@@ -57,6 +58,7 @@ static Vendors *sharedInstance = nil;
         if (!error) { //Query came back...
             [self->_vNames       removeAllObjects];
             [self->_vFolderNames removeAllObjects];
+            [self->_vRotations   removeAllObjects];
             for( PFObject *pfo in objects)  //Save all our vendor names...
             {
                 NSString *s = [pfo objectForKey:PInv_Vendor_key];
@@ -67,7 +69,7 @@ static Vendors *sharedInstance = nil;
                 sf = [sf stringByReplacingOccurrencesOfString:@"," withString:@"_"];
                 sf = [sf stringByReplacingOccurrencesOfString:@"\'" withString:@"_"];
                 [self->_vFolderNames addObject:sf];
-
+                [self->_vRotations addObject:[pfo objectForKey:PInv_Rotated_key]];
             }
             //NSLog(@" ...read all vendors");
             [self.delegate didReadVendorsFromParse];

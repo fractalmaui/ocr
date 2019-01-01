@@ -113,6 +113,7 @@
     for (NSString *s in vv.vNames)
     {
         int vc = [bbb getVendorFileCount:vv.vFolderNames[vindex]];
+        NSString *rotation = vv.vRotations[vindex];
         if (vc > 0) //Don't add a batch run option for empty batch folders!
         {
             actions[i] = [UIAlertAction actionWithTitle:s
@@ -120,7 +121,7 @@
                                                       self->vendorName = s;
                                                       self->_activityIndicator.hidden = FALSE;
                                                       [self->_activityIndicator startAnimating];
-                                                      [self->bbb runOneOrMoreBatches : s : i];
+                                                      [self->bbb runOneOrMoreBatches : i];
                                                   }];
             i++;
             if (i >= MAX_POSSIBLE_VENDORS) break;
@@ -132,7 +133,7 @@
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                self->_activityIndicator.hidden = FALSE;
                                                                [self->_activityIndicator startAnimating];
-                                                               [self->bbb runOneOrMoreBatches:@"":-1];
+                                                               [self->bbb runOneOrMoreBatches : -1];
                                                            }];
 #endif
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
@@ -152,10 +153,12 @@
 //=============Batch VC=====================================================
 -(void) didGetBatchCounts
 {
-    [self updateUI];
-    _activityIndicator.hidden = TRUE;
-    [_activityIndicator stopAnimating];
-    _titleLabel.text = @"Batch Processor Ready";
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self updateUI];
+        self->_titleLabel.text = @"Batch Processor Ready";;
+        self->_activityIndicator.hidden = TRUE;
+        [self->_activityIndicator stopAnimating];
+    });
 
 
 }
@@ -163,23 +166,31 @@
 //=============Batch VC=====================================================
 - (void)didCompleteBatch
 {
-    _activityIndicator.hidden = TRUE;
-    [_activityIndicator stopAnimating];
-    _titleLabel.text = @"Batch Completed!";
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_titleLabel.text = @"Batch Completed!";
+        self->_activityIndicator.hidden = TRUE;
+        [self->_activityIndicator stopAnimating];
+    });
+
 }
 
 //=============Batch VC=====================================================
 - (void)didFailBatch
 {
     NSLog(@" batch FAILURE!");
-    _activityIndicator.hidden = TRUE;
-    [_activityIndicator stopAnimating];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_activityIndicator.hidden = TRUE;
+        [self->_activityIndicator stopAnimating];
+    });
+
 }
 
 //=============Batch VC=====================================================
 - (void)batchUpdate : (NSString *) s
 {
-    _titleLabel.text = s;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_titleLabel.text = s;
+    });
 }
 
 

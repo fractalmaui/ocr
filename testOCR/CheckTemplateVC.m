@@ -3,7 +3,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/26/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "CheckTemplateVC.h"

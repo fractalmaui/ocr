@@ -32,11 +32,11 @@
     it.delegate = self;
     et = [[EXPTable alloc] init];
     et.delegate = self;
-    vendor = @"";
     tableName = @"";
     dbResults = [[NSMutableArray alloc] init];
     dbMode = DB_MODE_NONE;
-    
+    vendorLookup = @"*";
+
     return self;
 }
 
@@ -46,13 +46,19 @@
     
     _table.delegate = self;
     _table.dataSource = self;
+    
+    [self activityIndicatorOnOff : FALSE];
     // Do any additional setup after loading the view.
     _titleLabel.text = @"Touch Menu to perform query...";
-    if (_soids.length > 1) //No special lookup
+    if (_actData.length > 1) //Incoming data?
     {
-        if ([_soids containsString:@"E_"])
-            [et readFromParseByObjIDs:FALSE :  @"*" : _soids];
+        NSArray *sitems =  [_actData componentsSeparatedByString:@":"];
+        vendorLookup = @"*";
+        if (sitems[0] != nil) batchIDLookup = sitems[0];
+        if (sitems[1] != nil) vendorLookup  = sitems[1];
     }
+    if ([_searchType isEqualToString:@"E"]) [self loadEXP];
+    if ([_searchType isEqualToString:@"I"]) [self loadInvoices];
 
 }
 
@@ -67,7 +73,14 @@
  */
 
 
+//=============DB VC=====================================================
+-(void)activityIndicatorOnOff:(BOOL) onoff
+{
+    self->_activityIndicator.hidden = !onoff;
+    if (onoff) [self->_activityIndicator startAnimating];
+    else       [self->_activityIndicator stopAnimating];
 
+}
 
 //=============DB VC=====================================================
 - (IBAction)doneSelect:(id)sender
@@ -202,10 +215,24 @@
 //=============DB VC=====================================================
 -(void) loadEXP
 {
+    [self activityIndicatorOnOff : TRUE];
+    _titleLabel.text = @"Loading EXP table...";
+
     tableName = @"EXP";
-    vendor = @"All Vendors";
     dbMode = DB_MODE_EXP;
-    [et readFromParseAsStrings : FALSE : @"*"];
+    [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
+    [self updateUI];
+}
+
+//=============DB VC=====================================================
+-(void) loadInvoices
+{
+    [self activityIndicatorOnOff : TRUE];
+    _titleLabel.text = @"Loading Invoices...";
+    
+    tableName = @"Invoices";
+    dbMode = DB_MODE_INVOICE;
+    [it readFromParseAsStrings : vendorLookup  : batchIDLookup]; //All invoices for vendor
     [self updateUI];
 }
 
@@ -213,20 +240,24 @@
 //=============DB VC=====================================================
 -(void) loadEXPByVendor : (NSString *)v
 {
+    [self activityIndicatorOnOff : TRUE];
+    _titleLabel.text = @"Loading EXP table...";
+
     tableName = @"EXP";
-    vendor = v;
+    vendorLookup = v;
     dbMode = DB_MODE_EXP;
-    [et readFromParseAsStrings : FALSE : v];
+    [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
     [self updateUI];
 }
 
 //=============DB VC=====================================================
 -(void) loadInvoiceByVendor : (NSString *)v
 {
+    [self activityIndicatorOnOff : TRUE];
+    _titleLabel.text = @"Loading Invoices...";
     tableName = @"Invoices";
-    vendor = v;
     dbMode = DB_MODE_INVOICE;
-    [it readFromParseAsStrings : v ]; //All invoices for vendor
+    [it readFromParseAsStrings : vendorLookup : @"*" ]; //All invoices for vendor
     [self updateUI];
 }
 
@@ -234,23 +265,29 @@
 -(void) loadTemplates
 {
     tableName = @"Templates";
-    vendor = @"All Vendors";
     dbMode = DB_MODE_TEMPLATE;
     [ot readFromParseAsStrings];
     [self updateUI];
 }
 
-
+//=============DB VC=====================================================
+-(void) setLoadedTitle : (NSString *)tableName
+{
+    NSString *xtra = @"";
+    if ([_searchType isEqualToString:@"E"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
+    if ([_searchType isEqualToString:@"I"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
+    _titleLabel.text = [NSString stringWithFormat:@"[%@%@]",tableName,xtra];
+}
 
 //=============DB VC=====================================================
 -(void) updateUI
 {
-    NSString *vlab = @"";
-    if ([vendor isEqualToString:@""] )
-        vlab = @"Touch Menu to begin...";
-    else
-        vlab = [NSString stringWithFormat:@"%@:%@",tableName,vendor];
-    _titleLabel.text = vlab;
+//    NSString *vlab = @"";
+//    if ([vendor isEqualToString:@""] )
+//        vlab = @"Touch Menu to begin...";
+//    else
+//        vlab = [NSString stringWithFormat:@"%@:%@",tableName,vendor];
+//    _titleLabel.text = vlab;
 }
 
 #pragma mark - UITableViewDelegate
@@ -300,15 +337,20 @@
 {
     dbResults = [et getAllRecords];
     [_table reloadData];
-    
+    [self activityIndicatorOnOff : FALSE];
+    [self setLoadedTitle : @"EXP"];
+
 }
+
+#pragma mark - invoiceTableDelegate
 
 //=============DB VC=====================================================
 - (void)didReadInvoiceTableAsStrings : (NSMutableArray*)a
 {
-    NSLog(@" dri");
     dbResults = a;
     [_table reloadData];
+    [self activityIndicatorOnOff : FALSE];
+    [self setLoadedTitle : @"Invoices"];
 
 }
 

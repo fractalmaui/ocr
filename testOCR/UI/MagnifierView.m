@@ -64,7 +64,6 @@
 //    CGImageRef mask = [UIImage imageNamed: @"squareMask.png"].CGImage;
     UIImage *glass  = nil; //[UIImage imageNamed: @"magtarg.png"];
     
-    //NSLog(@" drawrect center xy %f %f",self.center.x,self.center.y);
     CGContextSaveGState(context);
     //Only need this if using circular mask, otherwise zoomed area is rectangular
     // CGContextClipToMask(context, bounds, mask);
@@ -75,7 +74,6 @@
     float xxf = 1*(self.frame.size.width*0.45);
     float yyf = 1*(self.frame.size.height*0.45);
     
-    //NSLog(@" context trans xy %f %f",self.frame.size.width*0.45,self.frame.size.height*0.45);
     CGContextTranslateCTM(context,xxf,yyf);
     float xf,yf;
     xf = -1.0*(touchPoint.x) - 25.0f + (float)_xoff;

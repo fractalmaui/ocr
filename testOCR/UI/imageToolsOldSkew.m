@@ -128,18 +128,6 @@
     return -1;
 }
 
-//=============(imageTools)=====================================================
--(int) scanRowLToROnePixel : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
-{
-    for (int i=0;i<wid;i++)
-    {
-        int r1 = idata[ptr];
-        if (r1 < thresh) return i; //Return column of hit
-        ptr+=4;
-    }
-    return -1;
-}
-
 
 //=============(imageTools)=====================================================
 -(int) scanRowRToL : (const UInt8*) idata : (int) ptr : (int) wid : (int) thresh
@@ -220,8 +208,6 @@
 //=============(imageTools)=====================================================
 -(UIImage *) deskew : (UIImage *)workImage
 {
-    NSLog(@" deskew");
-    
     pixelData = CGDataProviderCopyData(CGImageGetDataProvider(workImage.CGImage));
     if (pixelData == nil) return nil;
     idata = CFDataGetBytePtr(pixelData);
@@ -230,68 +216,32 @@
     int i;
     for (i=0;i<MAXBINS;i++)
     {
-        bins[i]         = -1;
+        bins[i] = -1;
         binclumpaves[i] = -1;
-        bgrad[i]        = -1;
-        absgrad[i]      = -1;
-        leftVline[i]    = -1;
+        bgrad[i] = -1;
+        absgrad[i] = -1;
     }
     int bcount = 0;
     //Find LH edges...
     for (int row=0;row<ihit;row++) //Go all the way down from top
     {
         int ptr = iwid * 4 * row;
-        int col = [self scanRowLToROnePixel:idata :ptr :iwid/2 : 120];
-        bins[bcount++] = col;
-        NSLog(@" rawbin [%d] = %d",bcount-1,col);
-    }
-    
-    //Try to find a straight line along the LH side FIRST....
-    int oldx = -1;
-    int newx = -1;
-    int ledge = -1;
-    int topledge = ihit*0.25;
-    int botledge = 0.75*ihit;
-    for (int row=topledge;row<botledge;row++) //Middle 50%
-    {
-        
-        newx = bins[row];
-        if (oldx != -1)
+        int col = [self scanRowLToRLite:idata :ptr :iwid/2 : 120];
+        if (col != -1)
         {
-            if (abs(newx - oldx) < 2) //straight edge?
-            {
-                leftVline[row] = bins[row];
-                NSLog(@" ll[%d] = %d",row,bins[row]);
-            }
-        }
-        oldx = newx;
-    }
-    
-/*
-    //Smooth leftvline
-    int dog = 0;
-    for (int row=topledge + 3;row<botledge;row++) //Middle 50%
-    {
-        if(leftVline[row-1] > 0 && leftVline[row-2] > 0)
-        {
-            int ave = leftVline[row] + leftVline[row-1] + leftVline[row-2];
-            ave = ave/3;
-            leftVline[row] = ave;
-            leftVline[row-1] = ave;
-            leftVline[row-2] = ave;
-            NSLog(@" ll2 [%d] = %d",row,ave);
+            bins[bcount++] = col;
+//            NSLog(@" rawbin [%d] = %d",bcount-1,col);
         }
     }
-*/
     
     int firstMin = 9999;
     int minAtTop = 1;
     //find a minimum at the start
-    for (int i=topledge;i<botledge;i++)
+    for (int i=0;i<bcount;i++)
     {
-        if ((leftVline[i] > 0) && (leftVline[i] < firstMin))
+        if (bins[i] < firstMin)
         {
-            firstMin = leftVline[i];
+            firstMin = bins[i];
             if (i > bcount / 2) minAtTop = 0;
         }
     }
@@ -301,40 +251,30 @@
 
     //Now toss any bins that aren't near this minimum, also follow it up or down
     int bigBinThresh = 10;
-    for (int i=topledge;i<botledge;i++)
+    for (int i=0;i<bcount;i++)
     {
-        int nm = leftVline[i];
-        if (abs(nm - firstMin) > bigBinThresh) bins[i] = -1;
-        else
-        {
-            firstMin = nm;
-            bins[i] = leftVline[i];  //not nearby? Toss! or copy back to bins
-        }
+        int nm = bins[i];
+        if (abs(nm - firstMin) > bigBinThresh) bins[i] = -1; //not nearby? Toss!
+        else firstMin = nm;
     }
-    
-    //OK LEFT EDGE -> bins now!!
     // Next, find local minima and flatten them down...
-    for (int pass = 0;pass<2;pass++)
+    for (int i=1;i<bcount-1;i++)
     {
-        for (int i=topledge;i<botledge;i++)
+        if (bins[i-1] != -1 && bins[i+1] != -1) //Got valid neighbors?
         {
-            if (bins[i-1] > 0 && bins[i+1] > 0) //Got valid neighbors?
+            int tval = bins[i];
+            if (tval < bins[i-1] && tval < bins[i+1]) //this bin smaller than neighbors? shrink neighbors
             {
-                int tval = bins[i];
-                if (tval < bins[i-1] && tval < bins[i+1]) //this bin smaller than neighbors? shrink neighbors
-                {
-                    bins[i-1] = tval;
-                    bins[i+1] = tval;
-                }
-                else if (tval > bins[i-1] && tval > bins[i+1]) //this bin bigger than neighbors? shrink this bin
-                {
-                    int nval = bins[i-1];
-                    if (bins[i+1] < nval) nval = bins[i+1];
-                    bins[i] = nval;
-                }
+                bins[i-1] = tval;
+                bins[i+1] = tval;
+            }
+            else if (tval > bins[i-1] && tval > bins[i+1]) //this bin bigger than neighbors? shrink this bin
+            {
+                int nval = bins[i-1];
+                if (bins[i+1] < nval) nval = bins[i+1];
+                bins[i] = nval;
             }
         }
-
     }
     
     NSLog(@"duh ");
@@ -343,71 +283,39 @@
     int ebin = -1;
     int minbin = 99999;
     //Get smallest bin size in top 10% of document
-    int ledgeDiff = botledge - topledge;
-    for (int i=topledge;i<topledge+ledgeDiff/10;i++)
+    int ibin = 10; //Never start at very top, staples, etc
+    while (bins[ibin] == -1 && ibin < bcount) ibin++; //Find bottom data...
+    for (int i=0;i<bcount/10;i++)
     {
-        int bval = bins[i];
-        if ((bval > 0) && bval < minbin)
+        int bval = bins[ibin++];
+        if (bval != -1 && bval < minbin)
         {
-            NSLog(@" Top minbin %d = %d",i,bval);
-            sbin   = i;
+            sbin = ibin;
             minbin = bval;
-        }
-    }
-    NSLog(@" minfound %d",minbin);
-
-
-    int maxbin = -99999;
-    for (int i=topledge + ledgeDiff*0.9;i<botledge;i++)
-    {
-        int bval = bins[i];
-        if ((bval > 0) && bval > maxbin)
-        {
-            ebin   = i;
-            maxbin = bval;
         }
     }
 
     //Get smallest bin size in bottom 10% of document
-    double sum = 0.0;
-    int scount = 0;
-
-    for (int i=topledge;i<topledge + ledgeDiff*0.1;i++)
+    minbin = 99999;
+    ibin = bcount - 1;
+    while (bins[ibin] == -1 && ibin > 0) ibin--; //Find bottom data...
+    for (int i=0;i<bcount/10;i++)
     {
-        if (bins[i] >0)
+        int bval = bins[ibin--];
+        if (bval != -1 && bval < minbin)
         {
-            NSLog(@" TOPPP  i %d bin %d",i,bins[i]);
-            sum+=(double)bins[i];
-            scount++;
+            ebin = ibin;
+            minbin = bval;
         }
     }
-    int topAve =  floor((sum / (double)scount) + 0.5);
-    sum = 0.0;
-    scount = 0;
-    for (int i=topledge + ledgeDiff*0.9;i<botledge;i++)
-    {
-        if (bins[i] >0)
-        {
-            NSLog(@" BOTTTTTOM  i %d bin %d",i,bins[i]);
-            sum+=(double)bins[i];
-            scount++;
-        }
-    }
+//    for (int i=0;i<bcount;i++)
+//       if (bins[i] != -1) NSLog(@" fbin [%d] = %d",i,bins[i]);
 
-    int botAve =  floor((sum / (double)scount) + 0.5);
-    NSLog(@" top/bot ave %d %d",topAve,botAve);
-
-    NSLog(@" sbin[%d]=%d  ebin[%d]=%d",sbin,bins[sbin],ebin,bins[ebin]);
-
-
+//    NSLog(@" start/end bins %d %d  vals %d %d",sbin,ebin,bins[sbin],bins[ebin]);
     double ddx = (double)(ebin - sbin);
     double ddy = (double)(bins[ebin] - bins[sbin]);
-    
-    ddx = 559 - 166;
-    ddy = 23 - 21;
     double angle2 = atan2f(ddy, ddx);
     _skewAngleFound = angle2;
-    NSLog(@" start/end bins %d %d  vals %d %d   annnnd angle %d",sbin,ebin,bins[sbin],bins[ebin],_skewAngleFound);
     //float adeg  = 360.0 * (angle / (2 * 3.14159));
     return [self imageRotatedByRadians:angle2 img:workImage];
 } //end deskew

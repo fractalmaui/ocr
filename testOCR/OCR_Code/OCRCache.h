@@ -3,7 +3,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/28/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -27,7 +27,6 @@
 
 -(void) clear;
 -(void) clearHardCore;
--(void) clearFBT;
 -(void) addOCRTxtWithRect : (NSString *) fname : (CGRect) r : (NSString *) txt;
 -(void) dump;
 -(CGRect) getRectByID : (NSString *) inoid;

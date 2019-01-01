@@ -45,7 +45,7 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 1;
+    docnum = 3;
     OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
@@ -211,7 +211,6 @@
     if (!adjusting)
     {
         adjustSelect = [ot hitField:touchDocX :touchDocY];
-        //NSLog(@" touchDown xy %d %d doc %d %d hit %d", touchX, touchY,touchDocX,touchDocY,adjustSelect);
         if (adjustSelect != -1 && !editing && !adjusting)
         {
             [self promptForAdjust:self];
@@ -233,9 +232,6 @@
     {
         [self dragSelectBox:touchX :touchY];
     }
-//    NSLog(@" touchMoved xy %d %d doc %d %d", touchX, touchY,touchDocX,touchDocY);
-//    int hitIndex = [ot hitField:touchDocX :touchDocY];
-//    NSLog(@" ... hit %d",hitIndex);
     
 }
 
@@ -297,6 +293,40 @@
 
 
 //=============OCR VC=====================================================
+-(void) loadStubbedOCRDataLite
+{
+    if (docnum == 1)
+    {
+        stubbedDocName = @"hfm";
+        supplierName   = @"HFM";
+        selectFname    = @"hfm.jpg";
+        selectFnameForTemplate = @"hfm90.jpg"; //This should be rotated for user
+        docFlipped90 = TRUE;
+    }
+    if (docnum == 2)
+    {
+        stubbedDocName = @"beef";
+        supplierName   = @"Hawaii Beef Producers";
+        selectFname    = @"hawaiiBeefInvoice.jpg";
+        selectFnameForTemplate = @"hawaiiBeefInvoice.jpg";  //This should be rotated for user
+        docFlipped90 = FALSE;
+    }
+    if (docnum == 3)
+    {
+        stubbedDocName = @"mg";
+        supplierName   = @"Meadow Gold";
+        selectFname    = @"mg";
+        selectFnameForTemplate = @"mg.png";  //This should be rotated for user
+        docFlipped90 = FALSE;
+    }
+    [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
+    [self scaleImageViewToFitDocument];
+
+} //end loadStubbedOCRDataLite
+
+
+
+//=============OCR VC=====================================================
 -(void) loadStubbedOCRData
 {
     NSLog(@" Load stubbed OCR data...");
@@ -319,38 +349,41 @@
     }
     if (docnum == 3)
     {
-        stubbedDocName = @"meadow";
+        stubbedDocName = @"mg";
         supplierName   = @"Meadow Gold";
-        selectFname    = @"meadow";
-        selectFnameForTemplate = @"meadow.jpg";  //This should be rotated for user
+        selectFname    = @"mg";
+        selectFnameForTemplate = @"mg.png";  //This should be rotated for user
         docFlipped90 = FALSE;
     }
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
 
     NSDictionary *d = [self readTxtToJSON:stubbedDocName];
-    [od setupDocument : selectFnameForTemplate : d : docFlipped90];
-    
-    tlRect = [od getTLRect];
-    trRect = [od getTRRect];
-    //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
-    blRect = [od getBLRect];
-    brRect = [od getBRRect];
-    docRect = [od getDocRect]; //Get min/max limits of printed text
-    [ot setOriginalRects : tlRect : trRect];
-    ot.supplierName = supplierName; //Pass along supplier name to template
-    ot.pdfFile      = selectFnameForTemplate;
-    
-    //Set unit scaling
-    [od computeScaling : tlRect : trRect];
+    if (d != nil)
+    {
+        [od setupDocumentAndParseJDON : selectFnameForTemplate : d : docFlipped90];
+        
+        tlRect = [od getTLRect];
+        trRect = [od getTRRect];
+        //NOTE: BL rect may be same as TLrect because it looks for leftmost AND bottommost!
+        blRect = [od getBLRect];
+        brRect = [od getBRRect];
+        docRect = [od getDocRect]; //Get min/max limits of printed text
+        [ot setOriginalRects : tlRect : trRect];
+        ot.supplierName = supplierName; //Pass along supplier name to template
+        ot.pdfFile      = selectFnameForTemplate;
+        
+        //Set unit scaling
+        [od computeScaling : tlRect : trRect];
+        
+        CGRect r = _inputImage.frame;
+        //Screen -> Document conversion
+        //MUST HAVE image loaded correctly at this point!
+        docXConv = (double)_inputImage.image.size.width  / (double)r.size.width;
+        docYConv = (double)_inputImage.image.size.height / (double)r.size.height;
 
-    CGRect r = _inputImage.frame;
-    //Screen -> Document conversion
-    //MUST HAVE image loaded correctly at this point!
-    docXConv = (double)_inputImage.image.size.width  / (double)r.size.width;
-    docYConv = (double)_inputImage.image.size.height / (double)r.size.height;
-    NSLog(@" duhhh");
-}
+    }
+} //End loadStubbedOCRData
 
 
 //=============OCR VC=====================================================
@@ -364,7 +397,7 @@
     //[it deskew:[UIImage imageNamed:@"cocacola.jpg"]];
     // [it deskew:[UIImage imageNamed:@"hawaiiBeefInvoice.jpg"]];
     //NSLog(@" duh just deskewed");
-    OCR_mode = 1;
+    //OCR_mode = 1;
     if (OCR_mode == 1)
     {
         [self loadStubbedOCRData]; //asdf
@@ -375,7 +408,7 @@
         UIImage *imageToOCR = [UIImage imageNamed:selectFnameForTemplate];
         CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
         //We only need the frame now!
-        [oto setupDocument : r];
+        [oto setupDocumentFrameAndParseJSON : r];
         [oto applyTemplate:ot];
         [oto cleanupInvoice];
         [oto writeEXPToParse];
@@ -388,6 +421,8 @@
        // [self writeEXPToParse];
     }
     else{   //Better make sure template is set up here!!!
+        [self loadStubbedOCRDataLite]; //asdf
+        oto.imageFileName = selectFnameForTemplate;
         [oto performOCROnImage : selectFnameForTemplate : [UIImage imageNamed:selectFnameForTemplate] : ot ];
     }
     
@@ -400,7 +435,7 @@
 {
     spinner.hidden = FALSE;
     [spinner startAnimating];
-    [et readFromParseAsStrings : TRUE : supplierName];
+    [et readFromParseAsStrings : TRUE : supplierName : @"*"];
     
 }
 
@@ -417,6 +452,7 @@
     //NSFileManager *fileManager = [NSFileManager defaultManager];
     NSURL *url = [NSURL fileURLWithPath:path];
     fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    if (fileContentsAscii == nil) return nil;
     sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
     NSData *jsonData = [fileContentsAscii dataUsingEncoding:NSUTF8StringEncoding];
     NSError *e;
@@ -917,8 +953,6 @@
     int docy = [self screenToDocumentY : rs.origin.y];
     int docw = [self screenToDocumentW : rs.size.width];
     int doch = [self screenToDocumentH : rs.size.height];
-    //NSLog(@"docxy %d %d  wh %d %d",docx,docy,docw,doch);
-    
     _instructionsLabel.text = [NSString stringWithFormat:
                                @"%@:XY(%d,%d)WH(%d,%d)",fieldNameShort,docx,docy,docw,doch];
     return CGRectMake(docx, docy, docw, doch);
@@ -1249,5 +1283,9 @@
     NSLog(@" OK: full OCR -> DB done, invoice %@",s);
 }
 
+- (void)errorPerformingOCR : (NSString *) errMsg
+{
+    NSLog(@" ocr err %@",errMsg);
+}
 
 @end

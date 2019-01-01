@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		20899A2B70E61B4FE406FEEF /* libPods-testOCR.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D64CF6F8DED5B2240FC357AE /* libPods-testOCR.a */; };
+		7204B10221D6FB7F007366C3 /* mg.png in Resources */ = {isa = PBXBuildFile; fileRef = 7204B10121D6FB7E007366C3 /* mg.png */; };
 		7206008A21B64052000B26DC /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7206008921B64052000B26DC /* AppDelegate.m */; };
 		7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7206008C21B64052000B26DC /* EditTemplateVC.m */; };
 		7206009021B64052000B26DC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7206008E21B64052000B26DC /* Main.storyboard */; };
@@ -30,7 +31,6 @@
 		72183DED21C5FA86005627AB /* squareMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 72183DEC21C5FA86005627AB /* squareMask.png */; };
 		721D9C2021CB122F00D1E78A /* OCRCategories.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C1F21CB122F00D1E78A /* OCRCategories.m */; };
 		721D9C2421CB13E500D1E78A /* CatObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C2321CB13E500D1E78A /* CatObject.m */; };
-		7221543A21D18688007DAAB5 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 7221543921D18688007DAAB5 /* Vendors.m */; };
 		722E08F321BF504700BBD88D /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F221BF504700BBD88D /* SystemConfiguration.framework */; };
 		722E08F521BF504E00BBD88D /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F421BF504E00BBD88D /* NetworkExtension.framework */; };
 		722E08F721BF505500BBD88D /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08F621BF505500BBD88D /* AudioToolbox.framework */; };
@@ -81,11 +81,14 @@
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
 		72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */; };
 		72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72ECD04521C88A1000DBD08E /* invoiceObject.m */; };
+		72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C021D93216005979D2 /* OCRSettings.m */; };
+		72F0D8C421D932BE005979D2 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C221D932BD005979D2 /* Vendors.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		28C4125257636EB4BDED1E0E /* Pods-testOCR.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testOCR.debug.xcconfig"; path = "Pods/Target Support Files/Pods-testOCR/Pods-testOCR.debug.xcconfig"; sourceTree = "<group>"; };
 		50EEDC457A0D1E519CF02028 /* Pods-testOCR.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testOCR.release.xcconfig"; path = "Pods/Target Support Files/Pods-testOCR/Pods-testOCR.release.xcconfig"; sourceTree = "<group>"; };
+		7204B10121D6FB7E007366C3 /* mg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mg.png; sourceTree = "<group>"; };
 		7206008521B64052000B26DC /* testOCR.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testOCR.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7206008821B64052000B26DC /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7206008921B64052000B26DC /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -120,8 +123,6 @@
 		721D9C1F21CB122F00D1E78A /* OCRCategories.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCategories.m; sourceTree = "<group>"; };
 		721D9C2221CB13E500D1E78A /* CatObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CatObject.h; sourceTree = "<group>"; };
 		721D9C2321CB13E500D1E78A /* CatObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CatObject.m; sourceTree = "<group>"; };
-		7221543821D18687007DAAB5 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/Vendors.h; sourceTree = "<absolute>"; };
-		7221543921D18688007DAAB5 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/Vendors.m; sourceTree = "<absolute>"; };
 		722420F921C854F9002D02A4 /* DBKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBKeys.h; sourceTree = "<group>"; };
 		722E08F221BF504700BBD88D /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		722E08F421BF504E00BBD88D /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
@@ -192,6 +193,10 @@
 		72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AddTemplateViewController.m; sourceTree = "<group>"; };
 		72ECD04421C88A1000DBD08E /* invoiceObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invoiceObject.h; sourceTree = "<group>"; };
 		72ECD04521C88A1000DBD08E /* invoiceObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = invoiceObject.m; sourceTree = "<group>"; };
+		72F0D8BF21D93216005979D2 /* OCRSettings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRSettings.h; sourceTree = "<group>"; };
+		72F0D8C021D93216005979D2 /* OCRSettings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRSettings.m; sourceTree = "<group>"; };
+		72F0D8C221D932BD005979D2 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m; sourceTree = "<absolute>"; };
+		72F0D8C321D932BE005979D2 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h; sourceTree = "<absolute>"; };
 		D64CF6F8DED5B2240FC357AE /* libPods-testOCR.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-testOCR.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -274,6 +279,7 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7204B10121D6FB7E007366C3 /* mg.png */,
 				7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */,
 				7207078521CD88EE00DB8CAD /* tgrid50.png */,
 				72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */,
@@ -353,12 +359,14 @@
 				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
 				7209608E21B8173200D49C63 /* OCRDocument.m */,
+				72F0D8BF21D93216005979D2 /* OCRSettings.h */,
+				72F0D8C021D93216005979D2 /* OCRSettings.m */,
 				7209609921B81FB900D49C63 /* OCRTemplate.h */,
 				7209609A21B81FB900D49C63 /* OCRTemplate.m */,
 				7209608721B7FBB000D49C63 /* OCRWord.h */,
 				7209608821B7FBB000D49C63 /* OCRWord.m */,
-				7221543821D18687007DAAB5 /* Vendors.h */,
-				7221543921D18688007DAAB5 /* Vendors.m */,
+				72F0D8C321D932BE005979D2 /* Vendors.h */,
+				72F0D8C221D932BD005979D2 /* Vendors.m */,
 			);
 			path = OCR_Code;
 			sourceTree = "<group>";
@@ -478,6 +486,7 @@
 				72183DED21C5FA86005627AB /* squareMask.png in Resources */,
 				72DB331C21CDC14600AA44C0 /* multiNOT.png in Resources */,
 				7206009021B64052000B26DC /* Main.storyboard in Resources */,
+				7204B10221D6FB7F007366C3 /* mg.png in Resources */,
 				72435B3B21C96E8E00620F4B /* loves.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -538,11 +547,12 @@
 				72435B3421C8C7C600620F4B /* EXPObject.m in Sources */,
 				72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */,
 				7283813621C4A60000A2954B /* MainVC.m in Sources */,
-				7221543A21D18688007DAAB5 /* Vendors.m in Sources */,
 				7209608C21B8164F00D49C63 /* imageTools.m in Sources */,
+				72F0D8C421D932BE005979D2 /* Vendors.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */,
 				725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */,
+				72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */,
 				72AFBE9421D4AEA400B75388 /* CheckTemplateVC.m in Sources */,
 				7209608F21B8173200D49C63 /* OCRDocument.m in Sources */,
 			);

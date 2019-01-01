@@ -3,7 +3,7 @@
 //  testOCR
 //
 //  Created by Dave Scruton on 12/28/18.
-//  Copyright © 2018 huedoku. All rights reserved.
+//  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
 #import "OCRCache.h"
@@ -250,7 +250,7 @@ static OCRCache *sharedInstance = nil;
         fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
         if (fileContentsAscii != nil) [OCRRectDict setObject:fileContentsAscii forKey:ocrFile];
     } //end for i
-    [self dump];
+    //[self dump];
 } //end loadCache
 
 

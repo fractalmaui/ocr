@@ -16,8 +16,10 @@
 #import <Foundation/Foundation.h>
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
 #import <Parse/Parse.h>
+#import "AppDelegate.h"
 #import "ActivityTable.h"
 #import "DropboxTools.h"
+#import "imageTools.h"
 #import "OCRTemplate.h"
 #import "Vendors.h"
 #import "UIImageExtras.h"
@@ -44,6 +46,7 @@
     NSString *batchFolder;
 
     NSString *vendorName; //Whose batch we're running
+    NSString *vendorRotation; //Are pages rotated typically?
     NSString *batchFiles; //CSV list of all files processed
     NSString *batchStatus;
     NSString *batchProgress;
@@ -76,7 +79,7 @@
 -(void) getBatchCounts;
 -(int)  getVendorFileCount : (NSString *)vfn;
 
--(void) runOneOrMoreBatches : (NSString *)vname : (int) index;
+-(void) runOneOrMoreBatches  : (int) vindex;
 -(void) setParent : (UIViewController*) p;
 
 @end

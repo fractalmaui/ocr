@@ -42,7 +42,6 @@ NSString * steps[] = {
     removeColor = FALSE;
     enhancing   = FALSE;
     coreImage   = [[CIImage alloc] init];
-
     return self;
 }
 
@@ -72,9 +71,10 @@ NSString * steps[] = {
     {
         _step = 1; //Set back to deskew...
     }
-    else if (_step == 0)
+    else if (_step == 0 && _needPicker)
     {
         [self displayPhotoPicker];
+        _needPicker = FALSE;
     }
 
     [self updateUI];
@@ -320,7 +320,6 @@ NSString * steps[] = {
     imgPicker.delegate      = self;
     imgPicker.sourceType    = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     [self presentViewController:imgPicker animated:NO completion:nil];
-    gotPhoto = TRUE;
 } //end displayPhotoPicker
 
 //=============AddTemplate VC=====================================================
@@ -339,7 +338,7 @@ NSString * steps[] = {
         self->photoScreenHit = self->_templateImage.frame.size.height;
         self->photoToUIX = (float)self->photoScreenWid/(float)self->_photo.size.width;
         self->photoToUIY = (float)self->photoScreenHit/(float)self->_photo.size.height;
-//        NSLog(@" set img");
+        self->gotPhoto = TRUE;
         [self resetRotation];
         [self updateUI];
     }];

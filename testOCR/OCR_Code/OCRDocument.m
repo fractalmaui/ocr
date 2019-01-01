@@ -22,6 +22,7 @@
 {
     if (self = [super init])
     {
+        allPages             = [[NSMutableArray alloc] init];
         allWords             = [[NSMutableArray alloc] init];
         headerPairs          = [[NSMutableArray alloc] init];
         columnStringData     = [[NSMutableArray alloc] init];
@@ -237,6 +238,7 @@
 //=============(OCRDocument)=====================================================
 -(void) clear
 {
+    [allPages removeAllObjects];
     [allWords removeAllObjects];
     //Clear postOCR stuff too...
     for (int i=0;i<MAX_QPA_ROWS;i++)
@@ -498,8 +500,8 @@
         }
         CGRect cr = CGRectMake(rr.origin.x, thisY, rr.size.width, nextY-thisY);
         NSMutableArray *a = [self findAllWordsInRect:cr];
-        NSLog(@" getColumnString:(col %d row %d)",column,i);
-        [self dumpArray:a];
+        //NSLog(@" getColumnString:(col %d row %d)",column,i);
+        //[self dumpArray:a];
         [resultStrings addObject:[self assembleWordFromArray : a : FALSE]];
     }
     
@@ -667,6 +669,59 @@
 }
 
 //=============(OCRDocument)=====================================================
+// Rightmost item in top 10%
+-(CGRect) getRightmostTopRect
+{
+    [self fixBogusWHIfNeeded];
+    int cuty = _height/4;
+    int maxx = -99999;
+    int foundit = -1;
+    int index = 0;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue;
+        int y1 = (int)ow.top.intValue;
+        if (y1 < cuty)
+        {
+            if (x1 > maxx)
+            {
+                maxx = x1;
+                foundit = index;
+            }
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+}
+
+//=============(OCRDocument)=====================================================
+// Leftmost item in top 10%
+-(CGRect) getLeftmostTopRect
+{
+    [self fixBogusWHIfNeeded];
+    int cuty = _height/4;
+    int minx = 99999;
+    int foundit = -1;
+    int index = 0;
+    for (OCRWord *ow  in allWords)
+    {
+        int x1 = (int)ow.left.intValue;
+        int y1 = (int)ow.top.intValue;
+        if (y1 < cuty)
+        {
+            if (x1 < minx)
+            {
+                minx = x1;
+                foundit = index;
+            }
+        }
+        index++;
+    }
+    return  [self getWordRectByIndex:foundit];
+
+}
+
+//=============(OCRDocument)=====================================================
 -(CGRect) getTLRect
 {
     [self fixBogusWHIfNeeded];
@@ -678,7 +733,6 @@
     {
         int x1 = (int)ow.left.intValue;
         int y1 = (int)ow.top.intValue;
-        NSLog(@" xy %d %d",x1,y1);
         // Look for farthest left near the top
         //OUCH! We don't have image height for incoming PDF data!?!?!
         if (x1 < minx && y1 < miny) {
@@ -841,7 +895,6 @@
         {
             return [self parseDateFromString:testText];
         }
-        //asdf
         NSDate *dgarbled = [self getGarbledDate:testText];
         if (dgarbled != nil) return dgarbled;
     }
@@ -871,6 +924,8 @@
     for (NSNumber* n in aof)
     {
         NSString *testText = [self getNthWord:n];
+        testText = [testText stringByReplacingOccurrencesOfString:@"B" withString:@"8"]; //B? maybe 8!
+        testText = [testText stringByReplacingOccurrencesOfString:@"I" withString:@"1"]; //I? maybe 1!
         testText = [testText stringByReplacingOccurrencesOfString:@"\"" withString:@""]; //No quotes please
         if ([self isStringAnInteger:testText] ) foundLong = (long)[testText longLongValue];
     } //end for n
@@ -990,32 +1045,52 @@
 -(void) parseJSONfromDict : (NSDictionary *)d
 {
     [self clear];
-    rawJSONDict          = d;
-    NSDictionary *pr     = [d valueForKey:@"ParsedResults"];
-    //NSNumber* exitCode   = [d valueForKey:@"OCRExitCode"];
+    rawJSONDict   = d;
+    NSArray *pr   = [d valueForKey:@"ParsedResults"];
 
-    parsedText           = [pr valueForKey:@"ParsedText"]; //Everything lumped together...
-    NSDictionary *to     = [pr valueForKey:@"TextOverlay"];
-    NSArray *lines       = [[to valueForKey:@"Lines"]objectAtIndex:0]; //array of "Words"
-    for (NSDictionary *d in lines)
+    //Loop over our pages....
+    int i=0;
+    for (NSDictionary *dPage in pr)
     {
-        //  NSLog(@"duhh: %@",d);
-        NSArray *words = [d valueForKey:@"Words"];
-        for (NSDictionary *w in words) //loop over each word
+        [allWords removeAllObjects];
+        NSMutableArray *Woids = [[NSMutableArray alloc] init];
+        //NSString *parsedText = [dPage valueForKey:@"ParsedText"]; //Everything lumped together...
+        NSDictionary *to     = [dPage valueForKey:@"TextOverlay"];
+        NSArray *lines       = [to valueForKey:@"Lines"]; //array of "Words"
+        for (NSDictionary *ddd in lines)
         {
-            OCRWord *ow = [[OCRWord alloc] init];
-            [ow packFromDictionary:w];
-            //[ow dump];
-            [allWords addObject:ow];
-        }
-    }
+            NSArray *words = [ddd valueForKey:@"Words"];
+            for (NSDictionary *w in words) //loop over each word
+            {
+                OCRWord *ow = [[OCRWord alloc] init];
+                [ow packFromDictionary:w];
+                //[ow dump];
+                [Woids addObject:ow];     // This is what gets copied to allPages...
+                [allWords addObject:ow]; //Keep in structure, need to process stuff later
+            }
+        } //end for ddd
+        [allPages addObject:Woids]; //Add next page ...
+        NSLog(@" page %d : %d words",i,(int)Woids.count);
+        i++;
+    } //end for dpage..
+    _numPages = i;
     [self getAverageGlyphHeight];
     [self assembleGroups];
     //NSLog(@" overall image wh %d,%d",_width,_height);
 } //end parseJSONfromDict
 
 //=============OCR VC=====================================================
--(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90
+// page is zero=based
+-(void) setupPage : (int) page
+{
+    if (page<0 || page>= allPages.count) return;
+    allWords = [allPages objectAtIndex:page];
+} //end setupPage
+
+
+//=============OCR VC=====================================================
+// Used only when editing templates...
+-(void) setupDocumentAndParseJDON : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90
 {
     _scannedImage = [UIImage imageNamed:ifname];
     _scannedName  = ifname;
@@ -1034,6 +1109,7 @@
 }
 
 //=============OCR VC=====================================================
+// Used in OCR batch runs...
 -(void) setupDocumentWithRect : (CGRect) r : (NSDictionary *)d
 {
     _scannedName  = @"nada";
@@ -1083,18 +1159,23 @@
     tlTemplateRect = tlr;
     trTemplateRect = trr;
     
+    topmostLeftRect  = [self getLeftmostTopRect];
+    topmostRightRect = [self getRightmostTopRect];
+    NSLog(@" tmleftRect %@",NSStringFromCGRect(topmostLeftRect));
+    NSLog(@" tmriteRect %@",NSStringFromCGRect(topmostRightRect));
+
     tlDocumentRect = [self getTLRect];
     trDocumentRect = [self getTRRect];
     blDocumentRect = [self getBLRect];
     brDocumentRect = [self getBRRect];
     _width  = (trDocumentRect.origin.x + trDocumentRect.size.width) - tlDocumentRect.origin.x;
     _height = (brDocumentRect.origin.y + brDocumentRect.size.height) - tlDocumentRect.origin.y;
-    NSLog(@"w/h computed %d %d",_width,_height);
-    
+    //NSLog(@"w/h computed %d %d",_width,_height);
+    //asdf
     double hsizeTemplate   = (double)(trTemplateRect.origin.x + trTemplateRect.size.width) -
                          (double)(tlTemplateRect.origin.x);
-    double hsizeDocument = (double)(trDocumentRect.origin.x + trDocumentRect.size.width) -
-                         (double)(tlDocumentRect.origin.x);
+    double hsizeDocument = (double)(topmostRightRect.origin.x + topmostRightRect.size.width) -
+                         (double)(topmostLeftRect.origin.x);
     if (hsizeTemplate == 0 ||
         (hsizeTemplate != 0 && hsizeDocument == hsizeTemplate)) //unit scale or error!
     {
@@ -1115,7 +1196,7 @@
 
 //=============(OCRDocument)=====================================================
 -(int) doc2templateX : (int) x
-{
+{//asdf
     if (unitScale) return x;
     double bx = (double)x - (double)tlDocumentRect.origin.x;
     //...convert to template space...
@@ -1173,8 +1254,9 @@
     double by = (double)r.origin.y - (double)tlTemplateRect.origin.y;
     //...convert to template space...
     double outx,outy,outw,outh;
-    outx = (double)tlDocumentRect.origin.x + bx*hScale;
-    outy = (double)tlDocumentRect.origin.y + by*vScale;
+    //DHS 12/31: OK try this as the origin???
+    outx = (double)topmostLeftRect.origin.x + bx*hScale;
+    outy = (double)topmostLeftRect.origin.y + by*vScale;
     outw = hScale * (double)r.size.width;
     outh = vScale * (double)r.size.height;
     

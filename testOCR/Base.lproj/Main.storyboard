@@ -282,6 +282,10 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="b0B-OC-bDz">
+                                <rect key="frame" x="177" y="323" width="20" height="20"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -300,6 +304,7 @@
                         <viewLayoutGuide key="safeArea" id="gi4-ks-u2q"/>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="b0B-OC-bDz" id="pU7-dw-i75"/>
                         <outlet property="table" destination="J6o-1f-TY2" id="Ok5-j0-lD5"/>
                         <outlet property="titleLabel" destination="teR-u9-XUO" id="Frk-EM-ejG"/>
                     </connections>

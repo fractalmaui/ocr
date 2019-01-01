@@ -20,7 +20,6 @@
     NSString *tableName;
     NSMutableArray *typeStrings;
     NSMutableArray *dataStrings;
-    NSMutableArray *objectIDStrings;
     NSMutableArray *dates;
 }
 
@@ -33,7 +32,6 @@
 
 -(NSString *) getType : (int) index;
 -(NSString *) getData : (int) index;
--(NSString *) getObjIDs : (int) index;
 -(NSDate *)   getDate : (int) index;
 -(int) getReadCount;
 

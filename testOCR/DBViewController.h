@@ -35,15 +35,18 @@ NS_ASSUME_NONNULL_BEGIN
     OCRTemplate *ot;
     
     NSMutableArray *dbResults;
-    NSString *vendor;
     NSString *tableName;
     int dbMode;
+    NSString *batchIDLookup;
+    NSString *vendorLookup;
 
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UITableView *table;
 
-@property (weak, nonatomic) IBOutlet NSString *soids;
+@property (weak, nonatomic) IBOutlet NSString *actData;
+@property (weak, nonatomic) IBOutlet NSString *searchType;
+@property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
 
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)menuSelect:(id)sender;

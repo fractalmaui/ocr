@@ -199,25 +199,24 @@
 
 
 //=============OCR VC=====================================================
--(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor
+-(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch
 {
     [self handleCSVInit:dumptoCSV];
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
-    if (![vendor isEqualToString:@"*"]) //Wildcard means get everything...
-        [query whereKey:PInv_Vendor_key equalTo:vendor];
-    [query orderByAscending:PInv_LineNumber_key];
+    //Wildcards means get everything...
+    if (![vendor isEqualToString:@"*"]) [query whereKey:PInv_Vendor_key equalTo:vendor];
+    if (![batch isEqualToString:@"*"])  [query whereKey:@"BatchID" equalTo:batch];
+    [query orderByAscending:PInv_LineNumber_key];  //THis may not work..
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
             [self->productNames  removeAllObjects];
-//            int i     = 0;
             for( PFObject *pfo in objects)
             {
                 NSString *s = [self getCSVFromObject:pfo];
                 [self->recordStrings addObject:s];
                 [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
                 [self handleCSVAdd : dumptoCSV : s];
- //               i++;
             }
             NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
@@ -240,6 +239,8 @@
     int i=0;
     int ecount = (int)expos.count;
     returnCount = 0;
+    AppDelegate *eappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+
     for (EXPObject *exo in expos)
     {
         
@@ -262,6 +263,7 @@
         exoRecord[PInv_Batch_key]               = exo.batch;
         exoRecord[PInv_ErrStatus_key]           = exo.errStatus;
         exoRecord[PInv_PDFFile_key]             = exo.PDFFile;
+        exoRecord[PInv_BatchID_key]             = eappDelegate.batchID;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
         //NSLog(@" exp savetoParse...");
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {

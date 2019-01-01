@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define MAX_QPA_ROWS 512
 @interface OCRDocument : NSObject
 {
+    NSMutableArray *allPages;
     NSMutableArray *allWords;
     OCRWord *workWord;
     NSString *documentType;
@@ -49,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableSet *gV20;
     NSMutableSet *gT50;   //Top half
     NSMutableSet *gL50;   //Left half
+    CGRect topmostLeftRect;
+    CGRect topmostRightRect;
 }
 @property (nonatomic , strong) UIImage* scannedImage;
 @property (nonatomic , strong) NSString* scannedName;
@@ -65,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , assign) int priceColumn;
 @property (nonatomic , assign) int amountColumn;
 
+@property (nonatomic , assign) int numPages;
+
+
 -(void) clearAllColumnStringData;
 -(void) addColumnStringData : (NSMutableArray*)stringArray;
 -(void) addIgnoreBoxItems  : (CGRect )rr;
@@ -74,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;
 -(void) dumpArray : (NSArray*)a;
--(int) doc2templateY : (int) x;
+-(int) doc2templateX : (int) x;
 -(int) doc2templateY : (int) y;
 
 
@@ -105,8 +111,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDate *) isItADate : (NSString *)tstr;
 -(void) parseHeaderColumns : (NSMutableArray*)aof;
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
--(void) setupDocument : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
+-(void) setupDocumentAndParseJDON : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
 -(void) setupDocumentWithRect : (CGRect) r : (NSDictionary *)d;
+-(void) setupPage : (int) page;
 @end
 
 NS_ASSUME_NONNULL_END

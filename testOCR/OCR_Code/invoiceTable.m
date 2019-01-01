@@ -121,11 +121,13 @@
 
 //=============(invoiceTable)=====================================================
 //Reads all invoices, packs to strings for now
--(void) readFromParseAsStrings : (NSString *)vendor
+-(void) readFromParseAsStrings : (NSString *)vendor  : batch
 {
     [self setupVendorTableName:vendor];
     if (tableName.length < 1) return; //No table name!
     PFQuery *query = [PFQuery queryWithClassName:tableName];
+    //Wildcards means get everything...
+    if (![batch isEqualToString:@"*"])  [query whereKey:@"BatchID" equalTo:batch];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
@@ -148,12 +150,14 @@
 {
     if (tableName.length < 1) return; //No table name!
     [self packInvoiceOids]; //Set up packedOIDs string
+    AppDelegate *iappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     PFObject *iRecord = [PFObject objectWithClassName:tableName];
     iRecord[PInv_Date_key]          = _idate;
     iRecord[PInv_InvoiceNumber_key] = _inumber;
     iRecord[PInv_CustomerKey]       = _icustomer;
     iRecord[PInv_Vendor_key]        = _ivendor;
     iRecord[PInv_EXPObjectID_key]   = packedOIDs;
+    iRecord[PInv_BatchID_key]       = iappDelegate.batchID;
     iRecord[PInv_VersionNumber]     = _versionNumber;
     //NSLog(@" itable savetoParse...");
     [iRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
