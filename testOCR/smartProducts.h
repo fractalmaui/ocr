@@ -48,7 +48,9 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *proteinNames;
     NSArray *produceNames;
     NSArray *suppliesNames;
-    
+    NSMutableArray *typos;
+    NSMutableArray *fixed;
+
     OCRCategories* occ; //Categories / processed / local lookup table
 }
 //These props get set by analyze for public access...
@@ -60,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , strong) NSString* latestQuantity;
 @property (nonatomic , strong) NSString* latestPricePerUOM;
 @property (nonatomic , strong) NSString* latestPrice;
+@property (nonatomic , strong) NSString* latestProductName;
 @property (nonatomic , strong) NSString* latestAmount;
 @property (nonatomic , strong) NSString* latestProcessed;
 @property (nonatomic , strong) NSString* latestLocal;

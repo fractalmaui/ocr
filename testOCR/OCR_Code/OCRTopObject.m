@@ -365,6 +365,7 @@ static OCRTopObject *sharedInstance = nil;
             NSLog(@" Final OCR Page %d",page);
             [od setupPage:page];
             [self applyTemplate : ot];   //Does OCR analysis
+            NSLog(@" CLeanup invoice...");
             [self cleanupInvoice];       //Fixes weird numbers, typos, etc...
             [self writeEXPToParse];      //Saves all EXP rows, then invoice as well
         }
@@ -477,10 +478,10 @@ static OCRTopObject *sharedInstance = nil;
         {
             [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :
              ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
-             _vendor : productName : smartp.latestProcessed :
+             _vendor : smartp.latestProductName : smartp.latestProcessed :
              smartp.latestLocal : smartp.latestLineNumber : _invoiceNumberString :
              [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i] :
-             @"NoBatch" : @"NoErr" : _imageFileName];
+             _batchID : @"NoErr" : _imageFileName];
         } //end analyzeOK
     } //end for loop
     [et saveToParse];

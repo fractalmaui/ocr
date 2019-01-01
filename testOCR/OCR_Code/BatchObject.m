@@ -117,7 +117,7 @@ static BatchObject *sharedInstance = nil;
     batchFiles    = @"";
     batchProgress = @"";
     [self.delegate batchUpdate : @"Started Batch..."];
-
+    oto.batchID    = _batchID; //Make sure OCR toplevel has batchID...
     vendorName     = vv.vNames[vindex];
     vendorRotation = vv.vRotations[vindex];
     [self updateParse];

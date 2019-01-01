@@ -166,7 +166,7 @@
 // New arg: headerY, just below found position of actual header in doc coords
 -(void) addHeaderColumnToSortedArray : (int) index : (int) y
 {
-    //NSLog(@" addhc %d ",index);
+    NSLog(@" addhc %d ",index);
     headerY = y;
     OCRBox *ob = ocrBoxes[index];
     int xleft =  ob.frame.origin.x;
@@ -176,7 +176,8 @@
         CGRect rr = headerColumns[i];
         if (xleft < rr.origin.x)  //Found a header to left of this one? insert...
         {
-            for (int j=i+1;j<headerColumnCount+1;j++)
+            //for (int j=i+1;j<headerColumnCount+1;j++)
+            for (int j=headerColumnCount;j>i;j--)
             {
                 headerColumns[j] = headerColumns[j-1];
             }
@@ -184,6 +185,7 @@
             break;
         }
     }
+    NSLog(@" where %d rect %@",whereToAdd,NSStringFromCGRect(ob.frame));
     headerColumns[whereToAdd] = ob.frame; //OK add it
     headerColumnCount++;
 } //end addHeaderColumnToSortedArray

@@ -11,6 +11,7 @@
 //  Created by Dave Scruton on 12/12/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  12/31 add typos
 
 #import "smartProducts.h"
 
@@ -24,6 +25,9 @@
     {
         [self loadTables];
         occ = [OCRCategories sharedInstance];
+        typos =  [[NSMutableArray alloc] init];
+        fixed =  [[NSMutableArray alloc] init];
+        [self loadTyposFile];
     }
     return self;
 }
@@ -313,22 +317,22 @@
     if ([fullProductName.lowercaseString containsString:@"subtotal"]) return FALSE;
     if ([fullProductName.lowercaseString containsString:@"charge"]) return FALSE;
 
-    //Try matching with built-in CSV file first...
+    //Try matching with built-in CSV file cat.txt first...
     NSArray *a = [occ matchCategory:fullProductName];
-    if (a != nil)  //Match?
+    if (a != nil)  //Hit?
     {
         if (a.count >= 4)
         {
-            _latestCategory  = a[0];
+            _latestCategory  = a[0]; //Get canned data out from array...
             _latestProcessed = a[2];
             _latestLocal     = a[3];
             processed = ([_latestProcessed isEqualToString:@"processed"]);
             local     = ([_latestLocal isEqualToString:@"yes"]);
             return TRUE;
         }
-        else
-            NSLog(@" ...CSV cat miss...(%@)",fullProductName);
     }
+    //Miss? Try matching words in the product name with some generic lists of items...
+    //  Must do it word-by-word, so it's SLOW...
     for (NSString *nextWord in pItems)
     {
         if (found) break;
@@ -391,11 +395,13 @@
             bulk = FALSE;
         }
     }
+    _latestProductName = fullProductName;
     return found;
     
 } //end analyzeProductName
 
 //=============(smartProducts)=====================================================
+//Second pass...
 -(int) analyzeSimple
 {
     int aerror = 0;
@@ -404,6 +410,9 @@
     local     = FALSE;
     bulk      = FALSE;
 //    NSString *foundResult = @"EMPTY";
+    //DHS 1/31: Fix common misspellings, like "ananas" or "apaya"...
+    fullProductName = [self fixSentenceTypo:fullProductName];
+
     BOOL found = [self analyzeProductName];
     if (!found)
     {
@@ -413,7 +422,11 @@
     }
     
     if ( //Got a product of Hawaii in description? set local flag
-        [fullProductName.lowercaseString containsString:@"hawaii"] ||
+        [fullProductName.lowercaseString containsString:@"local"]    ||
+        [fullProductName.lowercaseString containsString:@"hawaii"]   ||
+        ([fullProductName containsString:@"hawaii"]
+         &&
+         [fullProductName containsString:@"produce"])                ||
         [fullProductName.lowercaseString containsString:@"hawa11"]
         )
         local = TRUE;
@@ -599,6 +612,73 @@
     int c = (int)(100.0 * fin) - 100*d;
     return [NSString stringWithFormat:@"%d.%2.2d",d,c];
 }
+
+
+//=============(smartProducts)=====================================================
+-(void) loadTyposFile
+{
+    NSError *error;
+    NSArray *sItems;
+    NSString *fileContentsAscii;
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"typos" ofType:@"txt" inDirectory:@"txt"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    if (error != nil)
+    {
+        NSLog(@" error reading typos init file");
+        return;
+    }
+    sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
+    [typos removeAllObjects];
+    [fixed removeAllObjects];
+
+    for (NSString*s in sItems)
+    {
+        NSArray* lineItems    = [s componentsSeparatedByString:@"="];
+        if (lineItems.count == 2) //Got a something = something type string?
+        {
+            //No whitespace
+            NSString *lhand = [lineItems[0]stringByReplacingOccurrencesOfString:@" " withString:@""];
+            NSString *rhand = [lineItems[1]stringByReplacingOccurrencesOfString:@" " withString:@""];
+            [typos addObject:lhand];
+            [fixed addObject:rhand];
+        }
+    }
+    return;
+} //end loadTyposFile
+
+//=============(smartProducts)=====================================================
+// Disassembles / reassembles a sentence, fixes any product name typos therein
+-(NSString *) fixSentenceTypo : (NSString *)sentence
+{
+    
+    NSArray *sItems = [[sentence lowercaseString] componentsSeparatedByString:@" "]; //Separate words
+    BOOL bing = FALSE;
+    NSString *output = @"";
+    int wcount = (int)sItems.count;
+    for (int i=0;i<wcount;i++)
+    {
+        NSString *s = sItems[i];
+        NSString *t = [self fixTypo:s];
+        if (![s isEqualToString:t])  bing = TRUE;//Something got fixed?
+        output = [output stringByAppendingString:t];         //Add our word... more words?
+        if (i < wcount-1) output = [output stringByAppendingString:@" "]; //...add space
+    }
+    NSLog(@" fixit %@ -> %@",sentence,output);
+    return output;
+} //end fixSentenceTypo
+
+//=============(smartProducts)=====================================================
+// 2 table lookup: typos and fixed spellings, simple array match / replace
+-(NSString *) fixTypo : (NSString *)testString
+{
+    NSUInteger index = [typos indexOfObject:testString];
+    if (index != NSNotFound)
+    {
+        return [fixed objectAtIndex:index];
+    }
+    return testString; //Nothing to fix
+} //end fixTypo
 
 
 @end

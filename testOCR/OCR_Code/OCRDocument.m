@@ -181,9 +181,13 @@
 -(NSString*) cleanUpNumberString : (NSString *)nstr
 {
     NSString *outstr;
-    outstr = [nstr   stringByReplacingOccurrencesOfString:@"S" withString:@"5"];
-    outstr = [outstr stringByReplacingOccurrencesOfString:@"B" withString:@"8"];
-    outstr = [outstr stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces in number...
+    outstr = [nstr   stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces in number...
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"I" withString:@"1"]; // I -> 1
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"B" withString:@"8"]; // B -> 8
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"O" withString:@"0"]; // O -> 0
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"o" withString:@"0"]; // o -> 0
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"s" withString:@"5"]; // s -> 5
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"S" withString:@"5"]; // S -> 5
     return outstr;
 }
 
@@ -191,12 +195,16 @@
 // Makes sure price has format DDD.CC
 -(NSString *)cleanupPrice : (NSString *)s
 {
+    NSLog(@" cleanup Price in [%@]",s);
     NSString* ptst = [s stringByReplacingOccurrencesOfString:@" " withString:@""];
     BOOL numeric = [self isStringAPrice:ptst];
     NSString *sout = @"";
     if (!numeric)  //No numerals found? Just set to zero
-        sout = @"0.00";
-    else
+    {
+        //sout = @"0.00";
+        NSLog(@" non-numeric?");
+    }
+   // else
     {
         sout = [s stringByReplacingOccurrencesOfString:@" " withString:@""]; //No spaces please
         sout = [self cleanUpNumberString:sout];                                 //Fix typos and pull blanks
@@ -204,10 +212,13 @@
         //Dissemble to dollars and cents, then reassemble to guarantee 2 digits of cents
         float fdollarsAndCents = [sout floatValue];
         int d = (int) fdollarsAndCents;
-        int c = (int)(100.0 * fdollarsAndCents) - 100*d;
+        //asdf
+        int c = floor((100.0 * fdollarsAndCents) + 0.5) - 100*d;
         sout = [NSString stringWithFormat:@"%d.%2.2d",d,c];
 
     }
+    NSLog(@" .....out  [%@]",sout);
+
     return sout;
 }
 
@@ -383,14 +394,17 @@
 //=============(OCRDocument)=====================================================
 // Gets sorted array of words as they should appear in a sentence, given
 //  an array of separate words assumed to be in a retangle. Produces a hash
-//  for each word that guarantees proper sentence placement
+//  for each word that guarantees proper sentence placement, forces words
+//  into line. Note ytolerance...
 -(NSMutableArray *) getSortedWordPairsFromArray : (NSMutableArray*) a
 {
     NSMutableArray *wordPairs = [[NSMutableArray alloc] init];
     //NSLog(@" assemble word...");
-    int ys[16];
-    for (int i=0;i<16;i++) ys[i] = -999;
+    int ys[32];  //we can handle up to 32 words...
+    for (int i=0;i<32;i++) ys[i] = -999;
     int yptr = 0;
+    int ytolerance = 1.5 * _glyphHeight;
+    int fonyWidth = topmostRightRect.origin.x + topmostRightRect.size.width;
     for (NSNumber *n in a)
     {
         OCRWord *ow = [allWords objectAtIndex:n.longValue];
@@ -398,10 +412,10 @@
         int w = ow.width.intValue;
         //Keep a collection of row y values, if we are near an earlier word's y, just use it!
         //  this fixes the problem of slightly staggered words along a line...
-        for (int i=0;i<yptr;i++) if (abs(y-ys[i]) < _glyphHeight) y = ys[i];
+        for (int i=0;i<yptr;i++) if (abs(y-ys[i]) < ytolerance) y = ys[i];
         ys[yptr++] = y;
-        int abspos = _width * y + ow.left.intValue; //Abs pixel position in document
-        //NSLog(@" x %d y %d w %@",ow.left.intValue,y,ow.wordtext);
+        int abspos = fonyWidth * y + ow.left.intValue; //Abs pixel position in document
+        //NSLog(@"add2wordpairs wid %d y %d owleft %d w %@ abspos %d",fonyWidth,y,ow.left.intValue,ow.wordtext,abspos);
         //add dict of string / y pairs
         [wordPairs addObject:@{@"Word": ow.wordtext,@"XY":[NSNumber numberWithInt:abspos],@"W":[NSNumber numberWithInt:w]}];
     }
@@ -427,7 +441,7 @@
         if ([ow.wordtext.lowercaseString isEqualToString:@"description"])
             {
                 found = TRUE;
-                yTest = ow.top.intValue;
+                yTest = ow.top.intValue;  //Document space!
                 NSLog(@" descr found index %d",index);
                 break;
             }
@@ -438,10 +452,12 @@
         NSLog(@" Error: no header found!");
         return -1; //Failure code
     }
-    int testy = [self doc2templateY:yTest];
-    
-    double by = (double)testy - (double)trTemplateRect.origin.y;
-    by = (double)tlDocumentRect.origin.y + by*vScale;
+    //WTF? This just goes back to document space, just use yTest?!?
+//    int testy = [self doc2templateY:yTest];
+//    double by = (double)testy - (double)tlTemplateRect.origin.y;
+    //DHS 12/31
+//    by = (double)topmostLeftRect.origin.y + by*vScale;
+  //  NSLog(@" by %f ytest %f",by,yTest);
     NSMutableArray *b = [[NSMutableArray alloc] init];
     for (NSNumber *n in a) //Get every word on the same line as the keyword
     {
@@ -507,6 +523,7 @@
     
     NSString *headerForThisColumn = [self getHeaderStringFromRect:rr];
     headerForThisColumn = headerForThisColumn.lowercaseString;
+    NSLog(@" column header[%d] %@",column,headerForThisColumn);
     //let's see what it contains:
     if ([headerForThisColumn containsString:@"item"]) _itemColumn = column;
     if ([headerForThisColumn containsString:@"quantity"]) _quantityColumn = column;
@@ -518,13 +535,15 @@
 } //end getColumnStrings
 
 //=============(OCRDocument)=====================================================
+// Incoming rect is a template rect!!! (passed in by parent)
 -(NSString*) getHeaderStringFromRect : (CGRect)rr
 {
     NSString *cname = @"";
-    for (NSDictionary*d in headerPairs)
+    CGRect dr = [self template2DocRect:rr];
+    for (NSDictionary*d in headerPairs) //Look at our headers,
     {
-        NSNumber *nx = [d objectForKey:@"X"];
-        if (nx.intValue >= rr.origin.x  && nx.intValue <= rr.origin.x + rr.size.width)
+        NSNumber *nx = [d objectForKey:@"X"]; // find one with an X near our rect
+        if (nx.intValue >= dr.origin.x  && nx.intValue <= dr.origin.x + rr.size.width)
             return [d objectForKey:@"Field"]; //asdf
     }
     return cname;
@@ -1004,36 +1023,47 @@
     NSMutableArray *wordPairs = [self getSortedWordPairsFromArray:aof];
     lastX = -1;
     int firstX = -1;
+    //DHS 12/31: The PDF _width is BOGUS, too small to account for document spread.
+    //   use this fony width instead to create the XY hash...
+    int fonyWidth = topmostRightRect.origin.x + topmostRightRect.size.width;
+
     for (NSMutableDictionary *d in wordPairs)
     {
         NSNumber *n    = [d objectForKey:@"XY"];
         NSNumber *nw   = [d objectForKey:@"W"];
         NSString *wstr = [d objectForKey:@"Word"];
         int x = n.intValue;
-        int xc = x / _width;
-        int xoff = x - (_width*xc);
+        int xc = x / fonyWidth;
+        int xoff = x - (fonyWidth*xc);
+        NSLog(@" initial bigx %d xc %d,xoff %d width %d",x,xc,xoff,fonyWidth);
         int w = nw.intValue;
         if (firstField) firstX = xoff;
-        //NSLog(@" parseHeaderColumns word [%@] xy %d firstx %d",wstr,xoff,firstX);
+        NSLog(@" parseHeaderColumns word [%@] xoff %d lastx %d firstx %d",wstr,xoff,lastX,firstX);
         
         if (xoff - lastX > 2*_glyphHeight && (lastX > 0))
         {
+            NSLog(@" got gap");
             firstField = TRUE;
             int aveX = (firstX + (lastX-firstX)/2);
             NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:aveX]};
             [headerPairs addObject:dict];
             firstX = xoff;
+            hstr = @"";
         }
         if (firstField)
             {hstr = wstr;
+             NSLog(@" firstfield %@",wstr);
             firstField = FALSE;
             }
-        else hstr = [hstr stringByAppendingString:[NSString stringWithFormat:@" %@",wstr]];
-        
+        else
+        {   NSLog(@" append %@ to %@",wstr,hstr);
+            hstr = [hstr stringByAppendingString:[NSString stringWithFormat:@" %@",wstr]];
+        }
 
         lastX = xoff+w;
         
     }
+    //DOn't need this now?? WTF???did above logic change that much!?
     int aveX = (firstX + (lastX-firstX)/2);
     NSDictionary *dict = @{@"Field": hstr,@"X":[NSNumber numberWithInt:aveX]};
     [headerPairs addObject:dict];
@@ -1198,7 +1228,8 @@
 -(int) doc2templateX : (int) x
 {//asdf
     if (unitScale) return x;
-    double bx = (double)x - (double)tlDocumentRect.origin.x;
+    //DHS 12/31
+    double bx = (double)x - (double)topmostLeftRect.origin.x;
     //...convert to template space...
     double outx;
     outx = (double)tlTemplateRect.origin.x + bx/hScale;
@@ -1210,7 +1241,8 @@
 -(int) doc2templateY : (int) y
 {
     if (unitScale) return y;
-    double by = (double)y - (double)tlDocumentRect.origin.y;
+    //DHS 12/31
+    double by = (double)y - (double)topmostLeftRect.origin.y;
     //...convert to template space...
     double outy;
     outy = (double)tlTemplateRect.origin.y + by/vScale;

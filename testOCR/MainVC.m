@@ -92,7 +92,7 @@
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
     _versionLabel.text = [NSString stringWithFormat:@"version %@",versionNumber];
-   // [self testit];
+    [self testit];
 
     //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
@@ -384,6 +384,10 @@
 {
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
     OCRDocument *od = [[OCRDocument alloc] init];
+    
+    NSString *p = @"I. 64";
+    [od cleanupPrice:p];
+     
     [od setupDocumentAndParseJDON : @"hfmpages" :d :FALSE];
     return;
 
