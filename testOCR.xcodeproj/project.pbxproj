@@ -46,7 +46,7 @@
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
-		725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* DBViewController.m */; };
+		725DA97D21CB53BC0024ECF7 /* EXPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* EXPViewController.m */; };
 		7272C5ED21D5EE050094D7D1 /* bgpBkgd.png in Resources */ = {isa = PBXBuildFile; fileRef = 7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */; };
 		7272C5F021D6ABFE0094D7D1 /* OCRCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */; };
 		7279498E21D041670067B636 /* UIImageExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = 7279498D21D041670067B636 /* UIImageExtras.m */; };
@@ -63,6 +63,14 @@
 		729B7A3E21C886590075486C /* invoiceTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 729B7A3D21C886590075486C /* invoiceTable.m */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
+		729E92B121DBE25B00048DAF /* EXPCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 729E92B021DBE25B00048DAF /* EXPCell.m */; };
+		729E92BA21DBE3A000048DAF /* dollarIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92B321DBE38C00048DAF /* dollarIcon.png */; };
+		729E92BB21DBE3A000048DAF /* centIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92B421DBE38C00048DAF /* centIcon.png */; };
+		729E92BE21DBE3A000048DAF /* bigbuxIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92B721DBE38E00048DAF /* bigbuxIcon.png */; };
+		729E92BF21DBE3A000048DAF /* hiIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92B821DBE39F00048DAF /* hiIcon.png */; };
+		729E92C121DC1CC100048DAF /* barnIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C021DC1CC100048DAF /* barnIcon.png */; };
+		729E92C421DC1CCC00048DAF /* factoryIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C221DC1CCC00048DAF /* factoryIcon.png */; };
+		729E92C521DC1CCC00048DAF /* globeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C321DC1CCC00048DAF /* globeIcon.png */; };
 		72A9828921CCAC7400D5EAC6 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A9828821CCAC7300D5EAC6 /* WebKit.framework */; };
 		72AFBE9421D4AEA400B75388 /* CheckTemplateVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 72AFBE9321D4AEA400B75388 /* CheckTemplateVC.m */; };
 		72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB121C370FB004ADD79 /* hfm90.jpg */; };
@@ -141,8 +149,8 @@
 		72435B3821C8E01200620F4B /* cal_kona.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cal_kona.jpg; sourceTree = "<group>"; };
 		72435B3A21C96E8E00620F4B /* loves.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = loves.jpg; sourceTree = "<group>"; };
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
-		725DA97B21CB53BC0024ECF7 /* DBViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBViewController.h; sourceTree = "<group>"; };
-		725DA97C21CB53BC0024ECF7 /* DBViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBViewController.m; sourceTree = "<group>"; };
+		725DA97B21CB53BC0024ECF7 /* EXPViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPViewController.h; sourceTree = "<group>"; };
+		725DA97C21CB53BC0024ECF7 /* EXPViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPViewController.m; sourceTree = "<group>"; };
 		7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bgpBkgd.png; path = Resources/bgpBkgd.png; sourceTree = SOURCE_ROOT; };
 		7272C5EE21D6ABFE0094D7D1 /* OCRCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRCache.h; sourceTree = "<group>"; };
 		7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCache.m; sourceTree = "<group>"; };
@@ -166,6 +174,15 @@
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
 		729C592B21C1D08900F4C695 /* smartProducts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = smartProducts.m; sourceTree = "<group>"; };
 		729C592E21C1F62400F4C695 /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
+		729E92AF21DBE25B00048DAF /* EXPCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPCell.h; sourceTree = "<group>"; };
+		729E92B021DBE25B00048DAF /* EXPCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPCell.m; sourceTree = "<group>"; };
+		729E92B321DBE38C00048DAF /* dollarIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = dollarIcon.png; path = Resources/dollarIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92B421DBE38C00048DAF /* centIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = centIcon.png; path = Resources/centIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92B721DBE38E00048DAF /* bigbuxIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bigbuxIcon.png; path = Resources/bigbuxIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92B821DBE39F00048DAF /* hiIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = hiIcon.png; path = Resources/hiIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92C021DC1CC100048DAF /* barnIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = barnIcon.png; path = Resources/barnIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92C221DC1CCC00048DAF /* factoryIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = factoryIcon.png; path = Resources/factoryIcon.png; sourceTree = SOURCE_ROOT; };
+		729E92C321DC1CCC00048DAF /* globeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = globeIcon.png; path = Resources/globeIcon.png; sourceTree = SOURCE_ROOT; };
 		72A9828821CCAC7300D5EAC6 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		72AFBE9221D4AEA400B75388 /* CheckTemplateVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CheckTemplateVC.h; sourceTree = "<group>"; };
 		72AFBE9321D4AEA400B75388 /* CheckTemplateVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CheckTemplateVC.m; sourceTree = "<group>"; };
@@ -257,8 +274,8 @@
 				7206008C21B64052000B26DC /* EditTemplateVC.m */,
 				720C17B821CCC1150059CA2D /* AddTemplateViewController.h */,
 				72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */,
-				725DA97B21CB53BC0024ECF7 /* DBViewController.h */,
-				725DA97C21CB53BC0024ECF7 /* DBViewController.m */,
+				725DA97B21CB53BC0024ECF7 /* EXPViewController.h */,
+				725DA97C21CB53BC0024ECF7 /* EXPViewController.m */,
 				7206008E21B64052000B26DC /* Main.storyboard */,
 				7206009121B64055000B26DC /* Assets.xcassets */,
 				7206009321B64055000B26DC /* LaunchScreen.storyboard */,
@@ -279,6 +296,13 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				729E92C021DC1CC100048DAF /* barnIcon.png */,
+				729E92B721DBE38E00048DAF /* bigbuxIcon.png */,
+				729E92B421DBE38C00048DAF /* centIcon.png */,
+				729E92B321DBE38C00048DAF /* dollarIcon.png */,
+				729E92C221DC1CCC00048DAF /* factoryIcon.png */,
+				729E92C321DC1CCC00048DAF /* globeIcon.png */,
+				729E92B821DBE39F00048DAF /* hiIcon.png */,
 				7204B10121D6FB7E007366C3 /* mg.png */,
 				7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */,
 				7207078521CD88EE00DB8CAD /* tgrid50.png */,
@@ -376,6 +400,8 @@
 			children = (
 				7290229A21D58FF900885EF9 /* activityCell.h */,
 				7290229B21D58FF900885EF9 /* activityCell.m */,
+				729E92B021DBE25B00048DAF /* EXPCell.m */,
+				729E92AF21DBE25B00048DAF /* EXPCell.h */,
 				7279498C21D041660067B636 /* UIImageExtras.h */,
 				7279498D21D041670067B636 /* UIImageExtras.m */,
 				7283811F21C4A17300A2954B /* NavButtons.h */,
@@ -462,11 +488,13 @@
 				72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */,
 				7283813021C4A3FD00A2954B /* gearHOT.png in Resources */,
 				72B8DEC021C46459004ADD79 /* magtarg.png in Resources */,
+				729E92BF21DBE3A000048DAF /* hiIcon.png in Resources */,
 				72DB331D21CDC14600AA44C0 /* multiHOT.png in Resources */,
 				7209609521B81E6B00D49C63 /* arrRight.png in Resources */,
 				722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */,
 				7283813321C4A54600A2954B /* binonion.png in Resources */,
 				72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */,
+				729E92BE21DBE3A000048DAF /* bigbuxIcon.png in Resources */,
 				7272C5ED21D5EE050094D7D1 /* bgpBkgd.png in Resources */,
 				7283812C21C4A36200A2954B /* dbHOT.png in Resources */,
 				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
@@ -474,19 +502,24 @@
 				7207078621CD88EE00DB8CAD /* tgrid50.png in Resources */,
 				724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */,
 				720600A321B64AA0000B26DC /* cocacola.jpg in Resources */,
+				729E92C521DC1CCC00048DAF /* globeIcon.png in Resources */,
 				7283813121C4A3FD00A2954B /* gearNOT.png in Resources */,
 				7283812D21C4A36200A2954B /* HamburgerHOT.png in Resources */,
 				7209609621B81E6B00D49C63 /* arrDown.png in Resources */,
 				7283812B21C4A36200A2954B /* HamburgerNOT.png in Resources */,
 				720600A121B6487E000B26DC /* hfm.jpg in Resources */,
 				7209609821B81E6B00D49C63 /* arrLeft.png in Resources */,
+				729E92BA21DBE3A000048DAF /* dollarIcon.png in Resources */,
 				72B8DEC121C46459004ADD79 /* loupe-mask@2x.png in Resources */,
+				729E92C421DC1CCC00048DAF /* factoryIcon.png in Resources */,
 				7206009F21B640E2000B26DC /* hawaiiBeefInvoice.jpg in Resources */,
 				72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */,
 				72183DED21C5FA86005627AB /* squareMask.png in Resources */,
 				72DB331C21CDC14600AA44C0 /* multiNOT.png in Resources */,
 				7206009021B64052000B26DC /* Main.storyboard in Resources */,
 				7204B10221D6FB7F007366C3 /* mg.png in Resources */,
+				729E92BB21DBE3A000048DAF /* centIcon.png in Resources */,
+				729E92C121DC1CC100048DAF /* barnIcon.png in Resources */,
 				72435B3B21C96E8E00620F4B /* loves.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -530,6 +563,7 @@
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
 				72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */,
+				729E92B121DBE25B00048DAF /* EXPCell.m in Sources */,
 				7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */,
 				7283812021C4A17300A2954B /* NavButtons.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,
@@ -551,7 +585,7 @@
 				72F0D8C421D932BE005979D2 /* Vendors.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */,
-				725DA97D21CB53BC0024ECF7 /* DBViewController.m in Sources */,
+				725DA97D21CB53BC0024ECF7 /* EXPViewController.m in Sources */,
 				72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */,
 				72AFBE9421D4AEA400B75388 /* CheckTemplateVC.m in Sources */,
 				7209608F21B8173200D49C63 /* OCRDocument.m in Sources */,

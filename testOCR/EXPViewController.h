@@ -5,7 +5,7 @@
 //  | |_| | |_) |\ V /| |___
 //  |____/|____/  \_/  \____|
 //
-//  DBViewController.h
+//  EXPViewController
 //  testOCR
 //
 //  Created by Dave Scruton on 12/19/18.
@@ -18,7 +18,9 @@
 #import "OCRDocument.h"
 #import "OCRTemplate.h"
 #import "invoiceTable.h"
+#import "EXPObject.h"
 #import "EXPTable.h"
+#import "EXPCell.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define DB_MODE_INVOICE 202
 #define DB_MODE_TEMPLATE 203
 
-@interface DBViewController : UIViewController <OCRTemplateDelegate,invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource>
+@interface EXPViewController : UIViewController <OCRTemplateDelegate,invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource>
 {
     invoiceTable *it;
     EXPTable *et;
@@ -39,6 +41,16 @@ NS_ASSUME_NONNULL_BEGIN
     int dbMode;
     NSString *batchIDLookup;
     NSString *vendorLookup;
+    UIImage *barnIcon;
+    UIImage *bigbuxIcon;
+    UIImage *centIcon;
+    UIImage *dollarIcon;
+    UIImage *factoryIcon;
+    UIImage *globeIcon;
+    UIImage *hiIcon;
+    
+    NSString *sortBy;
+    BOOL sortAscending;
 
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -47,9 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet NSString *actData;
 @property (weak, nonatomic) IBOutlet NSString *searchType;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
+@property (weak, nonatomic) IBOutlet UIButton *sortButton;
+@property (weak, nonatomic) IBOutlet UIButton *sortDirButton;
 
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)menuSelect:(id)sender;
+- (IBAction)sortSelect:(id)sender;
+- (IBAction)sortDirSelect:(id)sender;
 
 @end
 

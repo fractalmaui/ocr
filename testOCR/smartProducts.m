@@ -24,9 +24,12 @@
     if (self = [super init])
     {
         [self loadTables];
-        occ = [OCRCategories sharedInstance];
-        typos =  [[NSMutableArray alloc] init];
-        fixed =  [[NSMutableArray alloc] init];
+        occ    = [OCRCategories sharedInstance];
+        typos  =  [[NSMutableArray alloc] init];
+        fixed  =  [[NSMutableArray alloc] init];
+        splits =  [[NSMutableArray alloc] init];
+        joined =  [[NSMutableArray alloc] init];
+        [self loadSplitsFile];
         [self loadTyposFile];
     }
     return self;
@@ -409,9 +412,10 @@
     processed = FALSE;
     local     = FALSE;
     bulk      = FALSE;
-//    NSString *foundResult = @"EMPTY";
-    //DHS 1/31: Fix common misspellings, like "ananas" or "apaya"...
+    //DHS 12/31: Fix common misspellings, like "ananas" or "apaya"...
     fullProductName = [self fixSentenceTypo:fullProductName];
+    //DHS 1/1 fix split words like "hawai ian"
+    fullProductName = [self fixSentenceSplits:fullProductName];
 
     BOOL found = [self analyzeProductName];
     if (!found)
@@ -615,6 +619,38 @@
 
 
 //=============(smartProducts)=====================================================
+-(void) loadSplitsFile
+{
+    NSError *error;
+    NSArray *sItems;
+    NSString *fileContentsAscii;
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"splits" ofType:@"txt" inDirectory:@"txt"];
+    NSURL *url = [NSURL fileURLWithPath:path];
+    fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
+    if (error != nil)
+    {
+        NSLog(@" error reading splits file");
+        return;
+    }
+    sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
+    [splits removeAllObjects];
+    [joined removeAllObjects];
+    
+    for (NSString*s in sItems)
+    {
+        NSArray* lineItems    = [s componentsSeparatedByString:@"="];
+        if (lineItems.count == 2) //Got a something = something type string?
+        {
+            [splits addObject:lineItems[0]];
+            [joined addObject:lineItems[1]];
+        }
+    }
+    return;
+
+}
+
+
+//=============(smartProducts)=====================================================
 -(void) loadTyposFile
 {
     NSError *error;
@@ -625,7 +661,7 @@
     fileContentsAscii = [NSString stringWithContentsOfURL:url encoding:NSASCIIStringEncoding error:&error];
     if (error != nil)
     {
-        NSLog(@" error reading typos init file");
+        NSLog(@" error reading typos file");
         return;
     }
     sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
@@ -648,10 +684,25 @@
 } //end loadTyposFile
 
 //=============(smartProducts)=====================================================
+// Goes over splits list,  splits in the sentence are replaced by joined
+-(NSString *) fixSentenceSplits : (NSString *)sentence
+{
+    //Look for common OCR splits (words with splits in them)
+    NSString *output = sentence;
+    for (int i=0;i<splits.count;i++)
+    {
+        if ([output containsString:splits[i]])
+            output = [output stringByReplacingOccurrencesOfString:splits[i] withString:joined[i]];
+
+    }
+    return output;
+} //end fixSentenceSplits
+
+//=============(smartProducts)=====================================================
 // Disassembles / reassembles a sentence, fixes any product name typos therein
 -(NSString *) fixSentenceTypo : (NSString *)sentence
 {
-    
+
     NSArray *sItems = [[sentence lowercaseString] componentsSeparatedByString:@" "]; //Separate words
     BOOL bing = FALSE;
     NSString *output = @"";

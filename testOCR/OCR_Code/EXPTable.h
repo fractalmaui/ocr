@@ -23,7 +23,6 @@
 
 @interface EXPTable : NSObject
 {
-    NSMutableArray *expos;
     NSMutableArray *objectIDs;
     NSMutableArray *recordStrings;
     NSMutableArray *productNames;
@@ -34,7 +33,10 @@
 
 @property (nonatomic, unsafe_unretained) id <EXPTableDelegate> delegate; // receiver of completion messages
 
+@property (nonatomic , assign) BOOL sortAscending;
+@property (nonatomic , strong) NSString* sortBy;
 @property (nonatomic , strong) NSString* versionNumber;
+@property (nonatomic , strong) NSMutableArray* expos;
 
 -(void) clear;
 

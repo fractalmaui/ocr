@@ -16,7 +16,7 @@
 #import "ActivityTable.h"
 #import "activityCell.h"
 #import "AddTemplateViewController.h"
-#import "DBViewController.h"
+#import "EXPViewController.h"
 #import "NavButtons.h"
 #import "SessionManager.h"
 #import "OCRCache.h"

@@ -21,7 +21,7 @@
 {
     if (self = [super init])
     {
-        expos         = [[NSMutableArray alloc] init]; //Invoice Objects
+        _expos        = [[NSMutableArray alloc] init]; //Invoice Objects
         objectIDs     = [[NSMutableArray alloc] init]; //Invoice Objects
         recordStrings = [[NSMutableArray alloc] init]; //Invoice Objects
         productNames  = [[NSMutableArray alloc] init]; //Invoice Objects
@@ -37,7 +37,7 @@
 //=============(EXPTable)=====================================================
 -(void) clear
 {
-    [expos removeAllObjects];
+    [_expos removeAllObjects];
     [objectIDs removeAllObjects];
 }
 
@@ -92,7 +92,7 @@
     exo.errStatus = errStatus;
     exo.PDFFile = PDFFile;
 
-    [expos addObject:exo];
+    [_expos addObject:exo];
     
 } //end addRecord
 
@@ -147,6 +147,34 @@
     }
 } //end handleCSVAdd
 
+
+//=============(EXPTable)=====================================================
+-(EXPObject*) getEXPObjectFromPFObject : (PFObject *)pfo
+{
+    EXPObject* e = [[EXPObject alloc] init];
+    e.expdate = [pfo objectForKey:PInv_Date_key];
+    e.category = pfo[PInv_Category_key];
+    e.month    = @""; //Nada for now
+    e.item    = pfo[PInv_Item_key];
+    e.item    = pfo[PInv_Item_key];
+    e.item    = pfo[PInv_Item_key];
+    e.uom   = pfo[PInv_UOM_key];
+    e.bulk   = pfo[PInv_Bulk_or_Individual_key];
+    e.vendor   = pfo[PInv_Vendor_key];
+    e.productName   = pfo[PInv_ProductName_key];
+    e.processed   = pfo[PInv_Processed_key];
+    e.local   = pfo[PInv_Local_key];
+    e.lineNumber   = pfo[PInv_LineNumber_key];
+    e.invoiceNumber   = pfo[PInv_InvoiceNumber_key];
+    e.quantity   = pfo[PInv_Quantity_key];
+    e.total   = pfo[PInv_TotalPrice_key];
+    e.pricePerUOM   = pfo[PInv_PricePerUOM_key];
+    e.batch   = pfo[PInv_Batch_key];
+    e.errStatus   = pfo[PInv_ErrStatus_key];
+    e.PDFFile   = pfo[PInv_PDFFile_key];
+    e.versionNumber   = pfo[PInv_VersionNumber];
+    return e;
+} //end getEXPObjectFromPFObject
 
 //=============(EXPTable)=====================================================
 -(NSString *) getCSVFromObject : (PFObject *)pfo
@@ -206,17 +234,36 @@
     //Wildcards means get everything...
     if (![vendor isEqualToString:@"*"]) [query whereKey:PInv_Vendor_key equalTo:vendor];
     if (![batch isEqualToString:@"*"])  [query whereKey:@"BatchID" equalTo:batch];
-    [query orderByAscending:PInv_LineNumber_key];  //THis may not work..
+    if (![_sortBy isEqualToString:@""]) NSLog(@"...sort EXP by %@",_sortBy);
+    NSString *sortkey = @"";
+    if ([_sortBy isEqualToString:@"Invoice Number"])    sortkey = PInv_InvoiceNumber_key;
+    else if ([_sortBy isEqualToString:@"Item"])         sortkey = PInv_Item_key;
+    else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
+    else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
+    else if ([_sortBy isEqualToString:@"Product Name"]) sortkey = PInv_ProductName_key;
+    else if ([_sortBy isEqualToString:@"Local"])        sortkey = PInv_Local_key;
+    else if ([_sortBy isEqualToString:@"Processed"])    sortkey = PInv_Processed_key;
+    else if ([_sortBy isEqualToString:@"Quantity"])     sortkey = PInv_Quantity_key;
+    else if ([_sortBy isEqualToString:@"Price"])        sortkey = PInv_PricePerUOM_key;
+    else if ([_sortBy isEqualToString:@"Total"])        sortkey = PInv_TotalPrice_key;
+    else sortkey = @"createdAt"; ///DEFAULT: sort everything by date
+    if (_sortAscending)
+        [query orderByAscending:sortkey];  //Sort UP
+    else
+        [query orderByDescending:sortkey]; //Sort Down
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
             [self->productNames  removeAllObjects];
+            [self->_expos        removeAllObjects];
             for( PFObject *pfo in objects)
             {
                 NSString *s = [self getCSVFromObject:pfo];
                 [self->recordStrings addObject:s];
                 [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
                 [self handleCSVAdd : dumptoCSV : s];
+                EXPObject *e = [self getEXPObjectFromPFObject:pfo];
+                [self->_expos addObject: e];
             }
             NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
@@ -235,13 +282,13 @@
 -(void) saveToParse
 {
     
-    if (expos.count < 1) return; //Nothing to write!
+    if (_expos.count < 1) return; //Nothing to write!
     int i=0;
-    int ecount = (int)expos.count;
+    int ecount = (int)_expos.count;
     returnCount = 0;
     AppDelegate *eappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
 
-    for (EXPObject *exo in expos)
+    for (EXPObject *exo in _expos)
     {
         
         PFObject *exoRecord = [PFObject objectWithClassName:tableName];

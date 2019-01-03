@@ -1,0 +1,4 @@
+#Common OCR Split word fixes
+mi x=mix
+hawai ian=hawaiian
+

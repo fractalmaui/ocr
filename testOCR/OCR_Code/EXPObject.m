@@ -16,5 +16,7 @@
 #import "EXPObject.h"
 
 @implementation EXPObject
+{
+}
 
 @end

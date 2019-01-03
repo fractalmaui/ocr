@@ -50,6 +50,8 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *suppliesNames;
     NSMutableArray *typos;
     NSMutableArray *fixed;
+    NSMutableArray *splits;
+    NSMutableArray *joined;
 
     OCRCategories* occ; //Categories / processed / local lookup table
 }

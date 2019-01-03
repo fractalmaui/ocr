@@ -5,20 +5,20 @@
 //  | |_| | |_) |\ V /| |___
 //  |____/|____/  \_/  \____|
 //
-//  DBViewController.m
+//  EXPViewController
 //  testOCR
 //
 //  Created by Dave Scruton on 12/19/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
-#import "DBViewController.h"
+#import "EXPViewController.h"
 
-@interface DBViewController ()
+@interface EXPViewController ()
 
 @end
 
-@implementation DBViewController
+@implementation EXPViewController
 
 //=============DB VC=====================================================
 -(id)initWithCoder:(NSCoder *)aDecoder {
@@ -36,7 +36,16 @@
     dbResults = [[NSMutableArray alloc] init];
     dbMode = DB_MODE_NONE;
     vendorLookup = @"*";
+    
+    barnIcon    = [UIImage imageNamed:@"barnIcon"];
+    bigbuxIcon  = [UIImage imageNamed:@"bigbuxIcon"];
+    centIcon    = [UIImage imageNamed:@"centIcon"];
+    dollarIcon  = [UIImage imageNamed:@"dollarIcon"];
+    factoryIcon = [UIImage imageNamed:@"factoryIcon"];
+    globeIcon   = [UIImage imageNamed:@"globeIcon"];
+    hiIcon      = [UIImage imageNamed:@"hiIcon"];
 
+    sortAscending = TRUE;
     return self;
 }
 
@@ -57,20 +66,23 @@
         if (sitems[0] != nil) batchIDLookup = sitems[0];
         if (sitems[1] != nil) vendorLookup  = sitems[1];
     }
+    sortBy = @"";
     if ([_searchType isEqualToString:@"E"]) [self loadEXP];
     if ([_searchType isEqualToString:@"I"]) [self loadInvoices];
-
+    _sortButton.hidden = TRUE;
 }
 
-/*
- #pragma mark - Navigation
- 
- // In a storyboard-based application, you will often want to do a little preparation before navigation
- - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
- // Get the new view controller using [segue destinationViewController].
- // Pass the selected object to the new view controller.
- }
- */
+//=============OCR MainVC=====================================================
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    batchIDLookup = @"*";
+    vendorLookup  = @"*";
+    [self loadEXP];//asdf
+    
+    
+}
+
 
 
 //=============DB VC=====================================================
@@ -91,6 +103,8 @@
 //=============DB VC=====================================================
 - (IBAction)menuSelect: (id)sender
 {
+    batchIDLookup = @"*";
+
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Database Operation",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
@@ -101,17 +115,17 @@
                                                               [self loadEXP];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table By Vendor...",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self promptForEXPVendor];
-                                                          }];
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self promptForEXPVendor];
+                                                           }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load Invoice Table...",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self promptForInvoiceVendor];
                                                           }];
     UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load Templates Table...",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self loadTemplates];
-                                                          }];
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self loadTemplates];
+                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -120,16 +134,66 @@
     [alert addAction:secondAction];
     [alert addAction:thirdAction];
     [alert addAction:fourthAction];
-//    [alert addAction:fifthAction];
-//    [alert addAction:sixthAction];
-//    [alert addAction:seventhAction];
-//    [alert addAction:eighthAction];
+    //    [alert addAction:fifthAction];
+    //    [alert addAction:sixthAction];
+    //    [alert addAction:seventhAction];
+    //    [alert addAction:eighthAction];
     
     [alert addAction:cancelAction];
     
     [self presentViewController:alert animated:YES completion:nil];
     
-} //end addFieldSelect
+} //end menuSelect
+
+//=============DB VC=====================================================
+- (IBAction)sortSelect: (id)sender
+{
+    batchIDLookup = @"*";
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Sort EXP Table By...",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertAction *actions[32];
+    int i=0;
+    
+    NSArray *sortOptions = @[
+        @"Invoice Number",@"Item",@"Vendor",
+        @"Product Name",@"Local",@"Processed",@"quantity",
+        @"Price",@"Total"
+    ];
+    for (NSString *s in sortOptions)
+    {
+        UIAlertAction *action = [UIAlertAction actionWithTitle:s
+                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                  self->sortBy = s;
+                                                  [self loadEXP];
+                                              }];
+        [alert addAction:action];
+        i++;
+    }
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    [alert addAction:cancelAction];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end sortSelect
+
+//=============DB VC=====================================================
+- (IBAction)sortDirSelect:(id)sender
+{
+    sortAscending = !sortAscending;
+    NSLog(@"ascending = %d",sortAscending);
+    if (sortAscending)
+        [_sortDirButton setBackgroundImage:[UIImage imageNamed:@"arrUp"] forState:UIControlStateNormal];
+    else
+        [_sortDirButton setBackgroundImage:[UIImage imageNamed:@"arrDown"] forState:UIControlStateNormal];
+    et.sortAscending = sortAscending;
+    [self loadEXP];
+
+}
+
+
 
 //=============DB VC=====================================================
 -(NSString*) getVendorNameForPrompt : (int) i
@@ -211,7 +275,6 @@
     
 }
 
-
 //=============DB VC=====================================================
 -(void) loadEXP
 {
@@ -220,6 +283,9 @@
 
     tableName = @"EXP";
     dbMode = DB_MODE_EXP;
+    et.sortBy = sortBy;
+    
+
     [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
     [self updateUI];
 }
@@ -276,7 +342,12 @@
     NSString *xtra = @"";
     if ([_searchType isEqualToString:@"E"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
     if ([_searchType isEqualToString:@"I"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
-    _titleLabel.text = [NSString stringWithFormat:@"[%@%@]",tableName,xtra];
+    if ([sortBy isEqualToString:@""]) //No particular sort...
+        _titleLabel.text = [NSString stringWithFormat:@"[%@%@]",tableName,xtra];
+    else{
+        NSString *s = [NSString stringWithFormat:@"Sort by %@",sortBy];
+        _titleLabel.text = s;
+    }
 }
 
 //=============DB VC=====================================================
@@ -303,12 +374,48 @@
 {
     static NSString *CellIdentifier = @"Cell";
     int row = (int)indexPath.row;
+    if (dbMode == DB_MODE_EXP)
+    {
+        EXPCell *cell = (EXPCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        if (cell == nil)
+        {
+            cell = [[EXPCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        }
+        
+        
+        EXPObject *e = [et.expos objectAtIndex:row];
+        BOOL local     =  ([e.local.lowercaseString     isEqualToString:@"yes"]);
+        BOOL processed =  ([e.processed.lowercaseString isEqualToString:@"processed"]);
+        if (local) cell.localIcon.image         = hiIcon;
+        else cell.localIcon.image               = globeIcon;
+        if (processed) cell.processedIcon.image = factoryIcon;
+        else cell.processedIcon.image           = barnIcon;
+
+        double total = [e.total doubleValue];
+        if (total > 100.0)      cell.priceIcon.image = bigbuxIcon;
+        else if (total > 10.0)  cell.priceIcon.image = dollarIcon;
+        else                    cell.priceIcon.image = centIcon;
+
+        cell.label1.text = [NSString stringWithFormat:@"%@",e.productName];
+        cell.label2.text = [NSString stringWithFormat:@"%@ at %@ = %@",
+                            e.quantity,e.pricePerUOM,e.total];
+        NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
+        [formatter setDateFormat:@"MM/dd/yy"];
+        NSString *sfd = [formatter stringFromDate:e.expdate];
+
+        cell.label3.text = [NSString stringWithFormat:@"Invoice %@ Date %@ File %@",
+                            e.invoiceNumber,sfd,e.PDFFile];
+        cell.doblabel.text = e.vendor;
+        //        cell.label4.text = e.vendor;
+        return cell;
+    }
+//    NSString *comment      = [_workActivity getNthComment  : row];
     UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
-//    NSString *comment      = [_workActivity getNthComment  : row];
+    return cell;
     UIColor *c;
     if (dbMode == DB_MODE_EXP)
         c  = [UIColor yellowColor];
@@ -328,7 +435,11 @@
     return (int)dbResults.count;
 }
 
-
+//=============DB VC=====================================================
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 80;
+}
 
 #pragma mark - EXPTableDelegate
 
@@ -339,6 +450,7 @@
     [_table reloadData];
     [self activityIndicatorOnOff : FALSE];
     [self setLoadedTitle : @"EXP"];
+    _sortButton.hidden = FALSE;
 
 }
 

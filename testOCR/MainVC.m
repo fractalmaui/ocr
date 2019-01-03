@@ -96,7 +96,7 @@
 
     //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
-    //[self performSegueWithIdentifier:@"batchSegue" sender:@"mainVC"];
+    //[self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
 }
 
 
@@ -255,7 +255,7 @@
     }
     else if([[segue identifier] isEqualToString:@"dbSegue"])
     {
-        DBViewController *vc = (DBViewController*)[segue destinationViewController];
+        EXPViewController *vc = (EXPViewController*)[segue destinationViewController];
         vc.actData    = sdata; //Pass selected objectID's from activity, if any...
         vc.searchType = stype;
     }
