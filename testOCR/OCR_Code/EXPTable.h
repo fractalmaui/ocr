@@ -20,7 +20,6 @@
 
 @protocol EXPTableDelegate;
 
-
 @interface EXPTable : NSObject
 {
     NSMutableArray *objectIDs;
@@ -28,7 +27,11 @@
     NSMutableArray *productNames;
     NSString *tableName;
     NSString *EXPDumpCSVList;
-    int returnCount;
+    int totalSentCount;
+    int totalReturnCount;
+    int returnCounts[32]; //For up to 32 pages...
+    int sentCounts[32]; //For up to 32 pages...
+    NSString *allErrors;
 }
 
 @property (nonatomic, unsafe_unretained) id <EXPTableDelegate> delegate; // receiver of completion messages
@@ -42,7 +45,7 @@
 
 -(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString *) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile;
 
--(void) saveToParse;
+-(void) saveToParse : (int) page : (BOOL) lastPage;
 -(void) readFromParse : (NSString *) invoiceNumberstring;
 -(void) readFromParseByObjIDs : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)soids;
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch;
@@ -58,5 +61,7 @@
 - (void)didReadEXPTable;
 - (void)didReadEXPTableAsStrings : (NSString *)s;
 - (void)didSaveEXPTable : (NSArray *)a;
+- (void)didFinishAllEXPRecords : (NSArray *)a;
+- (void)errorInEXPRecord : (NSString *)err : (NSString *)oid;
 @end
 

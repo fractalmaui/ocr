@@ -39,7 +39,8 @@
     Vendors *vv;
     OCRTemplate *ot;
     ActivityTable *act;
-    
+    OCRTopObject *oto;
+
     UIViewController *parent;
     
     BOOL gotTemplate;
@@ -56,16 +57,15 @@
     NSMutableDictionary *vendorFolders;
     NSArray *pdfEntries;  //Fetched list of PDF files from batch folder
     
-    OCRTopObject *oto;
+    NSMutableArray *errorList;
+
+    
     int batchCount;
     int batchTotal;
     int batchPage;
     int batchTotalPages;
     NSString *tableName;
     int returnCount;
-    //Long string of returning object IDs from OCR invoice processing
-    //Format: (Initial)_ParseID, where Initial is E for Exp, I for Invoice, etc
-    NSString *soids;
 }
 @property (nonatomic , strong) NSString* batchID;
 @property (nonatomic , assign) BOOL authorized;
@@ -74,11 +74,10 @@
 @property (nonatomic, unsafe_unretained) id <batchObjectDelegate> delegate; // receiver of completion messages
 
 + (id)sharedInstance;
--(void) addOID : (NSString *) oid : (NSString *) tableName;
 
+-(void) addError : (NSString *) errDesc : (NSString *) objectID;
 -(void) getBatchCounts;
 -(int)  getVendorFileCount : (NSString *)vfn;
-
 -(void) runOneOrMoreBatches  : (int) vindex;
 -(void) setParent : (UIViewController*) p;
 

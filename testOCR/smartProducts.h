@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , strong) NSString* invoiceDateString;
 @property (nonatomic , strong) NSString* latestLineNumber; //String?
 @property (nonatomic , assign) BOOL analyzeOK;
+@property (nonatomic , assign) BOOL nonProduct;
 
 
 
@@ -85,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addPrice : (NSString*)price;
 -(void) addQuantity : (NSString*)qstr;
 -(int) analyzeFull;
--(int) analyzeSimple;
+-(BOOL) analyzeSimple;
 -(void) dump;
 -(NSString*) getErrDescription : (int) aerr;
 -(NSString*) getDollarsAndCentsString : (float) fin;

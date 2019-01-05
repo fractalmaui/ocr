@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "DBKeys.h"
+#import "ActivityTable.h"
 #import "EXPTable.h"
 #import "OCRWord.h"
 #import "OCRCache.h"
@@ -43,10 +44,12 @@
     OCRDocument *od;
     invoiceTable *it;
     EXPTable *et;
+    ActivityTable *act;
 
     smartProducts *smartp;
     int smartCount;
-
+    int pagesReturned,pageCount;
+    int totalLines;
     //OCR'ed results...
     NSString *fieldName;
     NSString *fieldNameShort;
@@ -87,7 +90,7 @@
 
 + (id)sharedInstance;
 -(NSString *) getRawResult;
--(NSString *) getParsedText;
+//-(NSString *) getParsedText;
 - (void)performOCROnImage : (NSString *)fname : (UIImage *)imageToOCR : (OCRTemplate *)ot;
 - (void)performOCROnData : (NSString *)fname : (NSData *)imageDataToOCR : (CGRect) r : (OCRTemplate *)ot;
 -(void) stubbedOCR: (NSString*)imageName : (UIImage *)imageToOCR : (OCRTemplate *)ot;
@@ -104,7 +107,9 @@
 @protocol OCRTopObjectDelegate <NSObject>
 @required
 @optional
+- (void)batchUpdate : (NSString *) s;
 - (void)didPerformOCR : (NSString *) result;
 - (void)errorPerformingOCR : (NSString *) errMsg;
+- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID;
 - (void)didSaveOCRDataToParse : (NSString *) s;
 @end

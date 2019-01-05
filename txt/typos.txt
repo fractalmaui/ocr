@@ -1,19 +1,21 @@
 #Common OCR Mis-spelling, FIX smartly?
-quash  = squash
+ananas = bananas
 apaya = papaya
-ucumbers = cucumbers
-proe)uce = produce
-ranges = oranges
+asta = pasta
+elat = gelatin
+ereal = cereal
 ettuce = lettuce
 iceber = iceberg
-ananas = bananas
-pples = apples
-ugar = sugar
-asta = pasta
-ravy = gravy
-rink = drink
 oup = soup
-ranola = granola
+pples = apples
 proe)uce = produce
+quash  = squash
+ranges = oranges
+ranola = granola
+ravy = gravy
+reese = cheese
+rink = drink
+ucumbers = cucumbers
+ugar = sugar
 #I.E. check for first character missing!
 

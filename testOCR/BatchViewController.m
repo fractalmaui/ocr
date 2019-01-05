@@ -167,7 +167,7 @@
 - (void)didCompleteBatch
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        self->_titleLabel.text = @"Batch Completed!";
+        self->_titleLabel.text = @"Batch Complete!";;
         self->_activityIndicator.hidden = TRUE;
         [self->_activityIndicator stopAnimating];
     });

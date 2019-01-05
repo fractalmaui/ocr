@@ -16,6 +16,8 @@
 
 @implementation EXPTable
 
+#define FIELD_ERROR_STRING @"$ERR"
+
 //=============(EXPTable)=====================================================
 -(instancetype) init
 {
@@ -26,9 +28,6 @@
         recordStrings = [[NSMutableArray alloc] init]; //Invoice Objects
         productNames  = [[NSMutableArray alloc] init]; //Invoice Objects
         tableName = @"EXPFullTable";
-
-        //bbb = [BatchObject sharedInstance];
-
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
     return self;
@@ -37,8 +36,12 @@
 //=============(EXPTable)=====================================================
 -(void) clear
 {
+    NSLog(@" EXP Clear");
     [_expos removeAllObjects];
-    [objectIDs removeAllObjects];
+    //Clear EXP send/return counts...
+    totalSentCount = totalReturnCount = 0;
+    allErrors = @"";
+    for (int i=0;i<32;i++) returnCounts[i] = 0;
 }
 
 #define PInv_Local_key @"Local"
@@ -46,30 +49,44 @@
 
 
 //=============(EXPTable)=====================================================
+-(NSString *) TrackNilErrors :(NSString *)s : (NSString *)fieldName
+{
+    if (s == nil)
+    {
+        allErrors =  [allErrors stringByAppendingString:[NSString stringWithFormat:@"%@,",fieldName]];
+        s = FIELD_ERROR_STRING;
+    }
+    return s;
+}
+//asdf
+
+//=============(EXPTable)=====================================================
 -(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile
 {
     NSString *errstr = @"";
     //ERR Check! Look for nils! Clumsy but it's all we can do w/ all these args!
     if (fdate == nil)       errstr = PInv_Date_key;
-    if (category == nil)    errstr = PInv_Category_key;
-    if (month == nil)       errstr = PInv_Month_key;
-    if (item == nil)        errstr = PInv_Item_key;
-    if (uom == nil)         errstr = PInv_UOM_key;
-    if (bulk == nil)        errstr = PInv_Bulk_or_Individual_key;
-    if (vendor == nil)      errstr = PInv_Vendor_key;
-    if (productName == nil) errstr = PInv_ProductName_key;
-    if (processed == nil)   errstr = PInv_Processed_key;
-    if (local == nil)       errstr = PInv_Local_key;
-    if (lineNumber == nil)  errstr = PInv_LineNumber_key;
-    if (pricePerUOM == nil) errstr = PInv_PricePerUOM_key;
-    if (total == nil)       errstr = PInv_TotalPrice_key;
-    if (batch == nil)       errstr = PInv_Batch_key;
-    if (errStatus == nil)   errstr = PInv_ErrStatus_key;
-    if (PDFFile == nil)     errstr = PInv_PDFFile_key;
-    if (errstr.length > 1) //Got an error?
+    //Fix nil strings, add error indicator as needed...
+    category    = [self TrackNilErrors : category : PInv_Category_key];
+    month       = [self TrackNilErrors : month : PInv_Month_key];
+    item        = [self TrackNilErrors : item : PInv_Item_key];
+    uom         = [self TrackNilErrors : uom : PInv_UOM_key];
+    bulk        = [self TrackNilErrors : bulk : PInv_Bulk_or_Individual_key];
+    vendor      = [self TrackNilErrors : vendor : PInv_Vendor_key];
+    productName = [self TrackNilErrors : productName : PInv_ProductName_key];
+    processed   = [self TrackNilErrors : processed : PInv_Processed_key];
+    local       = [self TrackNilErrors : local : PInv_Local_key];
+    lineNumber  = [self TrackNilErrors : lineNumber : PInv_Local_key];
+    pricePerUOM = [self TrackNilErrors : pricePerUOM : PInv_PricePerUOM_key];
+    total       = [self TrackNilErrors : total : PInv_TotalPrice_key];
+    batch       = [self TrackNilErrors : batch : PInv_Batch_key];
+    errStatus   = [self TrackNilErrors : errStatus : PInv_ErrStatus_key];
+    PDFFile     = [self TrackNilErrors : PDFFile : PInv_PDFFile_key];
+    
+    if (allErrors.length > 1) //Got error(s)?
     {
-        NSLog(@"%@",[NSString stringWithFormat:@"  EXPerr:null(%@)",errstr]);
-        return;
+        NSLog(@"%@",allErrors);
+//        return;
     }
     
     EXPObject *exo = [[EXPObject alloc] init];
@@ -279,18 +296,28 @@
 }
 
 //=============(EXPTable)=====================================================
--(void) saveToParse
+// lastPage flag indicates we are ready to do invoice after all EXPs are saved.
+//  then a delegate callback tells parent when all object ID's are ready for invoice
+-(void) saveToParse : (int) page :  (BOOL) lastPage
 {
-    
     if (_expos.count < 1) return; //Nothing to write!
     int i=0;
-    int ecount = (int)_expos.count;
-    returnCount = 0;
+    //Clear any old junk from past EXP save...
+    if (page == 0)
+    {
+        [objectIDs removeAllObjects];
+        for (int i=0;i<32;i++) sentCounts[i] = 0;
+    }
+    sentCounts[page]   = (int)_expos.count;
+    returnCounts[page] = 0;
+    if (lastPage) //Last page? Get a total of everything sent...
+    {
+        totalSentCount = 0;
+        for (int i=0;i<32;i++) totalSentCount+=sentCounts[i];
+    }
     AppDelegate *eappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
     for (EXPObject *exo in _expos)
     {
-        
         PFObject *exoRecord = [PFObject objectWithClassName:tableName];
         exoRecord[PInv_Category_key]            = exo.category;
         exoRecord[PInv_Month_key]               = exo.month;
@@ -304,7 +331,7 @@
         exoRecord[PInv_Date_key]                = exo.expdate; //ONLY column that ain't a String!
         exoRecord[PInv_LineNumber_key]          = exo.lineNumber;
         exoRecord[PInv_InvoiceNumber_key]       = exo.invoiceNumber;
-        exoRecord[PInv_Quantity_key]            = exo.quantity;;
+        exoRecord[PInv_Quantity_key]            = exo.quantity;
         exoRecord[PInv_TotalPrice_key]          = exo.total;
         exoRecord[PInv_PricePerUOM_key]         = exo.pricePerUOM;
         exoRecord[PInv_Batch_key]               = exo.batch;
@@ -315,17 +342,25 @@
         //NSLog(@" exp savetoParse...");
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (succeeded) {
-                NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
+                //NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
                 NSString *objID = exoRecord.objectId;
                 //AppDelegate *gappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
                 //[gappDelegate.bbb addOID:objID : self->tableName]; //Links current batcself->h to this record
                 [self->objectIDs addObject:objID];
-                self->returnCount++;
-                if (self->returnCount == ecount)
-                {
-                    //NSLog(@" ...nextEXP: saved all recs to parse %d %@",i ,self->objectIDs);
+                self->returnCounts[page]++;
+                self->totalReturnCount++;
+                //NSLog(@" ...  EXP: ids %@",self->objectIDs);
+                NSLog(@" for page[%d] sent %d return %d",page,self->sentCounts[page],self->returnCounts[page]);
+                NSLog(@" for page[%d] totalsent %d totalreturn %d",page,self->totalSentCount,self->totalReturnCount);
+                if (self->returnCounts[page] == self->sentCounts[page]) //Finish this page?
                     [self.delegate didSaveEXPTable : self->objectIDs];
+                if (lastPage)
+                {
+                    if (self->totalReturnCount == self->totalSentCount) //All done w/ everything?
+                        [self.delegate didFinishAllEXPRecords : self->objectIDs];
                 }
+                if ([exo.total isEqualToString:FIELD_ERROR_STRING])
+                    [self.delegate errorInEXPRecord : @"Bad Price/Amount" : objID];
             } else {
                 NSLog(@" ERROR: saving EXP: %@",error.localizedDescription);
             }

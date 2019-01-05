@@ -29,7 +29,7 @@
     act = [[ActivityTable alloc] init];
     act.delegate = self;
     emptyIcon = [UIImage imageNamed:@"emptyDoc.jpg"];
-    dbIcon = [UIImage imageNamed:@"dbNOT.png"];
+    dbIcon = [UIImage imageNamed:@"lildbGrey.png"];
     batchIcon = [UIImage imageNamed:@"multiNOT.png"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     oc = [OCRCache sharedInstance];
@@ -279,8 +279,10 @@
     NSString *adata = [act getData:row];
 
     UIImage *ii = emptyIcon;
-    if ([atype.lowercaseString containsString:@"batch"]) ii = batchIcon;
-    
+    if ([atype.lowercaseString containsString:@"batch"])   ii = batchIcon;
+    if ([atype.lowercaseString containsString:@"invoice"]) ii = dbIcon;
+    if ([atype.lowercaseString containsString:@"exp"])     ii = dbIcon;
+
     NSDate *adate = [act getDate:row];
     NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"MM/dd/yyyy  HH:mmv:SS"];

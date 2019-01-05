@@ -1077,7 +1077,7 @@
     [self clear];
     rawJSONDict   = d;
     NSArray *pr   = [d valueForKey:@"ParsedResults"];
-
+    _numPages     = pr.count;
     //Loop over our pages....
     int i=0;
     for (NSDictionary *dPage in pr)

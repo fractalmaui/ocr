@@ -296,7 +296,7 @@
             break;
         case ANALYZER_MATH_ERROR:        result = @"Math Err";
             break;
-        case ANALYZER_NO_PRODUCT_FOUND:  result = @"No Product Found";
+        case ANALYZER_NO_PRODUCT_FOUND:  result =[NSString stringWithFormat:@"No Product Found (%@)",fullProductName];
             break;
         case ANALYZER_ZERO_AMOUNT:       result = @"Zero Amount";
             break;
@@ -314,11 +314,18 @@
 {
     BOOL found = FALSE;
     _latestCategory = @"EMPTY";
+    _nonProduct = FALSE;
     NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
     
     //Bail on any weird product names, or obviously NON-product items found in this column...
-    if ([fullProductName.lowercaseString containsString:@"subtotal"]) return FALSE;
-    if ([fullProductName.lowercaseString containsString:@"charge"]) return FALSE;
+    if (([fullProductName.lowercaseString containsString:@"subtotal"]) ||
+        ([fullProductName.lowercaseString containsString:@"charge"])   ||
+        ([fullProductName.lowercaseString containsString:@"surcharge"]))
+    {
+        NSLog(@" non product %@",fullProductName);
+        _nonProduct = TRUE;
+        return false;
+    }
 
     //Try matching with built-in CSV file cat.txt first...
     NSArray *a = [occ matchCategory:fullProductName];
@@ -405,9 +412,8 @@
 
 //=============(smartProducts)=====================================================
 //Second pass...
--(int) analyzeSimple
+-(BOOL) analyzeSimple
 {
-    int aerror = 0;
     _analyzeOK = FALSE;
     processed = FALSE;
     local     = FALSE;
@@ -420,9 +426,8 @@
     BOOL found = [self analyzeProductName];
     if (!found)
     {
-        //NSLog(@" analyze simple ... no product found %@",fullProductName);
         _analyzeOK = FALSE;
-        return -1;
+        return _analyzeOK;
     }
     
     if ( //Got a product of Hawaii in description? set local flag
@@ -462,9 +467,8 @@
     _latestVendor = vendor;
     
     _analyzeOK = TRUE;
-    return aerror;
-
-}
+    return _analyzeOK;
+} //end analyzeSimple
 
 //=============(smartProducts)=====================================================
 -(int) analyzeFull

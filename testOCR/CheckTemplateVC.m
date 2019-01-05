@@ -112,7 +112,7 @@
 {
     NSLog(@" OCR OK");
     dispatch_async(dispatch_get_main_queue(), ^{
-        self->_outputLabel.text = [self->oto getParsedText];
+        //self->_outputLabel.text = [self->oto getParsedText];
     });
 
 }
