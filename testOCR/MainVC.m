@@ -13,7 +13,7 @@
 //
 // PDF Image conversion?
 //   https://github.com/a2/FoodJournal-iOS/tree/master/Pods/UIImage%2BPDF/UIImage%2BPDF
-
+//  1/6 add pull to refresh
 
 #import "MainVC.h"
 
@@ -33,6 +33,12 @@
     batchIcon = [UIImage imageNamed:@"multiNOT.png"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     oc = [OCRCache sharedInstance];
+    
+    refreshControl = [[UIRefreshControl alloc] init];
+    
+    //    refreshControl = UIRefreshControl()
+    
+
 
     //Test only, built-in OCR crap...
     [self loadBuiltinOCRToCache];
@@ -56,15 +62,17 @@
 
     _table.delegate = self;
     _table.dataSource = self;
-    
-    // if you're going to use local notifications, you must request permission
-    
-   //DO I NEED THIS? UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert categories:nil];
-   //DO I NEED THIS? [[UIApplication sharedApplication] registerUserNotificationSettings:settings];
-    
+    _table.refreshControl = refreshControl;
+    [refreshControl addTarget:self action:@selector(refreshIt) forControlEvents:UIControlEventValueChanged];
 
+} //end viewDidLoad
+
+//=============OCR MainVC=====================================================
+-(void)refreshIt
+{
+    NSLog(@" pull to refresh...");
+    [_table reloadData];
 }
-
 
 
 //=============OCR MainVC=====================================================
@@ -84,6 +92,7 @@
 {
     [super viewWillAppear:animated];
     [act readActivitiesFromParse:nil :nil];
+    [self testit];
 }
 
 
@@ -121,6 +130,13 @@
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self clearCacheMenu];
                                                            }];
+    NSString* t = @"Minimum Activity Logging";
+    AppDelegate *mappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    if (mappDelegate.verbose) t = @"Verbose Activity Logging";
+    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(t,nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              mappDelegate.verbose = !mappDelegate.verbose;
+                                                          }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -128,8 +144,8 @@
     [alert addAction:firstAction];
     [alert addAction:secondAction];
     [alert addAction:thirdAction];
+    [alert addAction:fourthAction];
     [alert addAction:cancelAction];
-    
     [self presentViewController:alert animated:YES completion:nil];
 
 } //end menu
@@ -159,12 +175,17 @@
                                                                self->stype = @"I";
                                                                [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
                                                            }];
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Errors",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self performSegueWithIdentifier:@"errorSegue" sender:@"mainVC"];
+                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
     //DHS 3/13: Add owner's ability to delete puzzle
     [alert addAction:firstAction];
     [alert addAction:secondAction];
+    [alert addAction:thirdAction];
     [alert addAction:cancelAction];
     
     [self presentViewController:alert animated:YES completion:nil];
@@ -258,6 +279,11 @@
         EXPViewController *vc = (EXPViewController*)[segue destinationViewController];
         vc.actData    = sdata; //Pass selected objectID's from activity, if any...
         vc.searchType = stype;
+    }
+    else if([[segue identifier] isEqualToString:@"errorSegue"])
+    {
+        ErrorViewController *vc = (ErrorViewController*)[segue destinationViewController];
+        vc.batchData    = sdata;
     }
 }
 
@@ -384,6 +410,7 @@
 //=============OCR MainVC=====================================================
 -(void) testit
 {
+    
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
     OCRDocument *od = [[OCRDocument alloc] init];
     

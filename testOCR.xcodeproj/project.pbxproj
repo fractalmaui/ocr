@@ -19,6 +19,9 @@
 		720600A121B6487E000B26DC /* hfm.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 720600A021B6487D000B26DC /* hfm.jpg */; };
 		720600A321B64AA0000B26DC /* cocacola.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 720600A221B64AA0000B26DC /* cocacola.jpg */; };
 		7207078621CD88EE00DB8CAD /* tgrid50.png in Resources */ = {isa = PBXBuildFile; fileRef = 7207078521CD88EE00DB8CAD /* tgrid50.png */; };
+		7209159321E0908C00F94258 /* ErrorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209159221E0908C00F94258 /* ErrorViewController.m */; };
+		7209159621E0982A00F94258 /* errorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209159521E0982A00F94258 /* errorCell.m */; };
+		7209159921E0AA2D00F94258 /* PDFCache.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209159821E0AA2D00F94258 /* PDFCache.m */; };
 		7209608921B7FBB000D49C63 /* OCRWord.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608821B7FBB000D49C63 /* OCRWord.m */; };
 		7209608C21B8164F00D49C63 /* imageTools.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608B21B8164F00D49C63 /* imageTools.m */; };
 		7209608F21B8173200D49C63 /* OCRDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209608E21B8173200D49C63 /* OCRDocument.m */; };
@@ -73,6 +76,7 @@
 		729E92C121DC1CC100048DAF /* barnIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C021DC1CC100048DAF /* barnIcon.png */; };
 		729E92C421DC1CCC00048DAF /* factoryIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C221DC1CCC00048DAF /* factoryIcon.png */; };
 		729E92C521DC1CCC00048DAF /* globeIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 729E92C321DC1CCC00048DAF /* globeIcon.png */; };
+		729E9A6421E02E0400F3FB5B /* EXPDetailVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 729E9A6321E02E0400F3FB5B /* EXPDetailVC.m */; };
 		72A9828921CCAC7400D5EAC6 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72A9828821CCAC7300D5EAC6 /* WebKit.framework */; };
 		72AFBE9421D4AEA400B75388 /* CheckTemplateVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 72AFBE9321D4AEA400B75388 /* CheckTemplateVC.m */; };
 		72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72B8DEB121C370FB004ADD79 /* hfm90.jpg */; };
@@ -113,6 +117,12 @@
 		720600A021B6487D000B26DC /* hfm.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = hfm.jpg; path = "New Group/hfm.jpg"; sourceTree = SOURCE_ROOT; };
 		720600A221B64AA0000B26DC /* cocacola.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = cocacola.jpg; path = "New Group/cocacola.jpg"; sourceTree = SOURCE_ROOT; };
 		7207078521CD88EE00DB8CAD /* tgrid50.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = tgrid50.png; path = Resources/tgrid50.png; sourceTree = SOURCE_ROOT; };
+		7209159121E0908B00F94258 /* ErrorViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ErrorViewController.h; sourceTree = "<group>"; };
+		7209159221E0908C00F94258 /* ErrorViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ErrorViewController.m; sourceTree = "<group>"; };
+		7209159421E0982A00F94258 /* errorCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = errorCell.h; sourceTree = "<group>"; };
+		7209159521E0982A00F94258 /* errorCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = errorCell.m; sourceTree = "<group>"; };
+		7209159721E0AA2D00F94258 /* PDFCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PDFCache.h; sourceTree = "<group>"; };
+		7209159821E0AA2D00F94258 /* PDFCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PDFCache.m; sourceTree = "<group>"; };
 		7209608721B7FBB000D49C63 /* OCRWord.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRWord.h; sourceTree = "<group>"; };
 		7209608821B7FBB000D49C63 /* OCRWord.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRWord.m; sourceTree = "<group>"; };
 		7209608A21B8164F00D49C63 /* imageTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = imageTools.h; sourceTree = "<group>"; };
@@ -187,6 +197,8 @@
 		729E92C021DC1CC100048DAF /* barnIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = barnIcon.png; path = Resources/barnIcon.png; sourceTree = SOURCE_ROOT; };
 		729E92C221DC1CCC00048DAF /* factoryIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = factoryIcon.png; path = Resources/factoryIcon.png; sourceTree = SOURCE_ROOT; };
 		729E92C321DC1CCC00048DAF /* globeIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = globeIcon.png; path = Resources/globeIcon.png; sourceTree = SOURCE_ROOT; };
+		729E9A6221E02E0400F3FB5B /* EXPDetailVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPDetailVC.h; sourceTree = "<group>"; };
+		729E9A6321E02E0400F3FB5B /* EXPDetailVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPDetailVC.m; sourceTree = "<group>"; };
 		72A9828821CCAC7300D5EAC6 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		72AFBE9221D4AEA400B75388 /* CheckTemplateVC.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CheckTemplateVC.h; sourceTree = "<group>"; };
 		72AFBE9321D4AEA400B75388 /* CheckTemplateVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CheckTemplateVC.m; sourceTree = "<group>"; };
@@ -270,6 +282,10 @@
 				7206008921B64052000B26DC /* AppDelegate.m */,
 				7283813421C4A60000A2954B /* MainVC.h */,
 				7283813521C4A60000A2954B /* MainVC.m */,
+				7209159121E0908B00F94258 /* ErrorViewController.h */,
+				7209159221E0908C00F94258 /* ErrorViewController.m */,
+				7209159421E0982A00F94258 /* errorCell.h */,
+				7209159521E0982A00F94258 /* errorCell.m */,
 				72BA4D2321CE175000F432E9 /* BatchViewController.h */,
 				72BA4D2421CE175000F432E9 /* BatchViewController.m */,
 				72AFBE9221D4AEA400B75388 /* CheckTemplateVC.h */,
@@ -280,6 +296,8 @@
 				72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */,
 				725DA97B21CB53BC0024ECF7 /* EXPViewController.h */,
 				725DA97C21CB53BC0024ECF7 /* EXPViewController.m */,
+				729E9A6221E02E0400F3FB5B /* EXPDetailVC.h */,
+				729E9A6321E02E0400F3FB5B /* EXPDetailVC.m */,
 				7206008E21B64052000B26DC /* Main.storyboard */,
 				7206009121B64055000B26DC /* Assets.xcassets */,
 				7206009321B64055000B26DC /* LaunchScreen.storyboard */,
@@ -385,6 +403,8 @@
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
 				7272C5EE21D6ABFE0094D7D1 /* OCRCache.h */,
 				7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */,
+				7209159721E0AA2D00F94258 /* PDFCache.h */,
+				7209159821E0AA2D00F94258 /* PDFCache.m */,
 				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
 				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
@@ -568,17 +588,20 @@
 				7209609E21B81FDC00D49C63 /* OCRBox.m in Sources */,
 				7279498E21D041670067B636 /* UIImageExtras.m in Sources */,
 				72B8DEBD21C4642F004ADD79 /* MagnifierView.m in Sources */,
+				7209159621E0982A00F94258 /* errorCell.m in Sources */,
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
 				72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */,
 				729E92B121DBE25B00048DAF /* EXPCell.m in Sources */,
 				7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */,
 				7283812021C4A17300A2954B /* NavButtons.m in Sources */,
+				7209159321E0908C00F94258 /* ErrorViewController.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,
 				7290229C21D58FF900885EF9 /* activityCell.m in Sources */,
 				7206008A21B64052000B26DC /* AppDelegate.m in Sources */,
 				72BA4D2B21CF52B600F432E9 /* BatchObject.m in Sources */,
 				72BA4D2521CE175000F432E9 /* BatchViewController.m in Sources */,
+				729E9A6421E02E0400F3FB5B /* EXPDetailVC.m in Sources */,
 				721D9C2021CB122F00D1E78A /* OCRCategories.m in Sources */,
 				729B7A3E21C886590075486C /* invoiceTable.m in Sources */,
 				72BA4D2821CEFC0100F432E9 /* ActivityTable.m in Sources */,
@@ -593,6 +616,7 @@
 				72F0D8C421D932BE005979D2 /* Vendors.m in Sources */,
 				72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */,
 				72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */,
+				7209159921E0AA2D00F94258 /* PDFCache.m in Sources */,
 				725DA97D21CB53BC0024ECF7 /* EXPViewController.m in Sources */,
 				72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */,
 				72AFBE9421D4AEA400B75388 /* CheckTemplateVC.m in Sources */,

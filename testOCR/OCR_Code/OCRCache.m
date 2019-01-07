@@ -172,7 +172,7 @@ static OCRCache *sharedInstance = nil;
     //Prepare filename for appending to master file...
     const char *utfString = [recordToWrite UTF8String];
     NSData *myData = [NSData dataWithBytes: utfString length: strlen(utfString)];
-    NSLog(@" FBCache:update master file %@ with %@",path,latestFilename);
+    NSLog(@" OCRCache:update master file %@ with %@",path,latestFilename);
     //ok, get file handle for master...
     file = [NSFileHandle fileHandleForUpdatingAtPath:path];
     if (file == nil) //nuttin yet?
@@ -191,10 +191,10 @@ static OCRCache *sharedInstance = nil;
 
 //=====(OCRCache)======================================================================
 //  returns NSNotFound if no match
--(NSUInteger) index : (NSString *) id
+-(NSUInteger) index : (NSString *) inoid
 {
-    //NSLog(@" OCRCache findit %@, cache size %d",id,(int)cacheIds.count);
-    return [_OCRids indexOfObject : id];
+    NSString *oid = [self cleanupID:inoid];
+    return [_OCRids indexOfObject : oid];
 }
 
 //=====(OCRCache)======================================================================

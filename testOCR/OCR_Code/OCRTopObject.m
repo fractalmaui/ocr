@@ -205,10 +205,11 @@ static OCRTopObject *sharedInstance = nil;
         [self->_delegate errorPerformingOCR:@"Missing Invoice Date"];
     if (_invoiceCustomer     == nil)
         [self->_delegate errorPerformingOCR:@"Missing Invoice Customer"];
-    if (_invoiceVendor     == nil)
-        [self->_delegate errorPerformingOCR:@"Missing Invoice Vendor"];
+//Ignore for now
+//    if (_invoiceVendor     == nil)
+//        [self->_delegate errorPerformingOCR:@"Missing Invoice Vendor"];
     
-    NSLog(@" OTO:invoice rows %@",rowItems);
+    //NSLog(@" OTO:invoice rows %@",rowItems);
     [self dumpResults];
     
 } //end applyTemplate
@@ -490,7 +491,6 @@ static OCRTopObject *sharedInstance = nil;
 //  also smartCount must be set!
 -(void) writeEXPToParse : (int) page
 {
-
     smartCount  = 0;
     [et clear]; //Set up EXP for new entries...
     NSLog(@"  writeEXP...");
@@ -509,19 +509,20 @@ static OCRTopObject *sharedInstance = nil;
         [smartp addDate:_invoiceDate];
         [smartp addLineNumber:i+1];
         BOOL aok = [smartp analyzeSimple]; //fills out fields -> smartp.latest...
-        NSLog(@" analyze OK %d [%@]",smartp.analyzeOK,productName);
+        //NSLog(@" analyze OK %d [%@]",smartp.analyzeOK,productName);
         if (aok) //Only save valid stuff!
         {
             NSLog(@" add record to et: %d",totalLines + smartCount);
             smartCount++;
             //Format line count to triple digits, max 999
             NSString *lineString = [NSString stringWithFormat:@"%3.3d",(totalLines + smartCount)];
+            //Tons of args: adds allll this shit to the next EXP table entry for saving to parse...
             [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :
              ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
              _vendor : smartp.latestProductName : smartp.latestProcessed :
              smartp.latestLocal : lineString : _invoiceNumberString :
              [od getPostOCRQuantity:i] : [od getPostOCRAmount:i] : [od getPostOCRPrice:i] :
-             _batchID : @"NoErr" : _imageFileName];
+                _batchID : @"NoErr" : _imageFileName : [NSNumber numberWithInt:page]];
         } //end analyzeOK
         else //Bad product ID? Report error
         {
@@ -569,7 +570,7 @@ static OCRTopObject *sharedInstance = nil;
 //  then the invoice gets saved!
 - (void)didSaveEXPTable  : (NSArray *)a
 {
-    NSLog(@"didsaveEXP, page %d of %d",pagesReturned,pageCount);
+    //NSLog(@"didsaveEXP, page %d of %d",pagesReturned,pageCount);
     if (pagesReturned == 0) //First page, set up invoice
     {
         NSLog(@"First page return: invoice init");
@@ -591,7 +592,7 @@ static OCRTopObject *sharedInstance = nil;
 - (void)didFinishAllEXPRecords : (NSArray *)a;
 {
     for (NSString *objID in a) [it addInvoiceItemByObjectID : objID];
-    NSLog(@" finished EXP saves, save invoice");
+    //NSLog(@" finished EXP saves, save invoice");
     //For every page, add entries to invoice...
     [self.delegate batchUpdate : [NSString stringWithFormat:@"Save Invoice %@",_invoiceNumberString]];
     [act saveActivityToParse:@"...save Invoice" : _invoiceNumberString];
@@ -615,7 +616,7 @@ static OCRTopObject *sharedInstance = nil;
 // Error in an EXP record; pass on to batch for storage
 - (void)errorInEXPRecord : (NSString *)err : (NSString *)oid
 {
-    [self->_delegate errorSavingEXP:err:oid];
+    [self->_delegate errorSavingEXP:err:oid];  // -> BatchObject (bbb)
 }
 
 
@@ -623,7 +624,7 @@ static OCRTopObject *sharedInstance = nil;
 //=============OCR VC=====================================================
 - (void)didSaveInvoiceTable:(NSString *) s
 {
-    [self->_delegate didSaveOCRDataToParse:s];
+    [self->_delegate didSaveOCRDataToParse:s];  // -> BatchObject (bbb)
 }
 
 

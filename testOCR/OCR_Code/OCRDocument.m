@@ -195,14 +195,14 @@
 // Makes sure price has format DDD.CC
 -(NSString *)cleanupPrice : (NSString *)s
 {
-    NSLog(@" cleanup Price in [%@]",s);
+    //NSLog(@" cleanup Price in [%@]",s);
     NSString* ptst = [s stringByReplacingOccurrencesOfString:@" " withString:@""];
     BOOL numeric = [self isStringAPrice:ptst];
     NSString *sout = @"";
     if (!numeric)  //No numerals found? Just set to zero
     {
         //sout = @"0.00";
-        NSLog(@" non-numeric?");
+        //NSLog(@" non-numeric?");
     }
    // else
     {
@@ -217,7 +217,7 @@
         sout = [NSString stringWithFormat:@"%d.%2.2d",d,c];
 
     }
-    NSLog(@" .....out  [%@]",sout);
+    //NSLog(@" .....out  [%@]",sout);
 
     return sout;
 }
@@ -1074,6 +1074,7 @@
 //=============OCRDocument=====================================================
 -(void) parseJSONfromDict : (NSDictionary *)d
 {
+    NSLog(@" Parsing JSON from dict...");
     [self clear];
     rawJSONDict   = d;
     NSArray *pr   = [d valueForKey:@"ParsedResults"];

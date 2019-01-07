@@ -32,18 +32,27 @@
     int returnCounts[32]; //For up to 32 pages...
     int sentCounts[32]; //For up to 32 pages...
     NSString *allErrors;
+    NSString *workProductName;
+    NSString *workPDFFile;
+    NSNumber *workPage;
+    NSString *errorsByLineNumber[256];  // 256 invoice items?
 }
 
 @property (nonatomic, unsafe_unretained) id <EXPTableDelegate> delegate; // receiver of completion messages
 
 @property (nonatomic , assign) BOOL sortAscending;
 @property (nonatomic , strong) NSString* sortBy;
+@property (nonatomic , strong) NSString* selectValue;
+@property (nonatomic , strong) NSString* selectBy;
 @property (nonatomic , strong) NSString* versionNumber;
 @property (nonatomic , strong) NSMutableArray* expos;
 
 -(void) clear;
 
--(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString *) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile;
+-(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString *) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile : (NSNumber *) page;
+-(void) getObjectByID : (NSString *)oid;
+-(void) fixPricesInObjectByID : (NSString *)oid : (NSString *)qt: (NSString *)pt: (NSString *)tt;
+-(void) fixFieldInObjectByID : (NSString *)oid : (NSString *)key : (NSString *)value;
 
 -(void) saveToParse : (int) page : (BOOL) lastPage;
 -(void) readFromParse : (NSString *) invoiceNumberstring;
@@ -51,6 +60,7 @@
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch;
 -(NSString *)getRecord : (int) index;
 -(NSMutableArray *)getAllRecords;
+-(NSString *) dumpToCSV;
 
 
 @end
@@ -60,8 +70,10 @@
 @optional
 - (void)didReadEXPTable;
 - (void)didReadEXPTableAsStrings : (NSString *)s;
+- (void)didReadEXPObjectByID :(EXPObject *)e : (PFObject*)pfo;
 - (void)didSaveEXPTable : (NSArray *)a;
 - (void)didFinishAllEXPRecords : (NSArray *)a;
+- (void)didFixPricesInObjectByID : (NSString *)oid;
 - (void)errorInEXPRecord : (NSString *)err : (NSString *)oid;
 @end
 

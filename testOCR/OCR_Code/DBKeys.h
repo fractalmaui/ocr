@@ -34,6 +34,7 @@
 #define PInv_Batch_key @"Batch"
 #define PInv_ErrStatus_key @"ErrStatus"
 #define PInv_PDFFile_key @"PDFFile"
+#define PInv_Page_key @"Page"
 
 //Batch table...
 #define PInv_BatchID_key @"BatchID"
@@ -41,8 +42,6 @@
 #define PInv_BatchStatus_key @"BatchStatus"
 #define PInv_BatchProgress_key @"BatchProgress"
 #define PInv_BatchErrors_key @"BatchErrors"
-
-
 
 
 //Activity Table

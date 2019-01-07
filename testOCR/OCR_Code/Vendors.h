@@ -33,7 +33,7 @@
 + (id)sharedInstance;
 -(NSString *) getFolderName : (NSString *)vmatch;
 -(int) stringHasVendorName : (NSString *)s;
-
+-(NSString *) getRotationByVendorName : (NSString *)vname;
 @end
 
 @protocol VendorsDelegate <NSObject>

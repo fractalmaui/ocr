@@ -49,6 +49,14 @@ static Vendors *sharedInstance = nil;
     return @"";
 }
 
+//=============(Vendors)=====================================================
+-(NSString *) getRotationByVendorName : (NSString *)vname
+{
+    NSUInteger index = [_vNames indexOfObject:vname];
+    if (index == NSNotFound) return @"0";
+    return [_vRotations objectAtIndex:index];
+}
+
 
 //=============(Vendors)=====================================================
 -(void) readFromParse

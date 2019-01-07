@@ -90,10 +90,10 @@
     aRecord[PInv_ActivityType_key]     = actType;
     aRecord[PInv_ActivityData_key]     = actData;
     aRecord[PInv_VersionNumber    ]    = _versionNumber;
-    NSLog(@" activity savetoParse...");
+    //NSLog(@" activity savetoParse...");
     [aRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
-            NSLog(@" ...activity[%@]->parse",actType );
+            //NSLog(@" ...activity[%@]->parse",actType );
             [self.delegate didSaveActivity];
         } else {
             NSLog(@" ERROR: saving activity: %@",error.localizedDescription);

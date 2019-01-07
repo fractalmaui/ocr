@@ -719,7 +719,7 @@
         output = [output stringByAppendingString:t];         //Add our word... more words?
         if (i < wcount-1) output = [output stringByAppendingString:@" "]; //...add space
     }
-    NSLog(@" fixit %@ -> %@",sentence,output);
+    //NSLog(@" fixit %@ -> %@",sentence,output);
     return output;
 } //end fixSentenceTypo
 

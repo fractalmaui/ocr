@@ -42,7 +42,7 @@
 -(void) addInvoiceItemByObjectID:(NSString *)oid
 {
     //Overkill: this object only has one field for now...
-    NSLog(@" add invoice iod %@",oid);
+    //NSLog(@" add invoice iod %@",oid);
     invoiceObject *io = [[invoiceObject alloc] init];
     io.objectID = oid;
     [iobjs addObject: io];

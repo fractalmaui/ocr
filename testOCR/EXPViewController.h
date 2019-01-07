@@ -12,6 +12,8 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 
+#import <Foundation/Foundation.h>
+#import <MessageUI/MessageUI.h>
 #import <UIKit/UIKit.h>
 #import "DBKeys.h"
 #import "OCRWord.h"
@@ -21,6 +23,7 @@
 #import "EXPObject.h"
 #import "EXPTable.h"
 #import "EXPCell.h"
+#import "EXPDetailVC.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,7 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 #define DB_MODE_INVOICE 202
 #define DB_MODE_TEMPLATE 203
 
-@interface EXPViewController : UIViewController <OCRTemplateDelegate,invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource>
+@interface EXPViewController : UIViewController <OCRTemplateDelegate,invoiceTableDelegate,EXPTableDelegate,UITableViewDelegate,UITableViewDataSource,
+                    MFMailComposeViewControllerDelegate>
 {
     invoiceTable *it;
     EXPTable *et;
@@ -51,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     NSString *sortBy;
     BOOL sortAscending;
+    int selectedRow;
 
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -66,6 +71,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)menuSelect:(id)sender;
 - (IBAction)sortSelect:(id)sender;
 - (IBAction)sortDirSelect:(id)sender;
+- (IBAction)selectSelect:(id)sender;
+@property (weak, nonatomic) IBOutlet UIButton *selectButton;
 
 @end
 

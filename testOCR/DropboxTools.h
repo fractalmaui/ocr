@@ -16,13 +16,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
-
+#import "PDFCache.h"
 @protocol DropboxToolsDelegate;
 
 @interface DropboxTools : NSObject
 {
     UIViewController *parent;
     DBUserClient *client;
+    PDFCache *pc;
 //    NSMutableArray *batchFileList;
 }
 

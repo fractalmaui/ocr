@@ -21,7 +21,9 @@
 
 }
 
+
 @property (nonatomic , strong) NSDate* expdate;
+@property (nonatomic , strong) NSString* objectId;
 @property (nonatomic , strong) NSString* category;
 @property (nonatomic , strong) NSString* month;
 @property (nonatomic , strong) NSString* item;
@@ -40,6 +42,7 @@
 @property (nonatomic , strong) NSString* errStatus;
 @property (nonatomic , strong) NSString* PDFFile;
 @property (nonatomic , strong) NSString* versionNumber;
+@property (nonatomic , strong) NSNumber* page;
 
 
 @end

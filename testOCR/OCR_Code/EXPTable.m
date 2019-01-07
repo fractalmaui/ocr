@@ -27,6 +27,8 @@
         objectIDs     = [[NSMutableArray alloc] init]; //Invoice Objects
         recordStrings = [[NSMutableArray alloc] init]; //Invoice Objects
         productNames  = [[NSMutableArray alloc] init]; //Invoice Objects
+        _sortBy = @"*";
+        _selectBy = @"*";
         tableName = @"EXPFullTable";
         _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     }
@@ -41,7 +43,8 @@
     //Clear EXP send/return counts...
     totalSentCount = totalReturnCount = 0;
     allErrors = @"";
-    for (int i=0;i<32;i++) returnCounts[i] = 0;
+    for (int i=0;i<32;i++)  returnCounts[i] = 0;
+    for (int i=0;i<256;i++) errorsByLineNumber[i] = @"";
 }
 
 #define PInv_Local_key @"Local"
@@ -51,19 +54,38 @@
 //=============(EXPTable)=====================================================
 -(NSString *) TrackNilErrors :(NSString *)s : (NSString *)fieldName
 {
+    BOOL bing = FALSE;
+    NSString *latestError;
     if (s == nil)
     {
-        allErrors =  [allErrors stringByAppendingString:[NSString stringWithFormat:@"%@,",fieldName]];
+        latestError = [NSString stringWithFormat:@"empty %@[%@]",fieldName,workProductName];
+        bing = TRUE;
+    }
+    if ([s isEqualToString:@""] || [s isEqualToString:@" "])
+    {
+        latestError = [NSString stringWithFormat:@"blank %@[%@]",fieldName,workProductName];
+        bing = TRUE;
+    }
+    if (bing)
+    {
+        latestError =  [latestError stringByAppendingString:[NSString stringWithFormat:@":%@:%@",
+                                                           workPDFFile,workPage.stringValue]];
+        //Send error to batch parent, stick in an error string indicator for this field
         s = FIELD_ERROR_STRING;
+        allErrors =  [allErrors stringByAppendingString:latestError];
+        errorsByLineNumber[workPage.intValue] = latestError;
     }
     return s;
-}
-//asdf
+} //end TrackNilErrors
+
 
 //=============(EXPTable)=====================================================
--(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile
+-(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile : (NSNumber *) page
 {
     NSString *errstr = @"";
+    workProductName = productName;
+    workPDFFile     = PDFFile;
+    workPage        = page;
     //ERR Check! Look for nils! Clumsy but it's all we can do w/ all these args!
     if (fdate == nil)       errstr = PInv_Date_key;
     //Fix nil strings, add error indicator as needed...
@@ -82,7 +104,6 @@
     batch       = [self TrackNilErrors : batch : PInv_Batch_key];
     errStatus   = [self TrackNilErrors : errStatus : PInv_ErrStatus_key];
     PDFFile     = [self TrackNilErrors : PDFFile : PInv_PDFFile_key];
-    
     if (allErrors.length > 1) //Got error(s)?
     {
         NSLog(@"%@",allErrors);
@@ -90,25 +111,25 @@
     }
     
     EXPObject *exo = [[EXPObject alloc] init];
-    exo.expdate = fdate;
-    exo.category = category;
-    exo.month = month;
-    exo.item = item;
-    exo.uom = uom;
-    exo.bulk = bulk;
-    exo.vendor = vendor;
-    exo.productName = productName;
-    exo.processed = processed;
-    exo.local = local;
-    exo.lineNumber = lineNumber;
-    exo.invoiceNumber = invoiceNumber;
-    exo.quantity = quantity;
-    exo.pricePerUOM = pricePerUOM;
-    exo.total = total;
-    exo.batch = batch;
-    exo.errStatus = errStatus;
-    exo.PDFFile = PDFFile;
-
+    exo.expdate         = fdate;
+    exo.category        = category;
+    exo.month           = month;
+    exo.item            = item;
+    exo.uom             = uom;
+    exo.bulk            = bulk;
+    exo.vendor          = vendor;
+    exo.productName     = productName;
+    exo.processed       = processed;
+    exo.local           = local;
+    exo.lineNumber      = lineNumber;
+    exo.invoiceNumber   = invoiceNumber;
+    exo.quantity        = quantity;
+    exo.pricePerUOM     = pricePerUOM;
+    exo.total           = total;
+    exo.batch           = batch;
+    exo.errStatus       = errStatus;
+    exo.PDFFile         = PDFFile;
+    exo.page            = page;
     [_expos addObject:exo];
     
 } //end addRecord
@@ -169,27 +190,27 @@
 -(EXPObject*) getEXPObjectFromPFObject : (PFObject *)pfo
 {
     EXPObject* e = [[EXPObject alloc] init];
-    e.expdate = [pfo objectForKey:PInv_Date_key];
-    e.category = pfo[PInv_Category_key];
-    e.month    = @""; //Nada for now
-    e.item    = pfo[PInv_Item_key];
-    e.item    = pfo[PInv_Item_key];
-    e.item    = pfo[PInv_Item_key];
-    e.uom   = pfo[PInv_UOM_key];
-    e.bulk   = pfo[PInv_Bulk_or_Individual_key];
-    e.vendor   = pfo[PInv_Vendor_key];
-    e.productName   = pfo[PInv_ProductName_key];
-    e.processed   = pfo[PInv_Processed_key];
-    e.local   = pfo[PInv_Local_key];
-    e.lineNumber   = pfo[PInv_LineNumber_key];
-    e.invoiceNumber   = pfo[PInv_InvoiceNumber_key];
-    e.quantity   = pfo[PInv_Quantity_key];
-    e.total   = pfo[PInv_TotalPrice_key];
-    e.pricePerUOM   = pfo[PInv_PricePerUOM_key];
-    e.batch   = pfo[PInv_Batch_key];
-    e.errStatus   = pfo[PInv_ErrStatus_key];
-    e.PDFFile   = pfo[PInv_PDFFile_key];
-    e.versionNumber   = pfo[PInv_VersionNumber];
+    e.expdate           = [pfo objectForKey:PInv_Date_key];
+    e.category          = pfo[PInv_Category_key];
+    e.month             = pfo[PInv_Month_key];
+    e.item              = pfo[PInv_Item_key];
+    e.uom               = pfo[PInv_UOM_key];
+    e.bulk              = pfo[PInv_Bulk_or_Individual_key];
+    e.vendor            = pfo[PInv_Vendor_key];
+    e.productName       = pfo[PInv_ProductName_key];
+    e.processed         = pfo[PInv_Processed_key];
+    e.local             = pfo[PInv_Local_key];
+    e.lineNumber        = pfo[PInv_LineNumber_key];
+    e.invoiceNumber     = pfo[PInv_InvoiceNumber_key];
+    e.quantity          = pfo[PInv_Quantity_key];
+    e.total             = pfo[PInv_TotalPrice_key];
+    e.pricePerUOM       = pfo[PInv_PricePerUOM_key];
+    e.batch             = pfo[PInv_Batch_key];
+    e.errStatus         = pfo[PInv_ErrStatus_key];
+    e.PDFFile           = pfo[PInv_PDFFile_key];
+    e.page              = pfo[PInv_Page_key];
+    e.versionNumber     = pfo[PInv_VersionNumber];
+    e.objectId = pfo.objectId;
     return e;
 } //end getEXPObjectFromPFObject
 
@@ -240,8 +261,60 @@
         }
     }
     [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
+} //end readFromParseByObjIDs
+
+//=============OCR VC=====================================================
+-(void) fixPricesInObjectByID : (NSString *)oid : (NSString *)qt : (NSString *)pt : (NSString *)tt
+{
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    PFObject *pfo = [query getObjectWithId:oid];  //Fetch by object ID,
+    if (pfo != nil)
+    {
+        NSLog(@" fix field [%@] = %@ ",PInv_Quantity_key,qt);
+        NSLog(@" fix field [%@] = %@ ",PInv_PricePerUOM_key,pt);
+        NSLog(@" fix field [%@] = %@ ",PInv_TotalPrice_key,tt);
+        [pfo setObject:qt forKey:PInv_Quantity_key];
+        [pfo setObject:pt forKey:PInv_PricePerUOM_key];
+        [pfo setObject:tt forKey:PInv_TotalPrice_key];
+        [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError * _Nullable error) {
+            if (succeeded)
+            {
+                NSLog(@" update qpt OK objID %@",oid);
+                [self.delegate didFixPricesInObjectByID : oid];
+            }
+            else
+            {
+                NSLog(@" error updating quantity/price/total oid %@",oid);
+            }
+        }];
+    }
+} //end fixPricesInObjectByID
+
+//=============OCR VC=====================================================
+-(void) fixFieldInObjectByID : (NSString *)oid : (NSString *)key : (NSString *)value
+{
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    PFObject *pfo = [query getObjectWithId:oid];  //Fetch by object ID,
+    if (pfo != nil)
+    {
+        NSLog(@" fix field [%@] = %@ ",key,value);
+        [pfo setObject:value forKey:key];
+        [pfo saveEventually]; //No Hurry, just assume the DB is fast enough
+    }
 }
 
+
+//=============OCR VC=====================================================
+-(void) getObjectByID : (NSString *)oid
+{
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    PFObject *pfo = [query getObjectWithId:oid];  //Fetch by object ID,
+    if (pfo != nil)
+    {
+        EXPObject *e = [self getEXPObjectFromPFObject:pfo];
+        [self.delegate didReadEXPObjectByID:e:pfo];
+    }
+} //end getObjectByID
 
 //=============OCR VC=====================================================
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch
@@ -268,6 +341,8 @@
         [query orderByAscending:sortkey];  //Sort UP
     else
         [query orderByDescending:sortkey]; //Sort Down
+    //Special Selects...
+    if (![_selectBy isEqualToString:@"*"]) [query whereKey:_selectBy equalTo:_selectValue];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
@@ -288,6 +363,13 @@
     }];
 } //end readFromParseAsStrings
 
+//=============(EXPTable)=====================================================
+-(NSString *) dumpToCSV
+{
+    [self handleCSVInit:TRUE];
+    for (NSString *s in recordStrings) [self handleCSVAdd:TRUE :s];
+    return EXPDumpCSVList;
+}
 
 //=============(EXPTable)=====================================================
 -(void) readFromParse : (NSString *) invoiceNumberstring
@@ -337,6 +419,7 @@
         exoRecord[PInv_Batch_key]               = exo.batch;
         exoRecord[PInv_ErrStatus_key]           = exo.errStatus;
         exoRecord[PInv_PDFFile_key]             = exo.PDFFile;
+        exoRecord[PInv_Page_key]                = exo.page;
         exoRecord[PInv_BatchID_key]             = eappDelegate.batchID;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
         //NSLog(@" exp savetoParse...");
@@ -350,8 +433,8 @@
                 self->returnCounts[page]++;
                 self->totalReturnCount++;
                 //NSLog(@" ...  EXP: ids %@",self->objectIDs);
-                NSLog(@" for page[%d] sent %d return %d",page,self->sentCounts[page],self->returnCounts[page]);
-                NSLog(@" for page[%d] totalsent %d totalreturn %d",page,self->totalSentCount,self->totalReturnCount);
+                //NSLog(@" for page[%d] sent %d return %d",page,self->sentCounts[page],self->returnCounts[page]);
+                //NSLog(@" for page[%d] totalsent %d totalreturn %d",page,self->totalSentCount,self->totalReturnCount);
                 if (self->returnCounts[page] == self->sentCounts[page]) //Finish this page?
                     [self.delegate didSaveEXPTable : self->objectIDs];
                 if (lastPage)
@@ -361,6 +444,9 @@
                 }
                 if ([exo.total isEqualToString:FIELD_ERROR_STRING])
                     [self.delegate errorInEXPRecord : @"Bad Price/Amount" : objID];
+                NSString *fieldErr = self->errorsByLineNumber[exo.lineNumber.intValue];
+                if (fieldErr.length > 1)
+                     [self.delegate errorInEXPRecord : fieldErr : objID];
             } else {
                 NSLog(@" ERROR: saving EXP: %@",error.localizedDescription);
             }
@@ -372,3 +458,4 @@
 
 
 @end
+

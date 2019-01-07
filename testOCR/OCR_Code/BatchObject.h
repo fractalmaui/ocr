@@ -52,14 +52,11 @@
     NSString *batchStatus;
     NSString *batchProgress;
     NSString *batchErrors;
-    
+    NSString *cachesDirectory;
     NSMutableArray *vendorFileCounts;
     NSMutableDictionary *vendorFolders;
     NSArray *pdfEntries;  //Fetched list of PDF files from batch folder
-    
     NSMutableArray *errorList;
-
-    
     int batchCount;
     int batchTotal;
     int batchPage;
@@ -77,9 +74,13 @@
 
 -(void) addError : (NSString *) errDesc : (NSString *) objectID;
 -(void) getBatchCounts;
+-(NSString *) getErrors;
+-(NSString *) getVendor;
 -(int)  getVendorFileCount : (NSString *)vfn;
+-(void) readFromParseByID : (NSString *) bID;
 -(void) runOneOrMoreBatches  : (int) vindex;
 -(void) setParent : (UIViewController*) p;
+-(void) writeBatchReport;
 
 @end
 
@@ -90,6 +91,8 @@
 - (void)didGetBatchCounts;
 - (void)didCompleteBatch;
 - (void)didFailBatch;
+- (void)didReadBatchByID : (NSString *)oid;
+- (void)errorReadingBatchByID : (NSString *)err;
 @end
 
 

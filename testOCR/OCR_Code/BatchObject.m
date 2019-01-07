@@ -54,6 +54,10 @@ static BatchObject *sharedInstance = nil;
         vv  = [Vendors sharedInstance];
 
         act = [[ActivityTable alloc] init];
+        
+        //Uses caches folder for batch reports...
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+        cachesDirectory = [paths objectAtIndex:0];
 
         tableName = @"Batch";
         
@@ -165,8 +169,6 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 -(void) processNextFile
 {
-    //add Punctuation to batch names if 2nd... file
-    if (batchCount > 1) batchFiles = [batchFiles stringByAppendingString:@","];
     batchCount++;
     //Last file? Bail... we are now waiting on asynchronous operations to complete...
     if (batchCount > batchTotal)  return;
@@ -179,12 +181,28 @@ static BatchObject *sharedInstance = nil;
     if ([itemName.lowercaseString containsString:@"skip"]) //Skip this file?
     {
         [self processNextFile];                           //Re-entrant call, should be OK
-        batchFiles = [batchFiles stringByAppendingString:itemName];
     }
     else
+    {
+        //remember the filename...comma on 2nd... file
+        if (batchCount > 1) batchFiles = [batchFiles stringByAppendingString:@","];
+        batchFiles = [batchFiles stringByAppendingString:itemName];
         [dbt downloadImages:itemName];                   //Asyncbonous, need to finish before handling results
+    }
 
 } //end processNextFile
+
+//=============(BatchObject)=====================================================
+-(NSString *) getErrors;
+{
+    return batchErrors;
+}
+
+//=============(BatchObject)=====================================================
+-(NSString *) getVendor;
+{
+    return vendorName;
+}
 
 //=============(BatchObject)=====================================================
 -(int) getVendorFileCount : (NSString *)vfn
@@ -297,6 +315,34 @@ static BatchObject *sharedInstance = nil;
 
 
 //=============(BatchObject)=====================================================
+-(void) readFromParseByID : (NSString *) bID
+{
+    PFQuery *query = [PFQuery queryWithClassName:tableName];
+    [query whereKey:PInv_BatchID_key equalTo:bID];   //Look for our batch
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            
+            if (objects.count > 0) //Got something? Update...
+            {
+                PFObject *pfo = objects[0];
+                //Load internal fields...
+                self->vendorName    = pfo[PInv_Vendor_key];
+                self->batchFiles    = pfo[PInv_BatchFiles_key];
+                self->batchStatus   = pfo[PInv_BatchStatus_key];
+                self->batchProgress = pfo[PInv_BatchProgress_key];
+                self->batchErrors   = pfo[PInv_BatchErrors_key];
+                [self.delegate didReadBatchByID : bID];
+            }
+            else
+            {
+                [self.delegate didReadBatchByID : @"not found"];
+            }
+        }
+    }];
+} //end readFromParseByID
+
+
+//=============(BatchObject)=====================================================
 -(void) updateParse
 {
     PFQuery *query = [PFQuery queryWithClassName:tableName];
@@ -331,9 +377,36 @@ static BatchObject *sharedInstance = nil;
 } //end saveToParse
 
 
+//=============(BatchObject)=====================================================
+// Saves batch report in file named B_WHATEVERDATE.txt, saves in caches folder for now
+-(void) writeBatchReport
+{
+    NSString *path = [NSString stringWithFormat:@"%@/%@.txt",cachesDirectory,_batchID];
+    //Assemble output string:
+    NSString *s = @"Batch Report\n";
+    //if (batchCount > 1)
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"ID %@\n",_batchID]];
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"Files %@\n",batchFiles]];
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"Errors %@\n",batchErrors]];
+    for (NSString *ns in errorList)
+    {
+        s = [s stringByAppendingString:[NSString stringWithFormat:@"->%@\n",ns]];
+    }
+    
+
+    NSData *data =[s dataUsingEncoding:NSUTF8StringEncoding];
+    [data writeToFile:path atomically:YES];
+    NSLog(@" ...writeBatchReport %@",path);
+    NSLog(@" ...   string %@",s);
+
+    
+} //end writeBatchReport
+
+
+
 #pragma mark - DropboxToolsDelegate
 
-//=============(BatchObject)=====================================================
+//===========<DropboxToolDelegate>================================================
 // Returns with a list of all PDF's in the vendor folder
 - (void)didGetBatchList : (NSArray *)a
 {
@@ -341,13 +414,13 @@ static BatchObject *sharedInstance = nil;
     [self startProcessingFiles];
 }
 
-//=============(BatchObject)=====================================================
+//===========<DropboxToolDelegate>================================================
 - (void)errorGettingBatchList : (NSString *)s
 {
     [self addError : s : @"n/a"];
 }
 
-//=============(BatchObject)=====================================================
+//===========<DropboxToolDelegate>================================================
 // coming back from dropbox : # files in a folder
 -(void) didCountEntries:(NSString *)vname :(int)count
 {
@@ -365,7 +438,7 @@ static BatchObject *sharedInstance = nil;
 } //end didCountEntries
 
 
-//=============(BatchObject)=====================================================
+//===========<DropboxToolDelegate>================================================
 - (void)didDownloadImages
 {
     NSLog(@" ...downloaded all images? got %d",(int)dbt.batchImages.count);
@@ -374,10 +447,9 @@ static BatchObject *sharedInstance = nil;
     [self.delegate batchUpdate : batchProgress];
     [self updateParse];
     [self processPDFPages];
-}
+}  //end didDownloadImages
 
-
-//=============(BatchObject)=====================================================
+//===========<DropboxToolDelegate>================================================
 - (void)errorDownloadingImages : (NSString *)s
 {
     [self addError : s : @"n/a"];
@@ -385,14 +457,14 @@ static BatchObject *sharedInstance = nil;
 
 #pragma mark - OCRTemplateDelegate
 
-//=============(BatchObject)=====================================================
+//===========<OCRTemplateDelegate>================================================
 - (void)didReadTemplate
 {
     NSLog(@" got template...");
     gotTemplate = TRUE;
 }
 
-//=============(BatchObject)=====================================================
+//===========<OCRTemplateDelegate>================================================
 - (void)errorReadingTemplate : (NSString *)errmsg
 {
     NSString *s = [NSString stringWithFormat:@"%@ Template Error [%@]",vendorName,errmsg];
@@ -403,14 +475,14 @@ static BatchObject *sharedInstance = nil;
 
 #pragma mark - OCRTopObjectDelegate
 
-//=============(BatchObject)=====================================================
+//===========<OCRTopObjectDelegate>================================================
 - (void)batchUpdate : (NSString *) s
 {
     [self.delegate batchUpdate : s]; // pass the buck to parent
 }
 
 
-//=============(BatchObject)=====================================================
+//===========<OCRTopObjectDelegate>================================================
 - (void)didPerformOCR : (NSString *) result
 {
     NSLog(@" OCR OK page %d tp %d  count %d total %d",batchPage,batchTotalPages,batchCount,batchTotal);
@@ -421,14 +493,13 @@ static BatchObject *sharedInstance = nil;
     }
 }
 
-
-//=============(BatchObject)=====================================================
+//===========<OCRTopObjectDelegate>================================================
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
     [self addError : errMsg : @"n/a"];
 }
 
-//=============(BatchObject)=====================================================
+//===========<OCRTopObjectDelegate>================================================
 - (void)didSaveOCRDataToParse : (NSString *) s
 {
     NSLog(@" OK: full OCR -> DB done, invoice %@",s);
@@ -437,13 +508,16 @@ static BatchObject *sharedInstance = nil;
     NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
     [act saveActivityToParse:@"Batch Completed" : actData];
     [self.delegate didCompleteBatch];
+    [self writeBatchReport];
 }
 
 
-//=============(BatchObject)=====================================================
+//===========<OCRTopObjectDelegate>================================================
 - (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID
 {
     //Record this error , gets saved with batch record
+    NSString *secondArg = objectID;
+    if (objectID== nil) secondArg = _batchID; //Got no DB oid? use batchID for lookup
     [self addError : errMsg : objectID];
 }
 

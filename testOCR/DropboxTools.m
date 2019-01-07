@@ -42,6 +42,7 @@ static DropboxTools *sharedInstance = nil;
         _batchImageRects = [[NSMutableArray alloc] init]; // Size info for each PDF
         _batchImageData  = [[NSMutableArray alloc] init]; // PDF raw data, goes into OCR
         client           = [DBClientsManager authorizedClient];
+        pc               = [PDFCache sharedInstance];
     }
     return self;
 }
@@ -122,9 +123,9 @@ static DropboxTools *sharedInstance = nil;
                     [_batchImages     addObject:nextImage];
                     [_batchImagePaths addObject:imagePath];
                     [_batchImageRects addObject:rectObj];
+                    [pc addPDFImage:nextImage : imagePath : i];
                 }
                 if (i == pageCount) [_delegate didDownloadImages];
-
             } //end pdfpage
         } //end for i
     }  //end if pdf

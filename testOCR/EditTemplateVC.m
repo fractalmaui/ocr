@@ -45,7 +45,7 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 3;
+    docnum = 1;
     OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
@@ -388,6 +388,9 @@
 
 //=============OCR VC=====================================================
 - (IBAction)testSelect:(id)sender {
+    [self testEmail:sender];
+    return;
+    
     //NSDate *date = [od isItADate:@"duhhhhhhhh"];
     //NSDate *date2 = [od isItADate:@"12/24/18"];
     
@@ -435,7 +438,7 @@
 {
     spinner.hidden = FALSE;
     [spinner startAnimating];
-    [et readFromParseAsStrings : TRUE : supplierName : @"*"];
+    [et readFromParseAsStrings : TRUE : @"HFM" : @"*"];
     
 }
 

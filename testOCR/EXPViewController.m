@@ -20,7 +20,7 @@
 
 @implementation EXPViewController
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(id)initWithCoder:(NSCoder *)aDecoder {
     if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
     
@@ -31,8 +31,10 @@
     it = [[invoiceTable alloc] init];
     it.delegate = self;
     et = [[EXPTable alloc] init];
-    et.delegate = self;
-    tableName = @"";
+    et.delegate     = self;
+    et.selectBy     = @"*";
+    et.selectValue  = @"*";
+    tableName       = @"";
     dbResults = [[NSMutableArray alloc] init];
     dbMode = DB_MODE_NONE;
     vendorLookup = @"*";
@@ -49,7 +51,7 @@
     return self;
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -69,7 +71,9 @@
     sortBy = @"";
     if ([_searchType isEqualToString:@"E"]) [self loadEXP];
     if ([_searchType isEqualToString:@"I"]) [self loadInvoices];
-    _sortButton.hidden = TRUE;
+    _sortButton.hidden   = TRUE;
+    _selectButton.hidden = TRUE;
+
 }
 
 //=============OCR MainVC=====================================================
@@ -85,7 +89,7 @@
 
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void)activityIndicatorOnOff:(BOOL) onoff
 {
     self->_activityIndicator.hidden = !onoff;
@@ -94,13 +98,13 @@
 
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (IBAction)doneSelect:(id)sender
 {
     [self dismiss];
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (IBAction)menuSelect: (id)sender
 {
     batchIDLookup = @"*";
@@ -118,14 +122,10 @@
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                [self promptForEXPVendor];
                                                            }];
-    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load Invoice Table...",nil)
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Export CSV...",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self promptForInvoiceVendor];
+                                                              [self setupEmailAndSendit];
                                                           }];
-    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load Templates Table...",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               [self loadTemplates];
-                                                           }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -133,7 +133,7 @@
     [alert addAction:firstAction];
     [alert addAction:secondAction];
     [alert addAction:thirdAction];
-    [alert addAction:fourthAction];
+    //[alert addAction:fourthAction];
     //    [alert addAction:fifthAction];
     //    [alert addAction:sixthAction];
     //    [alert addAction:seventhAction];
@@ -145,7 +145,7 @@
     
 } //end menuSelect
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (IBAction)sortSelect: (id)sender
 {
     batchIDLookup = @"*";
@@ -179,7 +179,66 @@
     
 } //end sortSelect
 
-//=============DB VC=====================================================
+
+//=============EXP VC=====================================================
+- (IBAction)selectSelect: (id)sender
+{
+    batchIDLookup = @"*";
+    et.selectBy     = @"*";
+    et.selectValue  = @"*";
+
+    
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select By...",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Vendor:HPF",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Vendor_key;
+                                                   self->et.selectValue = @"HFM";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Vendor:Hawaii Beef Producers",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Vendor_key;
+                                                   self->et.selectValue = @"Hawaii Beef Producers";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Local",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Local_key;
+                                                   self->et.selectValue = @"Yes";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Not Local",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Local_key;
+                                                   self->et.selectValue = @"No";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Processed",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Processed_key;
+                                                   self->et.selectValue = @"PROCESSED";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"UnProcessed",nil)
+                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                   self->et.selectBy = PInv_Processed_key;
+                                                   self->et.selectValue = @"UNPROCESSED";
+                                                   [self loadEXP];
+                                               }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"All Fields",nil)
+                                                  style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                      [self loadEXP];
+                                                  }]];
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                  style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                  }]];
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end selectSelect
+
+//=============EXP VC=====================================================
 - (IBAction)sortDirSelect:(id)sender
 {
     sortAscending = !sortAscending;
@@ -194,8 +253,7 @@
 }
 
 
-
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(NSString*) getVendorNameForPrompt : (int) i
 {
     NSString *vends[] = {@"HFM",@"Hawaii Beef Producers"};
@@ -204,7 +262,7 @@
 } //end getVendorNameForPrompt
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) promptForEXPVendor
 {
     
@@ -235,7 +293,7 @@
 } //end promptForEXPVendor
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) promptForInvoiceVendor
 {
     
@@ -275,7 +333,7 @@
     
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) loadEXP
 {
     [self activityIndicatorOnOff : TRUE];
@@ -290,7 +348,7 @@
     [self updateUI];
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) loadInvoices
 {
     [self activityIndicatorOnOff : TRUE];
@@ -303,7 +361,7 @@
 }
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) loadEXPByVendor : (NSString *)v
 {
     [self activityIndicatorOnOff : TRUE];
@@ -316,7 +374,7 @@
     [self updateUI];
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) loadInvoiceByVendor : (NSString *)v
 {
     [self activityIndicatorOnOff : TRUE];
@@ -327,7 +385,7 @@
     [self updateUI];
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) loadTemplates
 {
     tableName = @"Templates";
@@ -336,21 +394,21 @@
     [self updateUI];
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) setLoadedTitle : (NSString *)tableName
 {
     NSString *xtra = @"";
     if ([_searchType isEqualToString:@"E"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
     if ([_searchType isEqualToString:@"I"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
     if ([sortBy isEqualToString:@""]) //No particular sort...
-        _titleLabel.text = [NSString stringWithFormat:@"[%@%@]",tableName,xtra];
+        _titleLabel.text = [NSString stringWithFormat:@"[%@%@] (latest 100)",tableName,xtra];
     else{
         NSString *s = [NSString stringWithFormat:@"Sort by %@",sortBy];
         _titleLabel.text = s;
     }
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(void) updateUI
 {
 //    NSString *vlab = @"";
@@ -369,7 +427,7 @@
 
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     static NSString *CellIdentifier = @"Cell";
@@ -381,8 +439,6 @@
         {
             cell = [[EXPCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         }
-        
-        
         EXPObject *e = [et.expos objectAtIndex:row];
         BOOL local     =  ([e.local.lowercaseString     isEqualToString:@"yes"]);
         BOOL processed =  ([e.processed.lowercaseString isEqualToString:@"processed"]);
@@ -430,33 +486,60 @@
 } //end cellForRowAtIndexPath
 
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return (int)dbResults.count;
 }
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return 80;
 }
 
+
+//=============EXP VC=====================================================
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    selectedRow = (int)indexPath.row;
+    //sdata  = [act getData:row];
+    EXPObject *e = [et.expos objectAtIndex:selectedRow];
+    [self performSegueWithIdentifier:@"expDetailSegue" sender:e];
+
+}
+
+//=============EXP VC=====================================================
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
+{
+    //NSLog(@" prepareForSegue: %@ sender %@",[segue identifier], sender);
+    if([[segue identifier] isEqualToString:@"expDetailSegue"])
+    {
+        EXPObject* locale = (EXPObject*)sender;
+        EXPDetailVC *vc = (EXPDetailVC*)[segue destinationViewController];
+//        vc.myTitle     = [NSString stringWithFormat:@"EXP[%@]",locale.objectId];
+       // vc.eobj        = locale;
+        vc.allObjects  = [[NSArray alloc]initWithArray:et.expos];
+        vc.detailIndex = selectedRow;
+    }
+}
+
+
 #pragma mark - EXPTableDelegate
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (void)didReadEXPTableAsStrings : (NSString *)s
 {
     dbResults = [et getAllRecords];
     [_table reloadData];
     [self activityIndicatorOnOff : FALSE];
     [self setLoadedTitle : @"EXP"];
-    _sortButton.hidden = FALSE;
+    _sortButton.hidden   = FALSE;
+    _selectButton.hidden = FALSE;
 
 }
 
 #pragma mark - invoiceTableDelegate
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (void)didReadInvoiceTableAsStrings : (NSMutableArray*)a
 {
     dbResults = a;
@@ -468,13 +551,62 @@
 
 #pragma mark - OCRTemplateDelegate
 
-//=============DB VC=====================================================
+//=============EXP VC=====================================================
 - (void)didReadTemplateTableAsStrings : (NSMutableArray*) a
 {
     dbResults = a;
     [_table reloadData];
 
 }
+
+//=============OCR VC=====================================================
+-(void) setupEmailAndSendit
+{
+    NSString* csvlist = [et dumpToCSV];
+    [self mailit:csvlist];
+}
+
+//=============OCR VC=====================================================
+//Doesn't work in simulator??? huh??
+-(void) mailit : (NSString *)s
+{
+    if ([MFMailComposeViewController canSendMail])
+    {
+        MFMailComposeViewController *mail = [[MFMailComposeViewController alloc] init];
+        mail.mailComposeDelegate = self;
+        [mail setSubject:@"EXP CSV output"];
+        [mail setMessageBody:s isHTML:NO];
+        [mail setToRecipients:@[@"fraktalmaui@gmail.com"]];
+        
+        [self presentViewController:mail animated:YES completion:NULL];
+    }
+    else
+    {
+        NSLog(@"This device cannot send email");
+    }
+}
+
+#pragma mark - MFMailComposeViewControllerDelegate
+
+
+//==========FeedVC=========================================================================
+- (void) mailComposeController:(MFMailComposeViewController *)controller    didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error
+{
+    NSLog(@" mailit: didFinishWithResult...");
+    switch (result)
+    {
+        case MFMailComposeResultSent:
+            NSLog(@" mail sent OK");
+            break;
+        case MFMailComposeResultFailed:
+            NSLog(@"Mail sent failure: %@", [error localizedDescription]);
+            break;
+        default:
+            break;
+    }
+    [controller dismissViewControllerAnimated:YES completion:NULL];
+}
+
 
 
 @end

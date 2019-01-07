@@ -15,6 +15,11 @@
 #import "SessionManager.h"
 #import "Vendors.h"
 
+#define VERBOSITY_DELIVERY 101
+#define VERBOSITY_DEBUG    102
+#define VERBOSITY_HEAVY    103
+#define VERBOSITY_INSANE   104
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 {
 }
@@ -24,6 +29,7 @@
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic , strong) NSString* versionNumber;
 @property (strong, nonatomic) OCRSettings* settings;
+@property(nonatomic) int verbose;
 
 
 @end

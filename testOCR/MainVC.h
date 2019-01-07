@@ -15,12 +15,15 @@
 #import <UIKit/UIKit.h>
 #import "ActivityTable.h"
 #import "activityCell.h"
+#import "AppDelegate.h"
 #import "AddTemplateViewController.h"
+#import "ErrorViewController.h"
 #import "EXPViewController.h"
 #import "NavButtons.h"
 #import "SessionManager.h"
 #import "OCRCache.h"
 #import "OCRDocument.h"
+#import "PDFCache.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
@@ -36,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
     int selectedRow;
     NSString* stype;
     NSString* sdata;
-
+    UIRefreshControl *refreshControl;
     OCRCache *oc;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;

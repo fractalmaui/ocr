@@ -46,6 +46,7 @@
     //Load Vendors from parse db
     [Vendors sharedInstance];
     
+    _verbose = VERBOSITY_DELIVERY;
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
 
