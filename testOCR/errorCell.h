@@ -12,6 +12,7 @@
 @interface errorCell : UITableViewCell
 @property (weak, nonatomic) IBOutlet UILabel *errorLabel;
 @property (weak, nonatomic) IBOutlet UILabel *label2;
+@property (weak, nonatomic) IBOutlet UIImageView *errIcon;
 
 @end
 

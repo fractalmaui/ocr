@@ -38,6 +38,7 @@ static BatchObject *sharedInstance = nil;
         vendorFileCounts = [[NSMutableArray alloc] init];
         vendorFolders    = [[NSMutableDictionary alloc] init];
         errorList        = [[NSMutableArray alloc] init];
+        fixedList        = [[NSMutableArray alloc] init];
 
         dbt = [[DropboxTools alloc] init];
         dbt.delegate = self;
@@ -80,6 +81,13 @@ static BatchObject *sharedInstance = nil;
 
 
 //=============(BatchObject)=====================================================
+// Copy error from errorList -> fixedList, leaves errorList alone!
+-(void) fixError : (int) index
+{
+    [fixedList addObject:[errorList objectAtIndex:index]];
+}
+
+//=============(BatchObject)=====================================================
 // Loop over vendors, get counts...
 -(void) getBatchCounts
 {
@@ -99,6 +107,14 @@ static BatchObject *sharedInstance = nil;
     [df setDateFormat:@"MMM_dd_HH_mm"];
     _batchID = [NSString stringWithFormat:@"B_%@", [df stringFromDate:[NSDate date]]];
 }
+
+//=============(BatchObject)=====================================================
+-(BOOL) isErrorFixed :(NSString *)errStr
+{
+    return ([batchFixed containsString:errStr]);
+//    return ([fixedList containsObject:errStr]);
+}
+
 
 //=============(BatchObject)=====================================================
 // vendor vindex -1 means run ALL
@@ -298,21 +314,6 @@ static BatchObject *sharedInstance = nil;
     //  [oto stubbedOCR : oto.imageFileName : [UIImage imageNamed:oto.imageFileName]  : ot];
 } //end processPDFPages
 
-//=============(BatchObject)=====================================================
-// Hook up all errors into one CSV string for saving to parse
--(NSString *)packErrors
-{
-    NSString *errStr = @"";
-    int i = 0;
-    for (NSString *s in errorList)
-    {
-        errStr =  [errStr stringByAppendingString:s];
-        if (i < errorList.count-1) errStr =  [errStr stringByAppendingString:@","];
-        i++;
-    }
-    return errStr;
-}
-
 
 //=============(BatchObject)=====================================================
 -(void) readFromParseByID : (NSString *) bID
@@ -331,6 +332,9 @@ static BatchObject *sharedInstance = nil;
                 self->batchStatus   = pfo[PInv_BatchStatus_key];
                 self->batchProgress = pfo[PInv_BatchProgress_key];
                 self->batchErrors   = pfo[PInv_BatchErrors_key];
+                self->batchFixed    = pfo[PInv_BatchFixed_key];
+                self->errorList = [self->batchErrors componentsSeparatedByString:@","];
+                self->fixedList = [self->batchFixed  componentsSeparatedByString:@","];
                 [self.delegate didReadBatchByID : bID];
             }
             else
@@ -346,6 +350,11 @@ static BatchObject *sharedInstance = nil;
 -(void) updateParse
 {
     PFQuery *query = [PFQuery queryWithClassName:tableName];
+    if (_batchID == nil)
+    {
+        NSLog(@" ERROR: update batchObject with null ID");
+        return;
+    }
     [query whereKey:PInv_BatchID_key equalTo:_batchID];   //Look for current batch
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
@@ -359,13 +368,15 @@ static BatchObject *sharedInstance = nil;
             pfo[PInv_Vendor_key]        = self->vendorName;
             pfo[PInv_BatchFiles_key]    = self->batchFiles;
             pfo[PInv_BatchProgress_key] = self->batchProgress;
-            pfo[PInv_BatchErrors_key]   = [self packErrors];  //There may be multiple errs in a batch...
+            //Pack up errors / fixed...
+            pfo[PInv_BatchErrors_key]   = [self->errorList componentsJoinedByString:@","];
+            pfo[PInv_BatchFixed_key]    = [self->fixedList componentsJoinedByString:@","];
             pfo[PInv_VersionNumber]     = self->_versionNumber;
             [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (succeeded)
                 {
                     NSLog(@" ...batch updated[%@]->parse",self->_batchID);
-                    //                    [self.delegate whateverdoIneedhere?];
+                    [self.delegate didUpdateParse];
                 }
                 else
                 {
@@ -374,7 +385,7 @@ static BatchObject *sharedInstance = nil;
             }]; //End save
         } //End !error
     }]; //End findobjects
-} //end saveToParse
+} //end updateParse
 
 
 //=============(BatchObject)=====================================================

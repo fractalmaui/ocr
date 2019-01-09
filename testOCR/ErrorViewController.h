@@ -29,6 +29,10 @@
     smartProducts *sp;
     NSString *berrs;
     NSMutableArray *errorList;
+    NSMutableArray *fixedList;
+    NSMutableArray *expList;
+    NSMutableArray *objectIDs;
+    NSMutableDictionary *expRecordsByID;
     int selectedRow;
     EXPTable *et;
     NSMutableArray *allErrorsInEXPRecord;
@@ -38,6 +42,9 @@
     
     NSString *vendorName;
     
+    UIImage *xIcon;
+    UIImage *okIcon;
+
     int viewWid,viewHit,viewW2,viewH2;
 
     //Keys used to look thru pf object and find errors,
@@ -52,6 +59,7 @@
     NSString *fixingObjectKey;
     NSString *fixingObjectField;
     NSString *fixingObjectID;
+    NSString *batchID;
     PFObject *pfoWork;
     BOOL isNumeric;
 }

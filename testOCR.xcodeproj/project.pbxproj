@@ -65,6 +65,7 @@
 		7283813321C4A54600A2954B /* binonion.png in Resources */ = {isa = PBXBuildFile; fileRef = 7283813221C4A54500A2954B /* binonion.png */; };
 		7283813621C4A60000A2954B /* MainVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 7283813521C4A60000A2954B /* MainVC.m */; };
 		7290229C21D58FF900885EF9 /* activityCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 7290229B21D58FF900885EF9 /* activityCell.m */; };
+		72988DCD21E5ACD200618442 /* redX.png in Resources */ = {isa = PBXBuildFile; fileRef = 72988DCB21E5ACD000618442 /* redX.png */; };
 		729B7A3E21C886590075486C /* invoiceTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 729B7A3D21C886590075486C /* invoiceTable.m */; };
 		729C592C21C1D08900F4C695 /* smartProducts.m in Sources */ = {isa = PBXBuildFile; fileRef = 729C592B21C1D08900F4C695 /* smartProducts.m */; };
 		729C592F21C1F62400F4C695 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 729C592E21C1F62400F4C695 /* MessageUI.framework */; };
@@ -97,6 +98,7 @@
 		72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72ECD04521C88A1000DBD08E /* invoiceObject.m */; };
 		72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C021D93216005979D2 /* OCRSettings.m */; };
 		72F0D8C421D932BE005979D2 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C221D932BD005979D2 /* Vendors.m */; };
+		72F6DC2A21E5C0D900EDF9A4 /* bluecheck.png in Resources */ = {isa = PBXBuildFile; fileRef = 72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -183,6 +185,7 @@
 		7283813521C4A60000A2954B /* MainVC.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainVC.m; sourceTree = "<group>"; };
 		7290229A21D58FF900885EF9 /* activityCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = activityCell.h; sourceTree = "<group>"; };
 		7290229B21D58FF900885EF9 /* activityCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = activityCell.m; sourceTree = "<group>"; };
+		72988DCB21E5ACD000618442 /* redX.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = redX.png; sourceTree = "<group>"; };
 		729B7A3C21C886590075486C /* invoiceTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = invoiceTable.h; sourceTree = "<group>"; };
 		729B7A3D21C886590075486C /* invoiceTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = invoiceTable.m; sourceTree = "<group>"; };
 		729C592A21C1D08900F4C695 /* smartProducts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = smartProducts.h; sourceTree = "<group>"; };
@@ -230,6 +233,7 @@
 		72F0D8C021D93216005979D2 /* OCRSettings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRSettings.m; sourceTree = "<group>"; };
 		72F0D8C221D932BD005979D2 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m; sourceTree = "<absolute>"; };
 		72F0D8C321D932BE005979D2 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h; sourceTree = "<absolute>"; };
+		72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bluecheck.png; path = Resources/bluecheck.png; sourceTree = SOURCE_ROOT; };
 		D64CF6F8DED5B2240FC357AE /* libPods-testOCR.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-testOCR.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -318,6 +322,8 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */,
+				72988DCB21E5ACD000618442 /* redX.png */,
 				729E92C021DC1CC100048DAF /* barnIcon.png */,
 				726F0A4A21DF105D007656FD /* lildbGrey.png */,
 				726F0A4821DF092E007656FD /* dbGrey.png */,
@@ -511,8 +517,10 @@
 				7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */,
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
 				7209609721B81E6B00D49C63 /* arrUp.png in Resources */,
+				72F6DC2A21E5C0D900EDF9A4 /* bluecheck.png in Resources */,
 				72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */,
 				7283813021C4A3FD00A2954B /* gearHOT.png in Resources */,
+				72988DCD21E5ACD200618442 /* redX.png in Resources */,
 				72B8DEC021C46459004ADD79 /* magtarg.png in Resources */,
 				729E92BF21DBE3A000048DAF /* hiIcon.png in Resources */,
 				72DB331D21CDC14600AA44C0 /* multiHOT.png in Resources */,

@@ -50,6 +50,7 @@
 -(void) clear;
 
 -(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString *) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile : (NSNumber *) page;
+-(void) getObjectsByIDs : (NSArray *)oids;
 -(void) getObjectByID : (NSString *)oid;
 -(void) fixPricesInObjectByID : (NSString *)oid : (NSString *)qt: (NSString *)pt: (NSString *)tt;
 -(void) fixFieldInObjectByID : (NSString *)oid : (NSString *)key : (NSString *)value;
@@ -68,6 +69,7 @@
 @protocol EXPTableDelegate <NSObject>
 @required
 @optional
+- (void)didGetObjectsByIds : (NSMutableDictionary *)d;
 - (void)didReadEXPTable;
 - (void)didReadEXPTableAsStrings : (NSString *)s;
 - (void)didReadEXPObjectByID :(EXPObject *)e : (PFObject*)pfo;

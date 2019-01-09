@@ -410,6 +410,23 @@
 //=============OCR MainVC=====================================================
 -(void) testit
 {
+//asdf
+    
+   NSArray *dairyNames = @[   //CANNED
+                   @"buttermilk",
+                   @"cheese",
+                   @"cream",
+                   @"creamer",
+                   @"ice cream",
+                   @"milk",
+                   @"PP CS",   //WTF???
+                   @"sherbert",
+                   @"yogurt"
+                   ];
+
+    NSString *string = [dairyNames componentsJoinedByString:@","];
+    return;
+    
     
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
     OCRDocument *od = [[OCRDocument alloc] init];

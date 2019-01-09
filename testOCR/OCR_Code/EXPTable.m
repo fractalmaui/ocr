@@ -305,6 +305,31 @@
 
 
 //=============OCR VC=====================================================
+-(void) getObjectsByIDs : (NSArray *)oids
+{
+    if (oids == nil || oids.count < 1) return;
+    PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
+    [query whereKey:@"objectId" containedIn:oids];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [self->_expos        removeAllObjects];
+            NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
+            for( PFObject *pfo in objects)
+            {
+                EXPObject *e = [self getEXPObjectFromPFObject:pfo];
+                [d setObject:e forKey:pfo.objectId];
+                [self->_expos addObject: e];
+            }
+            NSLog(@" ...loaded EXP OK %@",self->recordStrings);
+            [self.delegate didGetObjectsByIds : d];
+        }
+    }];
+
+
+}
+
+
+//=============OCR VC=====================================================
 -(void) getObjectByID : (NSString *)oid
 {
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];

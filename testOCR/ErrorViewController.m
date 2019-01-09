@@ -29,6 +29,11 @@
     bbb.delegate = self;
     [bbb setParent:self];
     errorList = [[NSMutableArray alloc] init];
+    fixedList = [[NSMutableArray alloc] init];
+    expList   = [[NSMutableArray alloc] init];
+    objectIDs = [[NSMutableArray alloc] init];
+    expRecordsByID = [[NSMutableDictionary alloc] init];
+
     allErrorsInEXPRecord = [[NSMutableArray alloc] init];
 
     sp = [[smartProducts alloc] init];
@@ -40,6 +45,9 @@
     et = [[EXPTable alloc] init];
     it = [[imageTools alloc] init];
     
+    xIcon  = [UIImage imageNamed:@"redX"];
+    okIcon = [UIImage imageNamed:@"bluecheck"];
+
     et.delegate = self;
     [self initErrorKeys];
     kbUp = FALSE;
@@ -72,10 +80,10 @@
     NSArray* bItems    = [_batchData componentsSeparatedByString:@":"];
     if (bItems.count > 0)
     {
-        NSString *bID = bItems[0];
-        [bbb readFromParseByID : bID];
+        batchID = bItems[0];
+        [bbb readFromParseByID : batchID];
     }
-    
+    [expList removeAllObjects];
     _fixNumberView.hidden = TRUE;
 
     
@@ -98,16 +106,7 @@
     yi = 60;
     _scrollView.frame = CGRectMake(xi, yi, xs, ys);
 
-    //Zoom up by 4x
-    UIView *v = _pdfView;
-    int vw = v.bounds.size.width;
-    int vh = v.bounds.size.height;
-    CGAffineTransform t = v.transform;
-    t = CGAffineTransformMakeScale(4, 4);
-    v.transform = t;
-    v.center = CGPointMake(vw*2, vh*2);
-    _scrollView.contentSize = CGSizeMake(vw*4, vh*4);
-    [_scrollView setContentOffset:CGPointMake(0,0) animated:NO];
+    [self zoomPDFView : 1];
     
 //    yi+= ys+10;
 //    xs = viewWid * 0.95;
@@ -116,6 +115,22 @@
 //    _outputLabel.frame = CGRectMake(xi, yi, xs, ys);
 //    _outputLabel.text  = @"...";
 } //end loadView
+
+//=============Error VC=====================================================
+-(void) zoomPDFView : (int) zoomBy
+{
+    //Zoom up...
+    UIView *v = _pdfView;
+    int vw = v.bounds.size.width;
+    int vh = v.bounds.size.height;
+    CGAffineTransform t = v.transform;
+    t = CGAffineTransformMakeScale(zoomBy, zoomBy);
+    v.transform = t;
+    v.center = CGPointMake(vw*zoomBy/2, vh*zoomBy/2);
+    _scrollView.contentSize = CGSizeMake(vw*zoomBy, vh*zoomBy);
+    [_scrollView setContentOffset:CGPointMake(0,0) animated:NO];
+
+} //end zoomPDFView
 
 
 //=============Error VC=====================================================
@@ -176,6 +191,8 @@
     NSLog(@" fix: new value %@ SAVE TO PARSE...",qText);
     [self textFieldDidEndEditing:_fieldValue];
     // save new field to parse...
+    BOOL changed = FALSE;
+    
     if (isNumeric) //Fix q/p/t fields?
     {
         //get stuff first:
@@ -186,6 +203,15 @@
         tText = [sp getDollarsAndCentsString : (float) td]; //Re-format total...
         pText = [sp getDollarsAndCentsString : pText.floatValue]; //Re-format price...
         [et fixPricesInObjectByID : fixingObjectID : qText : pText : tText];
+        changed = TRUE;
+    }
+    
+    if (changed) //Need to update batch record?
+    {
+        [bbb fixError : selectedRow];  //Moves error from batch "errorList" to "fixedList"
+        bbb.batchID = batchID;        //BatchID was passed in as part of batchData from parent
+        [bbb updateParse];           //annnd save updated batch record
+
     }
     _fixNumberView.hidden = TRUE;
     [_table reloadData];
@@ -226,10 +252,46 @@
     {
         cell = [[errorCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
-    cell.backgroundColor  = [UIColor yellowColor];
-    cell.errorLabel.text = [errorList objectAtIndex:row];
-    NSLog(@" cell %d %@",row,[errorList objectAtIndex:row]);
-    cell.label2.text = @"duh";
+    NSString *errStr = [errorList objectAtIndex:row];
+    if ([bbb isErrorFixed:errStr])
+    {
+        cell.errIcon.image = okIcon;
+        cell.backgroundColor = [UIColor whiteColor];
+    }
+    else
+    {
+        cell.errIcon.image = xIcon;
+        cell.backgroundColor = [UIColor yellowColor];
+    }
+    NSString *fullErr = [errorList objectAtIndex:row];
+    cell.errorLabel.text = fullErr;
+    NSLog(@" cell %d %@",row,fullErr);
+
+    NSString *pname = @"...";
+    //Look for product name in parentheses
+    NSArray *eItems    = [fullErr componentsSeparatedByString:@"("];
+    if (eItems.count == 2)
+    {
+        NSArray *e2Items    = [eItems[1] componentsSeparatedByString:@")"];
+        if (e2Items.count == 2)
+        {
+           pname = e2Items[0];
+        }
+    }
+    //Maybe there is a matching EXP object we can find...
+    else if (expRecordsByID.count > 0)
+    {
+        NSString *oid = [self getIDFromErrorString : fullErr];
+        if (oid != nil && oid.length > 0)
+        {
+            EXPObject *e = [expRecordsByID objectForKey:oid];
+            if (e != nil)
+            {
+                pname = e.productName;
+            }
+        }
+    }
+    cell.label2.text = pname;
     return cell;
 } //end cellForRowAtIndexPath
 
@@ -245,6 +307,30 @@
     return 60;
 }
 
+//=============Error VC=====================================================
+-(NSString *) getIDFromErrorString : (NSString *)errString
+{
+    NSArray *sItems = [errString componentsSeparatedByString:@":"];
+    if (sItems.count > 1)
+    {
+        NSString *s = sItems[1];
+        if (![s containsString:@"/"] ) return s;
+    }
+    return @"";
+}
+
+//=============Error VC=====================================================
+-(void) loadAllExpObjects
+{
+    [objectIDs removeAllObjects];
+    [expRecordsByID removeAllObjects];
+    for (NSString *e in errorList)
+    {
+        NSString *s = [self getIDFromErrorString : e];
+        if (s.length > 0) [objectIDs addObject: s];
+    }
+    [et getObjectsByIDs : objectIDs];
+}
 
 //=============Error VC=====================================================
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -271,6 +357,7 @@
     berrs = [bbb getErrors];
     NSLog(@" ok batch read %@:%@",oid,berrs);
     errorList = [berrs componentsSeparatedByString:@","]; //Break up errors...
+    [self loadAllExpObjects];
     [_table reloadData];
     [self updateUI];
 }
@@ -281,6 +368,16 @@
     
     
 }
+
+//=============<batchObjectDelegate>=====================================================
+- (void)didUpdateParse
+{
+    NSLog(@" ok batch didUpdateParse");
+
+}
+
+
+
 
 //=============Error VC=====================================================
 // Opens up a subpanel which will vary based on the error
@@ -307,6 +404,7 @@
     NSString *rot = [vv getRotationByVendorName:vendorName];
     if ([rot isEqualToString:@"-90"]) ii = [it rotate90CCW : ii];
     _pdfView.image = ii;
+    [self zoomPDFView : 4];
     if (isNumeric) //Is this a numeric field?
     {
         NSString *q = pfoWork[PInv_Quantity_key];
@@ -330,6 +428,16 @@
 
 
 #pragma mark - EXPTableDelegate
+
+//=============<EXPTableDelegate>=====================================================
+//Returning dictionary of EXP objects keyed by id's
+- (void)didGetObjectsByIds : (NSMutableDictionary *)d
+{
+    NSLog(@" OK exp objects %@",d);
+    expRecordsByID = d;
+    [_table reloadData];
+}
+
 
 //=============<EXPTableDelegate>=====================================================
 - (void)didReadEXPObjectByID :(EXPObject *)e  : (PFObject*)pfo
