@@ -18,6 +18,7 @@
 @implementation AppDelegate
 
 
+//====(TestOCR AppDelegate)==========================================
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
@@ -46,6 +47,9 @@
     //Load Vendors from parse db
     [Vendors sharedInstance];
     
+    //Reachability...
+    [self monitorReachability];
+    
     _verbose = VERBOSITY_DELIVERY;
     
     _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
@@ -55,12 +59,14 @@
 }
 
 
+//====(TestOCR AppDelegate)==========================================
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
 }
 
 
+//====(TestOCR AppDelegate)==========================================
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
@@ -85,6 +91,7 @@
     [SessionManager sharedSession].savedCompletionHandler = completionHandler;
 }
 
+//====(TestOCR AppDelegate)==========================================
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
     DBOAuthResult *authResult = [DBClientsManager handleRedirectURL:url];
     if (authResult != nil) {
@@ -102,6 +109,20 @@
     
     return NO;
 }
+
+
+//====(TestOCR AppDelegate)==========================================
+// Can we see the internet??
+- (void)monitorReachability {
+    //    Reachability *hostReach = [Reachability reachabilityWithHostname:@"www.google.com"];
+    //DHS 9/11 Got rid of elasticbeanstalk -> Sashido's cloud
+    Reachability *hostReach = [Reachability reachabilityWithHostname:@"scalabl.cloud"];
+    hostReach.reachableBlock = ^(Reachability*reach) {
+        self->_networkStatus = [reach currentReachabilityStatus];
+        //NSLog(@" monitorReachability: status %d",_networkStatus);
+    };
+    [hostReach startNotifier];
+} //end monitorReachability
 
 
 

@@ -13,6 +13,11 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 // Pull OIDs stuff asap
+// Notification stuff for clients...
+//[[NSNotificationCenter defaultCenter] postNotificationName:@"playLinkedGameNotification"
+//[[NSNotificationCenter defaultCenter] addObserver:self
+//                                         selector:@selector(didLoadGameStatistics)
+//                                             name:@"didLoadGameStatistics" object:nil];
 
 #import "BatchObject.h"
 
@@ -344,6 +349,26 @@ static BatchObject *sharedInstance = nil;
         }
     }];
 } //end readFromParseByID
+
+
+//=============(BatchObject)=====================================================
+// Sloppy: this is called by a non-batch related UI, so we have to use
+//  NSNotifications to get the results back since this object is a singleton!
+// Just dumps result to notifications...
+-(void) readFromParseByIDs : (NSArray *) bIDs
+{
+    PFQuery *query = [PFQuery queryWithClassName:tableName];
+    [query whereKey:PInv_BatchID_key containedIn:bIDs];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) { //Query came back...
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"didReadBatchByIDs" object:objects userInfo:nil];
+            }
+            else
+            {
+                NSLog(@" error batchObject:readFromParseByIDs");
+            }
+    }];
+} //end readFromParseByIDs
 
 
 //=============(BatchObject)=====================================================

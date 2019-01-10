@@ -11,6 +11,7 @@
 //  Created by Dave Scruton on 12/19/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  1/9 add pull to refresh
 
 #import "EXPViewController.h"
 
@@ -47,6 +48,8 @@
     globeIcon   = [UIImage imageNamed:@"globeIcon"];
     hiIcon      = [UIImage imageNamed:@"hiIcon"];
 
+    refreshControl = [[UIRefreshControl alloc] init];
+
     sortAscending = TRUE;
     return self;
 }
@@ -57,7 +60,9 @@
     
     _table.delegate = self;
     _table.dataSource = self;
-    
+    _table.refreshControl = refreshControl;
+    [refreshControl addTarget:self action:@selector(refreshIt) forControlEvents:UIControlEventValueChanged];
+
     [self activityIndicatorOnOff : FALSE];
     // Do any additional setup after loading the view.
     _titleLabel.text = @"Touch Menu to perform query...";
@@ -73,8 +78,7 @@
     if ([_searchType isEqualToString:@"I"]) [self loadInvoices];
     _sortButton.hidden   = TRUE;
     _selectButton.hidden = TRUE;
-
-}
+} //end viewDidLoad
 
 //=============OCR MainVC=====================================================
 - (void)viewWillAppear:(BOOL)animated
@@ -83,10 +87,15 @@
     batchIDLookup = @"*";
     vendorLookup  = @"*";
     [self loadEXP];//asdf
-    
-    
 }
 
+
+//=============EXP VC=====================================================
+-(void)refreshIt
+{
+    NSLog(@" pull to refresh...");
+    [self loadEXP];
+}
 
 
 //=============EXP VC=====================================================
@@ -95,7 +104,6 @@
     self->_activityIndicator.hidden = !onoff;
     if (onoff) [self->_activityIndicator startAnimating];
     else       [self->_activityIndicator stopAnimating];
-
 }
 
 //=============EXP VC=====================================================
@@ -529,12 +537,13 @@
 - (void)didReadEXPTableAsStrings : (NSString *)s
 {
     dbResults = [et getAllRecords];
-    [_table reloadData];
-    [self activityIndicatorOnOff : FALSE];
-    [self setLoadedTitle : @"EXP"];
-    _sortButton.hidden   = FALSE;
-    _selectButton.hidden = FALSE;
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self->_table reloadData];
+        [self activityIndicatorOnOff : FALSE];
+        [self setLoadedTitle : @"EXP"];
+        self->_sortButton.hidden   = FALSE;
+        self->_selectButton.hidden = FALSE;
+    });
 }
 
 #pragma mark - invoiceTableDelegate

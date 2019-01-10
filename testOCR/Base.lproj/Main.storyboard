@@ -18,13 +18,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="binonion.png" translatesAutoresizingMaskIntoConstraints="NO" id="MoT-2Y-4cV">
-                                <rect key="frame" x="0.0" y="43" width="375" height="265"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="265" id="OAi-SC-Fob"/>
-                                    <constraint firstAttribute="width" constant="375" id="rNc-Im-giU"/>
-                                </constraints>
-                            </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="BGP Cloud" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uTG-RE-BGC">
                                 <rect key="frame" x="42.5" y="239" width="290" height="69"/>
                                 <constraints>
@@ -84,6 +77,14 @@
                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="99" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5o5-dk-RPy">
+                                                    <rect key="frame" x="44" y="0.0" width="20" height="20"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <color key="backgroundColor" red="1" green="0.23456418492020248" blue="0.097490876519700453" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
+                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="rIB-jN-aXL" firstAttribute="leading" secondItem="Krs-oj-L0J" secondAttribute="trailing" constant="8" id="5dt-Av-lrJ"/>
@@ -100,6 +101,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
+                                            <outlet property="badgeLabel" destination="5o5-dk-RPy" id="24q-GU-7r7"/>
                                             <outlet property="bottomLabel" destination="FUy-d9-aIU" id="WOo-0Z-BYN"/>
                                             <outlet property="dateLabel" destination="UdF-vT-tBu" id="aPB-qM-uRN"/>
                                             <outlet property="icon" destination="Krs-oj-L0J" id="7xW-ZJ-t2h"/>
@@ -119,6 +121,13 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="binonion.png" translatesAutoresizingMaskIntoConstraints="NO" id="MoT-2Y-4cV">
+                                <rect key="frame" x="-9" y="43" width="375" height="265"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="265" id="OAi-SC-Fob"/>
+                                    <constraint firstAttribute="width" constant="375" id="rNc-Im-giU"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
@@ -137,6 +146,7 @@
                     </view>
                     <connections>
                         <outlet property="imageView" destination="keF-Xd-xri" id="NHX-Oj-43T"/>
+                        <outlet property="logoView" destination="MoT-2Y-4cV" id="OeP-Z6-LS3"/>
                         <outlet property="table" destination="MRb-uB-nhA" id="oU8-GD-z9m"/>
                         <outlet property="versionLabel" destination="2hX-97-BNc" id="Qye-0e-dWE"/>
                         <segue destination="BYZ-38-t0r" kind="show" identifier="templateSegue" id="1jN-gk-huX"/>

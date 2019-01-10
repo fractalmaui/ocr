@@ -28,6 +28,10 @@
     bbb = [BatchObject sharedInstance];
     bbb.delegate = self;
     [bbb setParent:self];
+    dbt = [[DropboxTools alloc] init];
+    dbt.delegate = self;
+    [dbt setParent:self];
+
     errorList = [[NSMutableArray alloc] init];
     fixedList = [[NSMutableArray alloc] init];
     expList   = [[NSMutableArray alloc] init];
@@ -398,13 +402,19 @@
     
     NSString *pdfName = pfoWork[PInv_PDFFile_key];
     NSString *pdfPage = pfoWork[PInv_Page_key];
-    int page = pdfPage.intValue;
-    UIImage *ii = [pc getImageByID:pdfName:page+1];
-    //Does this vendor usually have XY flipped scans?
-    NSString *rot = [vv getRotationByVendorName:vendorName];
-    if ([rot isEqualToString:@"-90"]) ii = [it rotate90CCW : ii];
-    _pdfView.image = ii;
-    [self zoomPDFView : 4];
+    errorPage = pdfPage.intValue;
+    //This assumes PDF is in cache... but what if it's NOT???
+    int dog = 0;
+    if ((dog == 1) && [pc imageExistsByID : pdfName : errorPage+1])
+    {
+        UIImage *ii = nil;
+        ii = [pc getImageByID : pdfName : errorPage+1];
+        [self finishSettingPDFImage : ii];
+    }
+    else //Cache miss? get PDF directly from dropbox...
+    {
+        [dbt downloadImages:pdfName];
+    }
     if (isNumeric) //Is this a numeric field?
     {
         NSString *q = pfoWork[PInv_Quantity_key];
@@ -425,6 +435,30 @@
     }
 } //end setupPanelForError
 
+//=============Error VC=====================================================
+-(void) finishSettingPDFImage : (UIImage *)ii
+{
+    //Does this vendor usually have XY flipped scans?
+    NSString *rot = [vv getRotationByVendorName:vendorName];
+    if ([rot isEqualToString:@"-90"]) ii = [it rotate90CCW : ii];
+    _pdfView.image = ii;
+    [self zoomPDFView : 4];
+
+} //end finishSettingPDFImage
+
+
+
+#pragma mark - DropboxToolsDelegate
+//=============<DropboxToolsDelegate>=====================================================
+// returning from a PDF fetch...
+- (void)didDownloadImages
+{
+    if (errorPage < 0 || errorPage >= dbt.batchImages.count) return;
+    UIImage *ii = dbt.batchImages[errorPage];
+    [self finishSettingPDFImage:ii];
+  //  @property (nonatomic , strong) NSMutableArray* batchImages;
+   //asdf
+}
 
 
 #pragma mark - EXPTableDelegate

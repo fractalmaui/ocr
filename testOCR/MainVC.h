@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import "ActivityTable.h"
 #import "activityCell.h"
+#import "BatchObject.h"
 #import "AppDelegate.h"
 #import "AddTemplateViewController.h"
 #import "ErrorViewController.h"
@@ -27,7 +28,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
-                    UITableViewDelegate,UITableViewDataSource>
+                    UITableViewDelegate,UITableViewDataSource, batchObjectDelegate>
 {
     NavButtons *nav;
     int viewWid,viewHit,viewW2,viewH2;
@@ -41,12 +42,15 @@ NS_ASSUME_NONNULL_BEGIN
     NSString* sdata;
     UIRefreshControl *refreshControl;
     OCRCache *oc;
+    BatchObject *bbb;
+    NSMutableArray *batchPFObjects;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 
 @property (weak, nonatomic) IBOutlet UITableView *table;
 
 @property (weak, nonatomic) IBOutlet UILabel *versionLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *logoView;
 
 @end
 

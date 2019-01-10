@@ -320,7 +320,7 @@
                 [d setObject:e forKey:pfo.objectId];
                 [self->_expos addObject: e];
             }
-            NSLog(@" ...loaded EXP OK %@",self->recordStrings);
+            //NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didGetObjectsByIds : d];
         }
     }];
@@ -382,7 +382,7 @@
                 EXPObject *e = [self getEXPObjectFromPFObject:pfo];
                 [self->_expos addObject: e];
             }
-            NSLog(@" ...loaded EXP OK %@",self->recordStrings);
+            //NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
         }
     }];

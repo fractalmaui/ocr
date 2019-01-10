@@ -28,21 +28,30 @@
     if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
     act = [[ActivityTable alloc] init];
     act.delegate = self;
+    bbb = [BatchObject sharedInstance]; //No need for delegate, just hook up batch
+    
     emptyIcon = [UIImage imageNamed:@"emptyDoc.jpg"];
     dbIcon = [UIImage imageNamed:@"lildbGrey.png"];
     batchIcon = [UIImage imageNamed:@"multiNOT.png"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     oc = [OCRCache sharedInstance];
     
+//    bbb = [BatchObject sharedInstance];
+
+    
+
     refreshControl = [[UIRefreshControl alloc] init];
+    batchPFObjects = nil;
     
-    //    refreshControl = UIRefreshControl()
-    
-
-
     //Test only, built-in OCR crap...
     [self loadBuiltinOCRToCache];
 
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(didReadBatchByIDs:)
+                                                 name:@"didReadBatchByIDs" object:nil];
+    
+
+    
     return self;
 }
 
@@ -64,6 +73,13 @@
     _table.dataSource = self;
     _table.refreshControl = refreshControl;
     [refreshControl addTarget:self action:@selector(refreshIt) forControlEvents:UIControlEventValueChanged];
+    
+    //add a lil dropshadow
+    _logoView.layer.shadowColor   = [UIColor blackColor].CGColor;
+    _logoView.layer.shadowRadius  = 18.0f;
+    _logoView.layer.shadowOpacity = 0.3f; // Note: You need the final value here
+
+    
 
 } //end viewDidLoad
 
@@ -305,19 +321,50 @@
     NSString *adata = [act getData:row];
 
     UIImage *ii = emptyIcon;
-    if ([atype.lowercaseString containsString:@"batch"])   ii = batchIcon;
+    cell.badgeLabel.hidden = TRUE;
+    //Batch Acdtivity:Batch cell has a badge(errorcount) and custom color...
+    //     (NEEDS TO COMPUTE ERRORS< CPU EATER?)
+    if ([atype.lowercaseString containsString:@"batch"])
+    {
+        ii = batchIcon;
+        //Look at batchpdf objects if present
+        if (batchPFObjects != nil)
+        {
+            for (PFObject *pfo in batchPFObjects)
+            {
+                // overall errs...
+                NSString *berrs  = pfo[PInv_BatchErrors_key];
+                NSArray  *bItems = [berrs componentsSeparatedByString:@":"];
+                // fixed count...
+                NSString *ferrs  = pfo[PInv_BatchFixed_key];
+                NSArray  *fItems = [ferrs componentsSeparatedByString:@":"];
+                int errCount = (int)bItems.count - (int)fItems.count;
+                cell.badgeLabel.hidden             = FALSE;
+                cell.badgeLabel.text               = [NSString stringWithFormat:@"%d",errCount];
+                cell.badgeLabel.layer.cornerRadius = 10;
+                cell.badgeLabel.clipsToBounds      = YES;
+            } //end for (PFOb....)
+        }    //end if (batch...
+    }       //end type.lower
+    //...other activity types... invoice, exp, etc...
     if ([atype.lowercaseString containsString:@"invoice"]) ii = dbIcon;
     if ([atype.lowercaseString containsString:@"exp"])     ii = dbIcon;
-
-    NSDate *adate = [act getDate:row];
+    //Date -> String, why isn't this in just one call???
+    NSDate *activityDate = [act getDate:row];
     NSDateFormatter * formatter =  [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"MM/dd/yyyy  HH:mmv:SS"];
-    NSString *sfd = [formatter stringFromDate:adate];
-
+    NSString *sfd = [formatter stringFromDate:activityDate];
+    
+    //Fill out Cell UI
+    //Top Bold label in the cell...
     cell.topLabel.text    = atype;
+    // ..next row, normal text (info etc...)
     cell.bottomLabel.text = adata;
+    // LH batch icon, db icon, etc...
     cell.icon.image       = ii;
+    // small grey label bottom cell
     cell.dateLabel.text   = sfd;
+
     return cell;
 } //end cellForRowAtIndexPath
 
@@ -333,12 +380,46 @@
     return 80;
 }
 
-//==========FeedVC=========================================================================
+//=============OCR MainVC=====================================================
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     int row = (int)indexPath.row;
     sdata  = [act getData:row];
     [self batchListChoiceMenu];
 }
+
+//=============OCR MainVC=====================================================
+// Finds batches in our activity list, gets error/other info
+-(void) getBatchInfo
+{
+    //asdf
+    NSMutableArray *bids = [[NSMutableArray alloc] init];
+    
+    for (int i=0;i< [act getReadCount];i++)
+    {
+        NSString *actData = [act getData:i]; //Get batch data, Separate fields
+        NSArray  *aItems  = [actData componentsSeparatedByString:@":"];
+        if (aItems.count == 2)
+        {
+            NSString *izzitAnID = aItems[0];
+            if ([izzitAnID containsString:@"B_"]) [bids addObject:izzitAnID];
+        }
+    }
+    [bbb readFromParseByIDs:bids];
+    NSLog(@"duhh");
+}
+
+//=============OCR MainVC=====================================================
+//asdf
+- (void)didReadBatchByIDs:(NSNotification *)notification
+{
+    //Should be pfobjects?
+    batchPFObjects = (NSMutableArray *)notification.object;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self->_table reloadData];
+    });
+} //end didReadBatchByIDs
+
+
 
 #pragma mark - NavButtonsDelegate
 //=============OCR MainVC=====================================================
@@ -410,7 +491,6 @@
 //=============OCR MainVC=====================================================
 -(void) testit
 {
-//asdf
     
    NSArray *dairyNames = @[   //CANNED
                    @"buttermilk",
@@ -497,6 +577,7 @@
 {
     //NSLog(@"  MainVC:got act table...");
     [_table reloadData];
+    [self getBatchInfo]; //Yet another parse pass...
 }
 
 //=============OCR MainVC=====================================================

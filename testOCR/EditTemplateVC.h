@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <MessageUI/MessageUI.h>
+#import "ActivityTable.h"
 #import "DBKeys.h"
 #import "OCRWord.h"
 #import "OCRDocument.h"
@@ -57,7 +58,8 @@
 
 
 @interface EditTemplateVC : UIViewController <MFMailComposeViewControllerDelegate,OCRTemplateDelegate,
-                                            invoiceTableDelegate,EXPTableDelegate,OCRTopObjectDelegate>
+                                            invoiceTableDelegate,EXPTableDelegate,OCRTopObjectDelegate,
+                                            ActivityTableDelegate>
 {
     
     UIActivityIndicatorView *spinner;
@@ -69,6 +71,8 @@
     OCRTemplate *ot;
     OCRTopObject *oto; //Performs OCR using template and document...
 
+    ActivityTable *act;
+    
     UIView *selectBox;
     CGRect selectDocRect;
     CGRect pageRect;

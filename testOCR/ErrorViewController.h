@@ -14,6 +14,7 @@
 
 #import <UIKit/UIKit.h>
 #import "BatchObject.h"
+#import "DropboxTools.h"
 #import "errorCell.h"
 #import "EXPTable.h"
 #import "imageTools.h"
@@ -23,9 +24,10 @@
 
 @interface ErrorViewController : UIViewController <batchObjectDelegate,
                                 UITableViewDelegate,UITableViewDataSource,EXPTableDelegate,
-                                UITextFieldDelegate>
+                                UITextFieldDelegate, DropboxToolsDelegate>
 {
     BatchObject *bbb;
+    DropboxTools *dbt;
     smartProducts *sp;
     NSString *berrs;
     NSMutableArray *errorList;
@@ -40,6 +42,7 @@
     Vendors *vv;
     imageTools *it;
     
+    int errorPage;
     NSString *vendorName;
     
     UIImage *xIcon;

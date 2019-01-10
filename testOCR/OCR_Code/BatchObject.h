@@ -82,6 +82,7 @@
 -(NSString *) getVendor;
 -(int)  getVendorFileCount : (NSString *)vfn;
 -(void) readFromParseByID : (NSString *) bID;
+-(void) readFromParseByIDs : (NSArray *) bIDs;
 -(void) runOneOrMoreBatches  : (int) vindex;
 -(void) setParent : (UIViewController*) p;
 -(void) updateParse;

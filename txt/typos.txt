@@ -17,5 +17,6 @@ reese = cheese
 rink = drink
 ucumbers = cucumbers
 ugar = sugar
+oo*ie = cookie
 #I.E. check for first character missing!
 

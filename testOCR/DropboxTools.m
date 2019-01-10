@@ -12,6 +12,9 @@
 //  Created by Dave Scruton on 12/21/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  Looks like BIG PDF's may have to be chopped into smaller chunks:
+//  https://stackoverflow.com/questions/25992238/how-to-split-pdf-into-separate-single-page-pdf-in-ios-programmatically
+//
 
 #import "DropboxTools.h"
 

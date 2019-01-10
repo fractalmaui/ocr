@@ -57,6 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL sortAscending;
     int selectedRow;
 
+    UIRefreshControl *refreshControl;
+
+    
 }
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UITableView *table;

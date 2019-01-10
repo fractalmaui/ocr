@@ -44,6 +44,9 @@
 		722E090321BF50BF00BBD88D /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 722E08FF21BF50BF00BBD88D /* ParseUI.framework */; };
 		722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */ = {isa = PBXBuildFile; fileRef = 722F9A7121C23E0D001D8EE6 /* ssd_hare.png */; };
 		722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */ = {isa = PBXBuildFile; fileRef = 722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */; };
+		72435AB621E697290048846A /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 72435AB221E697290048846A /* Reachability.m */; };
+		72435AB721E697290048846A /* LICENCE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 72435AB321E697290048846A /* LICENCE.txt */; };
+		72435AB821E697290048846A /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 72435AB421E697290048846A /* README.md */; };
 		72435B3421C8C7C600620F4B /* EXPObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72435B3321C8C7C600620F4B /* EXPObject.m */; };
 		72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 72435B3621C8C8EA00620F4B /* EXPTable.m */; };
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
@@ -156,6 +159,10 @@
 		722E08FF21BF50BF00BBD88D /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ParseUI.framework; path = 3rdparty/ParseUI.framework; sourceTree = "<group>"; };
 		722F9A7121C23E0D001D8EE6 /* ssd_hare.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssd_hare.png; path = Resources/ssd_hare.png; sourceTree = SOURCE_ROOT; };
 		722F9A7221C23E0D001D8EE6 /* ssd_tortoise.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ssd_tortoise.png; path = Resources/ssd_tortoise.png; sourceTree = SOURCE_ROOT; };
+		72435AB221E697290048846A /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
+		72435AB321E697290048846A /* LICENCE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENCE.txt; sourceTree = "<group>"; };
+		72435AB421E697290048846A /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		72435AB521E697290048846A /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		72435B3221C8C7C600620F4B /* EXPObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPObject.h; sourceTree = "<group>"; };
 		72435B3321C8C7C600620F4B /* EXPObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPObject.m; sourceTree = "<group>"; };
 		72435B3521C8C8EA00620F4B /* EXPTable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPTable.h; sourceTree = "<group>"; };
@@ -307,10 +314,13 @@
 				7206009321B64055000B26DC /* LaunchScreen.storyboard */,
 				7206009621B64055000B26DC /* Info.plist */,
 				7206009721B64055000B26DC /* main.m */,
+				72435AB121E697290048846A /* Reachability */,
 				7283813721C4D83100A2954B /* UI */,
 				72724C6021C21D6F0043F49A /* OCR_Code */,
 				72DB331E21CDC35F00AA44C0 /* DropboxTools.h */,
 				72DB331F21CDC35F00AA44C0 /* DropboxTools.m */,
+				7209159721E0AA2D00F94258 /* PDFCache.h */,
+				7209159821E0AA2D00F94258 /* PDFCache.m */,
 				729C592A21C1D08900F4C695 /* smartProducts.h */,
 				729C592B21C1D08900F4C695 /* smartProducts.m */,
 				72CA1A6821CADE1300F908A0 /* SessionManager.h */,
@@ -385,6 +395,17 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		72435AB121E697290048846A /* Reachability */ = {
+			isa = PBXGroup;
+			children = (
+				72435AB221E697290048846A /* Reachability.m */,
+				72435AB321E697290048846A /* LICENCE.txt */,
+				72435AB421E697290048846A /* README.md */,
+				72435AB521E697290048846A /* Reachability.h */,
+			);
+			path = Reachability;
+			sourceTree = "<group>";
+		};
 		72724C6021C21D6F0043F49A /* OCR_Code */ = {
 			isa = PBXGroup;
 			children = (
@@ -409,8 +430,6 @@
 				7209609D21B81FDC00D49C63 /* OCRBox.m */,
 				7272C5EE21D6ABFE0094D7D1 /* OCRCache.h */,
 				7272C5EF21D6ABFE0094D7D1 /* OCRCache.m */,
-				7209159721E0AA2D00F94258 /* PDFCache.h */,
-				7209159821E0AA2D00F94258 /* PDFCache.m */,
 				721D9C1E21CB11DA00D1E78A /* OCRCategories.h */,
 				721D9C1F21CB122F00D1E78A /* OCRCategories.m */,
 				7209608D21B8173200D49C63 /* OCRDocument.h */,
@@ -513,6 +532,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				72435AB721E697290048846A /* LICENCE.txt in Resources */,
 				7283812A21C4A36200A2954B /* dbNOT.png in Resources */,
 				7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */,
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
@@ -520,6 +540,7 @@
 				72F6DC2A21E5C0D900EDF9A4 /* bluecheck.png in Resources */,
 				72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */,
 				7283813021C4A3FD00A2954B /* gearHOT.png in Resources */,
+				72435AB821E697290048846A /* README.md in Resources */,
 				72988DCD21E5ACD200618442 /* redX.png in Resources */,
 				72B8DEC021C46459004ADD79 /* magtarg.png in Resources */,
 				729E92BF21DBE3A000048DAF /* hiIcon.png in Resources */,
@@ -602,6 +623,7 @@
 				72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */,
 				729E92B121DBE25B00048DAF /* EXPCell.m in Sources */,
 				7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */,
+				72435AB621E697290048846A /* Reachability.m in Sources */,
 				7283812021C4A17300A2954B /* NavButtons.m in Sources */,
 				7209159321E0908C00F94258 /* ErrorViewController.m in Sources */,
 				7206009821B64055000B26DC /* main.m in Sources */,

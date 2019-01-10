@@ -40,7 +40,9 @@
     oto = [OCRTopObject sharedInstance];
     oto.delegate = self;
 
-    ot.delegate = self;
+    act = [[ActivityTable alloc] init];
+    act.delegate = self;
+    
     arrowLHStepSize = 10;
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
@@ -473,11 +475,12 @@
     return dict;
 }
 
-
 //=============OCR VC=====================================================
 -(void) clearFields
 {
     [ot clearFields];
+    // ...save to PInv_ActivityType_key and PInv_ActivityData keys...
+    [act saveActivityToParse:@"Clear Template" : supplierName];
     [ot saveToParse:self->supplierName];
     // Set limits where text was found at top / left / right,
     //  used for re-scaling if invoice was shrunk or whatever
@@ -689,6 +692,8 @@
                                                                [self->ot saveTemplatesToDisk:self->supplierName];
                                                                self->spinner.hidden = FALSE;
                                                                [self->spinner startAnimating];
+                                                               [act saveActivityToParse:@"...template:deleteBox" : supplierName];
+
                                                                [self->ot saveToParse:self->supplierName];
                                                                [self refreshOCRBoxes];
                                                            }];
@@ -705,6 +710,7 @@
                                                     [self->ot saveTemplatesToDisk:self->supplierName];
                                                     self->spinner.hidden = FALSE;
                                                     [self->spinner startAnimating];
+                                                    [act saveActivityToParse:@"...template:clearTags" : supplierName];
                                                     [self->ot saveToParse:self->supplierName];
                                                 }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
@@ -762,6 +768,7 @@
     [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
+    [act saveActivityToParse:@"...template:addTag" : supplierName];
     [ot saveToParse:supplierName];
 } //end addTag
 
@@ -851,6 +858,7 @@
     [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
+    [act saveActivityToParse:@"...template:addBox" : supplierName];
     [ot saveToParse:supplierName];
     [self clearScreenAfterEdit];
     [self stopMagView];

@@ -12,6 +12,7 @@
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
 #import <Parse/Parse.h>
 #import "OCRSettings.h"
+#import "Reachability/Reachability.h"
 #import "SessionManager.h"
 #import "Vendors.h"
 
@@ -30,6 +31,7 @@
 @property (nonatomic , strong) NSString* versionNumber;
 @property (strong, nonatomic) OCRSettings* settings;
 @property(nonatomic) int verbose;
+@property (nonatomic , assign) BOOL networkStatus;
 
 
 @end

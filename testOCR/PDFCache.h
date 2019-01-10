@@ -34,7 +34,7 @@
 -(void) addPDFImage : (UIImage*) pdfImage : (NSString *) fname : (int) page;
 -(void) dump;
 -(UIImage *) getImageByID : (NSString *) inoid : (int) page;
--(BOOL) imageExistsByID : (NSString *) inoid;
+-(BOOL) imageExistsByID : (NSString *) oidIn : (int) page;
 
 + (id)sharedInstance;
 
