@@ -36,7 +36,7 @@
     loggedIn = FALSE; //DHS 9/13 Assume we start up logged OUT
     _inset = 10; //L/R inset, buttons are spaced between these two limits 8/9 back to 10
     self.backgroundColor = [UIColor clearColor];
-    
+
     blurBkgdView = [[UIView alloc] initWithFrame : CGRectMake(0, 0, viewWid, viewHit)];
     blurBkgdView.backgroundColor = [UIColor grayColor];
     blurBkgdView.opaque = NO;

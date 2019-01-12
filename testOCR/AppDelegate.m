@@ -27,6 +27,8 @@
         configuration.clientKey     = @"hxSXfyhuz3xik85xRZlmC2XrhQ5URkOlLNAioGeY";
         configuration.server        = @"https://pg-app-jhg70nkxzqetipfyic66ks9q3kq41y.scalabl.cloud/1/";
         NSLog(@" parse DB at sashido.io connected");
+        //Load Vendors from parse db,
+        // ...force a load also, since object may already have been created before DB is ready!
     }]];
     
     //Dropbox?
@@ -43,9 +45,10 @@
 
     //Settings...
     _settings = [OCRSettings sharedInstance];
-    
-    //Load Vendors from parse db
-    [Vendors sharedInstance];
+    Vendors* vv = [Vendors sharedInstance];
+    NSLog(@" duh?");
+    [vv readFromParse];
+
     
     //Reachability...
     [self monitorReachability];
@@ -97,7 +100,7 @@
     if (authResult != nil) {
         if ([authResult isSuccess]) {
             NSLog(@"Success! User is logged into Dropbox.");
-            UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
+            //UINavigationController *navigationController = (UINavigationController *)self.window.rootViewController;
             _authSuccessful = YES;
             return YES;
         } else if ([authResult isCancel]) {

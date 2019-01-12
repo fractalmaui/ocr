@@ -416,7 +416,7 @@
         [oto setupDocumentFrameAndParseJSON : r];
         [oto applyTemplate:ot];
         [oto cleanupInvoice];
-        [oto writeEXPToParse];
+        [oto writeEXPToParse : 1]; //Note 2nd arg is page!
         NSString *OCR_Results_Dump = [oto dumpResults];
         [self alertMessage:@"Invoice Dump" :OCR_Results_Dump];
 
@@ -461,7 +461,8 @@
     sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
     NSData *jsonData = [fileContentsAscii dataUsingEncoding:NSUTF8StringEncoding];
     NSError *e;
-    NSDictionary *jdict = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&e];
+    NSDictionary *jdict = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                          options:NSJSONReadingMutableContainers error:&e];
     if (e != nil) NSLog(@" Error: %@",e.localizedDescription);
     return jdict;
 }
@@ -692,7 +693,7 @@
                                                                [self->ot saveTemplatesToDisk:self->supplierName];
                                                                self->spinner.hidden = FALSE;
                                                                [self->spinner startAnimating];
-                                                               [act saveActivityToParse:@"...template:deleteBox" : supplierName];
+                                                               [self->act saveActivityToParse:@"...template:deleteBox" : self->supplierName];
 
                                                                [self->ot saveToParse:self->supplierName];
                                                                [self refreshOCRBoxes];
@@ -710,7 +711,7 @@
                                                     [self->ot saveTemplatesToDisk:self->supplierName];
                                                     self->spinner.hidden = FALSE;
                                                     [self->spinner startAnimating];
-                                                    [act saveActivityToParse:@"...template:clearTags" : supplierName];
+                                                    [self->act saveActivityToParse:@"...template:clearTags" : self->supplierName];
                                                     [self->ot saveToParse:self->supplierName];
                                                 }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)

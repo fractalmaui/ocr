@@ -51,6 +51,8 @@
 		72435B3721C8C8EA00620F4B /* EXPTable.m in Sources */ = {isa = PBXBuildFile; fileRef = 72435B3621C8C8EA00620F4B /* EXPTable.m */; };
 		72435B3921C8E01200620F4B /* cal_kona.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3821C8E01200620F4B /* cal_kona.jpg */; };
 		72435B3B21C96E8E00620F4B /* loves.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72435B3A21C96E8E00620F4B /* loves.jpg */; };
+		724B4BB321E74BDE0086B933 /* multiHOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 724B4BB221E74BDE0086B933 /* multiHOT.png */; };
+		724B4BB521E74BE50086B933 /* multiNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 724B4BB421E74BE50086B933 /* multiNOT.png */; };
 		724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 724F9DB321C9C2A40022C829 /* meadow.jpg */; };
 		725DA97D21CB53BC0024ECF7 /* EXPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 725DA97C21CB53BC0024ECF7 /* EXPViewController.m */; };
 		726F0A4921DF092F007656FD /* dbGrey.png in Resources */ = {isa = PBXBuildFile; fileRef = 726F0A4821DF092E007656FD /* dbGrey.png */; };
@@ -93,14 +95,13 @@
 		72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72BA4D2D21CF644B00F432E9 /* OCRTopObject.m */; };
 		72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */; };
 		72CA1A6A21CADE7200F908A0 /* SessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 72CA1A6921CADE7200F908A0 /* SessionManager.m */; };
-		72DB331C21CDC14600AA44C0 /* multiNOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 72DB331A21CDC14500AA44C0 /* multiNOT.png */; };
-		72DB331D21CDC14600AA44C0 /* multiHOT.png in Resources */ = {isa = PBXBuildFile; fileRef = 72DB331B21CDC14600AA44C0 /* multiHOT.png */; };
 		72DB332021CDC35F00AA44C0 /* DropboxTools.m in Sources */ = {isa = PBXBuildFile; fileRef = 72DB331F21CDC35F00AA44C0 /* DropboxTools.m */; };
 		72E5D31121B6DE4C005AF869 /* txt in Resources */ = {isa = PBXBuildFile; fileRef = 72E5D31021B6DE4C005AF869 /* txt */; };
 		72E785AC21CCBFC600EEEF1F /* AddTemplateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72E785AB21CCBFC600EEEF1F /* AddTemplateViewController.m */; };
 		72ECD04621C88A1000DBD08E /* invoiceObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 72ECD04521C88A1000DBD08E /* invoiceObject.m */; };
 		72F0D8C121D93216005979D2 /* OCRSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C021D93216005979D2 /* OCRSettings.m */; };
 		72F0D8C421D932BE005979D2 /* Vendors.m in Sources */ = {isa = PBXBuildFile; fileRef = 72F0D8C221D932BD005979D2 /* Vendors.m */; };
+		72F394FF21E91AD4009E59C4 /* lilGreenCheck.png in Resources */ = {isa = PBXBuildFile; fileRef = 72F394FE21E91AD3009E59C4 /* lilGreenCheck.png */; };
 		72F6DC2A21E5C0D900EDF9A4 /* bluecheck.png in Resources */ = {isa = PBXBuildFile; fileRef = 72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */; };
 /* End PBXBuildFile section */
 
@@ -169,6 +170,8 @@
 		72435B3621C8C8EA00620F4B /* EXPTable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPTable.m; sourceTree = "<group>"; };
 		72435B3821C8E01200620F4B /* cal_kona.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = cal_kona.jpg; sourceTree = "<group>"; };
 		72435B3A21C96E8E00620F4B /* loves.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = loves.jpg; sourceTree = "<group>"; };
+		724B4BB221E74BDE0086B933 /* multiHOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = multiHOT.png; path = Resources/multiHOT.png; sourceTree = SOURCE_ROOT; };
+		724B4BB421E74BE50086B933 /* multiNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = multiNOT.png; path = Resources/multiNOT.png; sourceTree = SOURCE_ROOT; };
 		724F9DB321C9C2A40022C829 /* meadow.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = meadow.jpg; sourceTree = "<group>"; };
 		725DA97B21CB53BC0024ECF7 /* EXPViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EXPViewController.h; sourceTree = "<group>"; };
 		725DA97C21CB53BC0024ECF7 /* EXPViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EXPViewController.m; sourceTree = "<group>"; };
@@ -228,8 +231,6 @@
 		72C0DC0921CD76BD00FA6955 /* emptyDoc.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = emptyDoc.jpg; sourceTree = "<group>"; };
 		72CA1A6821CADE1300F908A0 /* SessionManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SessionManager.h; sourceTree = "<group>"; };
 		72CA1A6921CADE7200F908A0 /* SessionManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionManager.m; sourceTree = "<group>"; };
-		72DB331A21CDC14500AA44C0 /* multiNOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = multiNOT.png; sourceTree = "<group>"; };
-		72DB331B21CDC14600AA44C0 /* multiHOT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = multiHOT.png; sourceTree = "<group>"; };
 		72DB331E21CDC35F00AA44C0 /* DropboxTools.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DropboxTools.h; sourceTree = "<group>"; };
 		72DB331F21CDC35F00AA44C0 /* DropboxTools.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DropboxTools.m; sourceTree = "<group>"; };
 		72E5D31021B6DE4C005AF869 /* txt */ = {isa = PBXFileReference; lastKnownFileType = folder; path = txt; sourceTree = "<group>"; };
@@ -240,6 +241,7 @@
 		72F0D8C021D93216005979D2 /* OCRSettings.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRSettings.m; sourceTree = "<group>"; };
 		72F0D8C221D932BD005979D2 /* Vendors.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Vendors.m; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.m; sourceTree = "<absolute>"; };
 		72F0D8C321D932BE005979D2 /* Vendors.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Vendors.h; path = /Users/davescruton/Desktop/testOCR/testOCR/OCR_Code/Vendors.h; sourceTree = "<absolute>"; };
+		72F394FE21E91AD3009E59C4 /* lilGreenCheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = lilGreenCheck.png; path = Resources/lilGreenCheck.png; sourceTree = SOURCE_ROOT; };
 		72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = bluecheck.png; path = Resources/bluecheck.png; sourceTree = SOURCE_ROOT; };
 		D64CF6F8DED5B2240FC357AE /* libPods-testOCR.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-testOCR.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -334,6 +336,7 @@
 			children = (
 				72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */,
 				72988DCB21E5ACD000618442 /* redX.png */,
+				72F394FE21E91AD3009E59C4 /* lilGreenCheck.png */,
 				729E92C021DC1CC100048DAF /* barnIcon.png */,
 				726F0A4A21DF105D007656FD /* lildbGrey.png */,
 				726F0A4821DF092E007656FD /* dbGrey.png */,
@@ -343,6 +346,8 @@
 				729E92C221DC1CCC00048DAF /* factoryIcon.png */,
 				729E92C321DC1CCC00048DAF /* globeIcon.png */,
 				729E92B821DBE39F00048DAF /* hiIcon.png */,
+				724B4BB221E74BDE0086B933 /* multiHOT.png */,
+				724B4BB421E74BE50086B933 /* multiNOT.png */,
 				7204B10121D6FB7E007366C3 /* mg.png */,
 				7272C5EC21D5EE050094D7D1 /* bgpBkgd.png */,
 				7207078521CD88EE00DB8CAD /* tgrid50.png */,
@@ -354,8 +359,6 @@
 				7283812621C4A36100A2954B /* dbNOT.png */,
 				7283812921C4A36200A2954B /* HamburgerHOT.png */,
 				7283812721C4A36100A2954B /* HamburgerNOT.png */,
-				72DB331B21CDC14600AA44C0 /* multiHOT.png */,
-				72DB331A21CDC14500AA44C0 /* multiNOT.png */,
 				72183DEC21C5FA86005627AB /* squareMask.png */,
 				72B8DEBF21C46459004ADD79 /* loupe-mask@2x.png */,
 				72B8DEBE21C46459004ADD79 /* magtarg.png */,
@@ -537,6 +540,7 @@
 				7206009521B64055000B26DC /* LaunchScreen.storyboard in Resources */,
 				7206009221B64055000B26DC /* Assets.xcassets in Resources */,
 				7209609721B81E6B00D49C63 /* arrUp.png in Resources */,
+				724B4BB521E74BE50086B933 /* multiNOT.png in Resources */,
 				72F6DC2A21E5C0D900EDF9A4 /* bluecheck.png in Resources */,
 				72C0DC0A21CD76BE00FA6955 /* emptyDoc.jpg in Resources */,
 				7283813021C4A3FD00A2954B /* gearHOT.png in Resources */,
@@ -544,7 +548,6 @@
 				72988DCD21E5ACD200618442 /* redX.png in Resources */,
 				72B8DEC021C46459004ADD79 /* magtarg.png in Resources */,
 				729E92BF21DBE3A000048DAF /* hiIcon.png in Resources */,
-				72DB331D21CDC14600AA44C0 /* multiHOT.png in Resources */,
 				7209609521B81E6B00D49C63 /* arrRight.png in Resources */,
 				722F9A7321C23E0D001D8EE6 /* ssd_hare.png in Resources */,
 				7283813321C4A54600A2954B /* binonion.png in Resources */,
@@ -555,6 +558,7 @@
 				722F9A7421C23E0D001D8EE6 /* ssd_tortoise.png in Resources */,
 				72E5D31121B6DE4C005AF869 /* txt in Resources */,
 				7207078621CD88EE00DB8CAD /* tgrid50.png in Resources */,
+				72F394FF21E91AD4009E59C4 /* lilGreenCheck.png in Resources */,
 				724F9DB421C9C2A40022C829 /* meadow.jpg in Resources */,
 				720600A321B64AA0000B26DC /* cocacola.jpg in Resources */,
 				726F0A4921DF092F007656FD /* dbGrey.png in Resources */,
@@ -572,10 +576,10 @@
 				72B8DEB221C370FB004ADD79 /* hfm90.jpg in Resources */,
 				726F0A4B21DF105D007656FD /* lildbGrey.png in Resources */,
 				72183DED21C5FA86005627AB /* squareMask.png in Resources */,
-				72DB331C21CDC14600AA44C0 /* multiNOT.png in Resources */,
 				7206009021B64052000B26DC /* Main.storyboard in Resources */,
 				7204B10221D6FB7F007366C3 /* mg.png in Resources */,
 				729E92BB21DBE3A000048DAF /* centIcon.png in Resources */,
+				724B4BB321E74BDE0086B933 /* multiHOT.png in Resources */,
 				729E92C121DC1CC100048DAF /* barnIcon.png in Resources */,
 				72435B3B21C96E8E00620F4B /* loves.jpg in Resources */,
 			);

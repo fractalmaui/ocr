@@ -2,7 +2,10 @@
 ananas = bananas
 apaya = papaya
 asta = pasta
+ausage = sausage
+ea = tea
 elat = gelatin
+elatin = gelatin
 ereal = cereal
 ettuce = lettuce
 iceber = iceberg
@@ -17,6 +20,7 @@ reese = cheese
 rink = drink
 ucumbers = cucumbers
 ugar = sugar
-oo*ie = cookie
+'hips = chips
+`hips = chips
 #I.E. check for first character missing!
 

@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSString * postOCRQuantities[MAX_QPA_ROWS];
     NSString * postOCRPrices[MAX_QPA_ROWS];
     NSString * postOCRAmounts[MAX_QPA_ROWS];
-
+    int        postOCRMinorErrors[MAX_QPA_ROWS]; 
     int currentYear; //For fixing bad date strings
     NSMutableArray *ignoreList;
     BOOL useIgnoreList;
@@ -79,7 +79,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray *) cleanUpPriceColumns : (int) index : (NSMutableArray*) a;
 -(NSString*) cleanUpProductNameString : (NSString *)pstr;
 -(void) computeScaling: (CGRect )tlr : (CGRect )trr;
+-(void) dumpArrayFull : (NSArray*)a;
 -(void) dumpArray : (NSArray*)a;
+-(void) dumpWordsInBox : (CGRect) rr;
 -(int) doc2templateX : (int) x;
 -(int) doc2templateY : (int) y;
 
@@ -98,12 +100,15 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSString*) getPostOCRQuantity : (int) row;
 -(NSString*) getPostOCRPrice    : (int) row;
 -(NSString*) getPostOCRAmount   : (int) row;
+-(int) getPostOCRMinorError     : (int) row;
 
 -(CGRect) getDocRect;
 -(CGRect) getTLRect;
 -(CGRect) getTRRect;
 -(CGRect) getBLRect;
 -(CGRect) getBRRect;
+-(CGRect) template2DocRect  : (CGRect) r;
+
 -(void) getAverageGlyphHeight;
 -(NSMutableArray *) getRowFromColumnStringData : (int)index;
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric;
@@ -111,6 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSDate *) isItADate : (NSString *)tstr;
 -(void) parseHeaderColumns : (NSMutableArray*)aof;
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
+-(void) setPostOCRMinorError : (int) row : (int) merror;
 -(void) setupDocumentAndParseJDON : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;
 -(void) setupDocumentWithRect : (CGRect) r : (NSDictionary *)d;
 -(void) setupPage : (int) page;

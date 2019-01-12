@@ -13,12 +13,7 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 // Pull OIDs stuff asap
-// Notification stuff for clients...
-//[[NSNotificationCenter defaultCenter] postNotificationName:@"playLinkedGameNotification"
-//[[NSNotificationCenter defaultCenter] addObserver:self
-//                                         selector:@selector(didLoadGameStatistics)
-//                                             name:@"didLoadGameStatistics" object:nil];
-
+//  1/9 Added file rename (stubbed out for now)
 #import "BatchObject.h"
 
 @implementation BatchObject
@@ -190,6 +185,20 @@ static BatchObject *sharedInstance = nil;
 //=============(BatchObject)=====================================================
 -(void) processNextFile
 {
+    // Rename last processed file...
+#ifdef RENAME_FILES_AFTER_PROCESSING
+    if (batchCount > 0)
+    {
+        NSMutableArray *chunks = (NSMutableArray*)[lastPDFProcessed componentsSeparatedByString:@"/"];
+        if (chunks.count > 2)
+        {
+            AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            chunks[1] = bappDelegate.settings.outputFolder;
+            NSString *outputPath = [chunks componentsJoinedByString:@"/"];
+            [dbt renameFile:lastPDFProcessed : outputPath];
+        }
+    }
+#endif
     batchCount++;
     //Last file? Bail... we are now waiting on asynchronous operations to complete...
     if (batchCount > batchTotal)  return;
@@ -197,18 +206,20 @@ static BatchObject *sharedInstance = nil;
     int i = batchCount-1; //Batch Count is 1...n
     if (i < 0 || i >= pdfEntries.count) return; //Out of bounds!
     DBFILESMetadata *entry = pdfEntries[i];
-    NSString *itemName = [NSString stringWithFormat:@"%@/%@",dbt.prefix,entry.name];
+    lastPDFProcessed = [NSString stringWithFormat:@"%@/%@",dbt.prefix,entry.name];
     //Check for "skip" string, ignore file if so...
-    if ([itemName.lowercaseString containsString:@"skip"]) //Skip this file?
+    if ([lastPDFProcessed.lowercaseString containsString:@"skip"]) //Skip this file?
     {
-        [self processNextFile];                           //Re-entrant call, should be OK
+        [self processNextFile];  //Re-entrant call, should be OK
     }
     else
     {
         //remember the filename...comma on 2nd... file
         if (batchCount > 1) batchFiles = [batchFiles stringByAppendingString:@","];
-        batchFiles = [batchFiles stringByAppendingString:itemName];
-        [dbt downloadImages:itemName];                   //Asyncbonous, need to finish before handling results
+        batchFiles = [batchFiles stringByAppendingString:lastPDFProcessed];
+        batchProgress = [NSString stringWithFormat:@"Download PDF..."];
+        [self.delegate batchUpdate : batchProgress];
+        [dbt downloadImages:lastPDFProcessed];    //Asyncbonous, need to finish before handling results
     }
 
 } //end processNextFile
@@ -265,7 +276,7 @@ static BatchObject *sharedInstance = nil;
             UIImage *ii =  dbt.batchImages[page];
             if ([vendorRotation isEqualToString:@"-90"]) //Stupid, make this better!
                 ii = [it rotate90CCW:ii];
-            UIImage *deskewedImage = [it deskew:ii];
+            //UIImage *deskewedImage = [it deskew:ii];
             //OUCH! THis has to be decoupled to handle the OCR returning on each image!
             [oto performOCROnImage:@"test.png" :ii :ot];
         }
@@ -338,8 +349,8 @@ static BatchObject *sharedInstance = nil;
                 self->batchProgress = pfo[PInv_BatchProgress_key];
                 self->batchErrors   = pfo[PInv_BatchErrors_key];
                 self->batchFixed    = pfo[PInv_BatchFixed_key];
-                self->errorList = [self->batchErrors componentsSeparatedByString:@","];
-                self->fixedList = [self->batchFixed  componentsSeparatedByString:@","];
+                self->errorList = (NSMutableArray*)[self->batchErrors componentsSeparatedByString:@","];
+                self->fixedList = (NSMutableArray*)[self->batchFixed  componentsSeparatedByString:@","];
                 [self.delegate didReadBatchByID : bID];
             }
             else
@@ -401,7 +412,7 @@ static BatchObject *sharedInstance = nil;
                 if (succeeded)
                 {
                     NSLog(@" ...batch updated[%@]->parse",self->_batchID);
-                    [self.delegate didUpdateParse];
+                    [self.delegate didUpdateBatchToParse];
                 }
                 else
                 {

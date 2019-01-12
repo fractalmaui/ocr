@@ -98,7 +98,7 @@
 -(void) setupDocumentFrameAndParseJSON : (CGRect) r;
 - (void)applyTemplate : (OCRTemplate *)ot;             //FOR TESTING ONLY
 -(void) cleanupInvoice;                               //FOR TESTING ONLY
--(void) writeEXPToParse;
+-(void) writeEXPToParse : (int) page;
 -(NSString *) dumpResults;
 
 

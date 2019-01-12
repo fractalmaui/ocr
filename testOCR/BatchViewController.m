@@ -40,7 +40,6 @@
     // Do any additional setup after loading the view.
     _activityIndicator.hidden = FALSE;
     [_activityIndicator startAnimating];
-    _titleLabel.text = @"Getting Batch Info...";
     _batchTableLabel.text = @"...";
     [bbb getBatchCounts];
 }
@@ -113,7 +112,7 @@
     for (NSString *s in vv.vNames)
     {
         int vc = [bbb getVendorFileCount:vv.vFolderNames[vindex]];
-        NSString *rotation = vv.vRotations[vindex];
+        //NSString *rotation = vv.vRotations[vindex];
         if (vc > 0) //Don't add a batch run option for empty batch folders!
         {
             actions[i] = [UIAlertAction actionWithTitle:s
@@ -150,20 +149,20 @@
 
 #pragma mark - batchObjectDelegate
 
-//=============Batch VC=====================================================
+//=============<batchObjectDelegate>=====================================================
 -(void) didGetBatchCounts
 {
+    _titleLabel.text = @"Checking Dropbox...";
+
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updateUI];
         self->_titleLabel.text = @"Batch Processor Ready";;
         self->_activityIndicator.hidden = TRUE;
         [self->_activityIndicator stopAnimating];
     });
-
-
 }
 
-//=============Batch VC=====================================================
+//=============<batchObjectDelegate>=====================================================
 - (void)didCompleteBatch
 {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -174,7 +173,7 @@
 
 }
 
-//=============Batch VC=====================================================
+//=============<batchObjectDelegate>=====================================================
 - (void)didFailBatch
 {
     NSLog(@" batch FAILURE!");
@@ -182,10 +181,16 @@
         self->_activityIndicator.hidden = TRUE;
         [self->_activityIndicator stopAnimating];
     });
-
 }
 
-//=============Batch VC=====================================================
+//=============<batchObjectDelegate>=====================================================
+- (void)didUpdateBatchToParse
+{
+    NSLog(@" ok batch didUpdateBatchToParse");
+}
+
+
+//=============<batchObjectDelegate>=====================================================
 - (void)batchUpdate : (NSString *) s
 {
     dispatch_async(dispatch_get_main_queue(), ^{

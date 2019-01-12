@@ -164,7 +164,7 @@
     [iRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
         if (succeeded) {
             NSLog(@" ...invoiceTable [vendor:%@]->parse",self->_ivendor);
-            NSString *objID = iRecord.objectId;
+            //NSString *objID = iRecord.objectId;
             // HMM this is broken. maybe we need to use NSNotification to send
             //  objectID's across objects over to the batchObject singleton.
             //AppDelegate *gappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];

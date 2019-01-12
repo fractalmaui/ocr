@@ -166,7 +166,7 @@
 // New arg: headerY, just below found position of actual header in doc coords
 -(void) addHeaderColumnToSortedArray : (int) index : (int) y
 {
-    NSLog(@" addhc %d ",index);
+    //NSLog(@" addhc %d ",index);
     headerY = y;
     OCRBox *ob = ocrBoxes[index];
     int xleft =  ob.frame.origin.x;
@@ -185,7 +185,7 @@
             break;
         }
     }
-    NSLog(@" where %d rect %@",whereToAdd,NSStringFromCGRect(ob.frame));
+    //NSLog(@" where %d rect %@",whereToAdd,NSStringFromCGRect(ob.frame));
     headerColumns[whereToAdd] = ob.frame; //OK add it
     headerColumnCount++;
 } //end addHeaderColumnToSortedArray
@@ -458,7 +458,6 @@
 //=============(OCRTemplate)=====================================================
 -(void) saveTemplatesToDisk : (NSString *)vendorName
 {
-    return;
     NSError *err;
     [self cleanupColumns];
     fileWorkString = [self packToString];

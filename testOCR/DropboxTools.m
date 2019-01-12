@@ -313,4 +313,13 @@ static DropboxTools *sharedInstance = nil;
 } //end errMsg
 
 
+//=============(DropboxTools)=====================================================
+-(void) renameFile : (NSString*) fromPath : (NSString*) toPath
+{
+    
+    DBUserClient *client = [DBClientsManager authorizedClient];
+    [[client filesRoutes] moveV2:fromPath toPath:toPath];
+}
+
+
 @end

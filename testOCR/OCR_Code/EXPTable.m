@@ -80,7 +80,7 @@
 
 
 //=============(EXPTable)=====================================================
--(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile : (NSNumber *) page
+-(void) addRecord : (NSDate*) fdate : (NSString *) category : (NSString *) month : (NSString *) item : (NSString *) uom : (NSString *) bulk : (NSString *) vendor : (NSString *) productName : (NSString *) processed : (NSString *) local : (NSString *) lineNumber : (NSString *) invoiceNumber : (NSString *) quantity : (NSString *) pricePerUOM : (NSString*) total : (NSString *) batch : (NSString *) errStatus : (NSString *) PDFFile : (NSNumber *) page  
 {
     NSString *errstr = @"";
     workProductName = productName;
@@ -448,6 +448,8 @@
         exoRecord[PInv_BatchID_key]             = eappDelegate.batchID;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
         //NSLog(@" exp savetoParse...");
+        
+        NSLog(@"savetloparse [%@] %@ x %@ = %@",exo.productName,exo.quantity,exo.pricePerUOM,exo.total);
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (succeeded) {
                 //NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);

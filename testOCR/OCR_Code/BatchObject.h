@@ -54,6 +54,7 @@
     NSString *batchErrors;
     NSString *batchFixed;
     NSString *cachesDirectory;
+    NSString *lastPDFProcessed;
     NSMutableArray *vendorFileCounts;
     NSMutableDictionary *vendorFolders;
     NSArray *pdfEntries;  //Fetched list of PDF files from batch folder
@@ -98,7 +99,7 @@
 - (void)didCompleteBatch;
 - (void)didFailBatch;
 - (void)didReadBatchByID : (NSString *)oid;
-- (void)didUpdateParse;
+- (void)didUpdateBatchToParse;
 - (void)errorReadingBatchByID : (NSString *)err;
 @end
 

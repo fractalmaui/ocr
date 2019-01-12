@@ -14,6 +14,7 @@
 // PDF Image conversion?
 //   https://github.com/a2/FoodJournal-iOS/tree/master/Pods/UIImage%2BPDF/UIImage%2BPDF
 //  1/6 add pull to refresh
+//  1/9 Make sure batch gets created AFTER parse DB is up!
 
 #import "MainVC.h"
 
@@ -28,18 +29,13 @@
     if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
     act = [[ActivityTable alloc] init];
     act.delegate = self;
-    bbb = [BatchObject sharedInstance]; //No need for delegate, just hook up batch
     
     emptyIcon = [UIImage imageNamed:@"emptyDoc.jpg"];
     dbIcon = [UIImage imageNamed:@"lildbGrey.png"];
     batchIcon = [UIImage imageNamed:@"multiNOT.png"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     oc = [OCRCache sharedInstance];
-    
-//    bbb = [BatchObject sharedInstance];
-
-    
-
+ 
     refreshControl = [[UIRefreshControl alloc] init];
     batchPFObjects = nil;
     
@@ -76,8 +72,14 @@
     
     //add a lil dropshadow
     _logoView.layer.shadowColor   = [UIColor blackColor].CGColor;
-    _logoView.layer.shadowRadius  = 18.0f;
-    _logoView.layer.shadowOpacity = 0.3f; // Note: You need the final value here
+    _logoView.layer.shadowOffset  = CGSizeMake(0.0f,10.0f);
+    _logoView.layer.shadowOpacity = 0.3f; 
+    _logoView.layer.shadowRadius  = 10.0f;
+    //below top label too...
+    _logoLabel.layer.shadowColor   = [UIColor blackColor].CGColor;
+    _logoLabel.layer.shadowOffset  = CGSizeMake(0.0f,10.0f);
+    _logoLabel.layer.shadowOpacity = 0.3f;
+    _logoLabel.layer.shadowRadius  = 10.0f;
 
     
 
@@ -108,7 +110,7 @@
 {
     [super viewWillAppear:animated];
     [act readActivitiesFromParse:nil :nil];
-    [self testit];
+  //  [self testit];
 }
 
 
@@ -117,7 +119,7 @@
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
     _versionLabel.text = [NSString stringWithFormat:@"version %@",versionNumber];
-    [self testit];
+   // [self testit];
 
     //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
@@ -244,6 +246,13 @@
 //=============OCR MainVC=====================================================
 -(void) setupNavBar
 {
+    nav.backgroundColor = [UIColor redColor];
+//    [nav setSolidBkgdColor:[UIColor colorWithRed:0.9 green:0.8 blue:0.7 alpha:1] :0.5];
+//
+//
+//     -(void) setSolidBkgdColor : (UIColor*) color : (float) alpha
+//]
+//    nav.backgroundColor = [UIColor colorWithRed:0.9 green:0.8 blue:0.7 alpha:1];
     // Menu Button...
     [nav setHotNot         : NAV_HOME_BUTTON : [UIImage imageNamed:@"HamburgerHOT"]  :
      [UIImage imageNamed:@"HamburgerNOT"] ];
@@ -269,8 +278,8 @@
     [nav setLabelText      : NAV_BATCH_BUTTON : NSLocalizedString(@"Batch",nil)];
     [nav setLabelTextColor : NAV_BATCH_BUTTON : [UIColor blackColor]];
     [nav setHidden         : NAV_BATCH_BUTTON : FALSE]; //10/16 show create even logged out...
-
-    [nav setSolidBkgdColor:[UIColor whiteColor] :1];
+    //Set color behind NAV buttpns...
+    [nav setSolidBkgdColor:[UIColor colorWithRed:0.9 green:0.8 blue:0.7 alpha:1] :1];
     
     //REMOVE FOR FINAL DELIVERY
     //    vn = [[UIVersionNumber alloc] initWithPlacement:UI_VERSIONNUMBER_TOPRIGHT];
@@ -324,28 +333,50 @@
     cell.badgeLabel.hidden = TRUE;
     //Batch Acdtivity:Batch cell has a badge(errorcount) and custom color...
     //     (NEEDS TO COMPUTE ERRORS< CPU EATER?)
-    if ([atype.lowercaseString containsString:@"batch"])
+    if ([atype.lowercaseString containsString:@"batch"] && (batchPFObjects != nil))
     {
         ii = batchIcon;
-        //Look at batchpdf objects if present
-        if (batchPFObjects != nil)
+        NSArray  *adItems = [adata componentsSeparatedByString:@":"]; //Break up batch data
+        if (adItems != nil && adItems.count > 0) //Got something?
         {
+            NSString *batchID = adItems[0];
+            //NSLog(@" list[%d] bid %@",row,batchID);
             for (PFObject *pfo in batchPFObjects)
             {
-                // overall errs...
-                NSString *berrs  = pfo[PInv_BatchErrors_key];
-                NSArray  *bItems = [berrs componentsSeparatedByString:@":"];
-                // fixed count...
-                NSString *ferrs  = pfo[PInv_BatchFixed_key];
-                NSArray  *fItems = [ferrs componentsSeparatedByString:@":"];
-                int errCount = (int)bItems.count - (int)fItems.count;
-                cell.badgeLabel.hidden             = FALSE;
-                cell.badgeLabel.text               = [NSString stringWithFormat:@"%d",errCount];
-                cell.badgeLabel.layer.cornerRadius = 10;
-                cell.badgeLabel.clipsToBounds      = YES;
+                if ([pfo[PInv_BatchID_key] isEqualToString:batchID]) //Batch Match? Look for errors
+                {
+                    int bcount = 0;
+                    int fcount = 0;
+                    NSString *berrs  = pfo[PInv_BatchErrors_key];
+                    NSArray  *bItems = [berrs componentsSeparatedByString:@","];
+                    bcount = (int)bItems.count;
+                    if (berrs.length < 1) bcount = 0; //empty?
+                    // fixed count...
+                    NSString *ferrs  = pfo[PInv_BatchFixed_key];
+                    NSArray  *fItems = [ferrs componentsSeparatedByString:@","];
+                    fcount = (int)fItems.count;
+                    if (ferrs.length < 1) fcount = 0; //empty?
+                    int errCount = bcount - fcount;  //# errs = total errs - fixed errs
+                    if (errCount > 0)
+                    {
+                        cell.badgeLabel.hidden             = FALSE;
+                        cell.badgeLabel.text               = [NSString stringWithFormat:@"%d",errCount];
+                        cell.badgeLabel.layer.cornerRadius = 10;
+                        cell.badgeLabel.clipsToBounds      = YES;
+                        cell.checkmark.hidden              = TRUE;
+                    }
+                    else{ //No errors, show checkmark
+                        cell.checkmark.hidden              = FALSE;
+                    }
+                    
+                } //end batch match
             } //end for (PFOb....)
-        }    //end if (batch...
+        }    //end aditems...
     }       //end type.lower
+    else //Non-batch activity?
+    {
+        cell.checkmark.hidden = TRUE; //No checkmark!
+    }
     //...other activity types... invoice, exp, etc...
     if ([atype.lowercaseString containsString:@"invoice"]) ii = dbIcon;
     if ([atype.lowercaseString containsString:@"exp"])     ii = dbIcon;
@@ -391,9 +422,8 @@
 // Finds batches in our activity list, gets error/other info
 -(void) getBatchInfo
 {
-    //asdf
+    bbb = [BatchObject sharedInstance]; //No need for delegate, just hook up batch
     NSMutableArray *bids = [[NSMutableArray alloc] init];
-    
     for (int i=0;i< [act getReadCount];i++)
     {
         NSString *actData = [act getData:i]; //Get batch data, Separate fields
@@ -405,8 +435,7 @@
         }
     }
     [bbb readFromParseByIDs:bids];
-    NSLog(@"duhh");
-}
+} //end getBatchInfo
 
 //=============OCR MainVC=====================================================
 //asdf
@@ -440,6 +469,8 @@
     }
     else if (which == 2) //Templates / settings?
     {
+        [self testit];
+        return;
         [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
     }
     if (which == 3) //batch
@@ -483,7 +514,8 @@
     sItems    = [fileContentsAscii componentsSeparatedByString:@"\n"];
     NSData *jsonData = [fileContentsAscii dataUsingEncoding:NSUTF8StringEncoding];
     NSError *e;
-    NSDictionary *jdict = [NSJSONSerialization JSONObjectWithData:jsonData options:nil error:&e];
+    NSDictionary *jdict = [NSJSONSerialization JSONObjectWithData:jsonData
+                                                          options:NSJSONReadingMutableContainers error:&e];
     if (e != nil) NSLog(@" Error: %@",e.localizedDescription);
     return jdict;
 }
@@ -491,21 +523,13 @@
 //=============OCR MainVC=====================================================
 -(void) testit
 {
-    
-   NSArray *dairyNames = @[   //CANNED
-                   @"buttermilk",
-                   @"cheese",
-                   @"cream",
-                   @"creamer",
-                   @"ice cream",
-                   @"milk",
-                   @"PP CS",   //WTF???
-                   @"sherbert",
-                   @"yogurt"
-                   ];
+    NSLog(@" load vendors?");
+    Vendors* vv = [Vendors sharedInstance];
+    [vv readFromParse];
 
-    NSString *string = [dairyNames componentsJoinedByString:@","];
-    return;
+//    DropboxTools *dbt = [DropboxTools sharedInstance];
+//    [dbt renameFile:@"/latestBatch/HFM/lilHFMDec2.pdf" :@"/latestBatch/HFM/lilHFMDec.pdf"];
+//    return;
     
     
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
@@ -521,7 +545,7 @@
     NSArray *pr   = [d valueForKey:@"ParsedResults"];
     for (NSDictionary *dd in pr)
     {
-        NSString *parsedText = [dd valueForKey:@"ParsedText"]; //Everything lumped together...
+        //NSString *parsedText = [dd valueForKey:@"ParsedText"]; //Everything lumped together...
         NSDictionary *to     = [dd valueForKey:@"TextOverlay"];
         NSArray *lines       = [to valueForKey:@"Lines"]; //array of "Words"
         NSLog(@" duh");

@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import "ActivityTable.h"
 #import "activityCell.h"
+#import "DropboxTools.h"
 #import "BatchObject.h"
 #import "AppDelegate.h"
 #import "AddTemplateViewController.h"
@@ -25,6 +26,7 @@
 #import "OCRCache.h"
 #import "OCRDocument.h"
 #import "PDFCache.h"
+#import "Vendors.h"
 NS_ASSUME_NONNULL_BEGIN
 
 @interface MainVC : UIViewController <NavButtonsDelegate,ActivityTableDelegate,
@@ -46,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableArray *batchPFObjects;
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
+@property (weak, nonatomic) IBOutlet UILabel *logoLabel;
 
 @property (weak, nonatomic) IBOutlet UITableView *table;
 

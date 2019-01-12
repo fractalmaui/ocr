@@ -24,6 +24,7 @@
     NSString *batchFolderDefault;
     NSString *errorFolderDefault;
     NSString *rejectFolderDefault;
+    NSString *outputFolderDefault;
     double PhotoJPEGQualityDefault;
     BOOL loaded;
     
@@ -33,6 +34,7 @@
 @property (nonatomic , strong) NSString *batchFolder;
 @property (nonatomic , strong) NSString *errorFolder;
 @property (nonatomic , strong) NSString *rejectFolder;
+@property (nonatomic , strong) NSString *outputFolder;
 @property (nonatomic , assign) double   PhotoJPEGQuality;
 
 @property (nonatomic, unsafe_unretained) id <OCRSettingsDelegate> delegate;

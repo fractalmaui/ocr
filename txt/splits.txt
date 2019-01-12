@@ -1,4 +1,5 @@
 #Common OCR Split word fixes
 mi x=mix
 hawai ian=hawaiian
-
+sw ftener=sweetener
+1 x=mix

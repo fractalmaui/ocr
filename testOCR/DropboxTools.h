@@ -48,7 +48,7 @@
 
 -(void) setParent : (UIViewController*) p;
 -(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder;
-
+-(void) renameFile : (NSString*) fromPath : (NSString*) toPath;
 
 
 @end

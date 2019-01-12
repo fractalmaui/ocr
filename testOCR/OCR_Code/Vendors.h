@@ -32,13 +32,15 @@
 
 + (id)sharedInstance;
 -(NSString *) getFolderName : (NSString *)vmatch;
+-(void) readFromParse;
 -(int) stringHasVendorName : (NSString *)s;
 -(NSString *) getRotationByVendorName : (NSString *)vname;
 @end
 
 @protocol VendorsDelegate <NSObject>
 @required
--(void) didReadVendorsFromParse;
 @optional
+-(void) didReadVendorsFromParse;
+-(void) errorReadingVendorsFromParse;
 @end
 

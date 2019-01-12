@@ -64,6 +64,12 @@ static Vendors *sharedInstance = nil;
     PFQuery *query = [PFQuery queryWithClassName:@"Vendors"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
+            if (objects == nil || objects.count < 1)
+            {
+                NSLog(@" ERROR READING Vendors from DB!");
+                [self.delegate errorReadingVendorsFromParse];
+                return;
+            }
             [self->_vNames       removeAllObjects];
             [self->_vFolderNames removeAllObjects];
             [self->_vRotations   removeAllObjects];
@@ -79,7 +85,7 @@ static Vendors *sharedInstance = nil;
                 [self->_vFolderNames addObject:sf];
                 [self->_vRotations addObject:[pfo objectForKey:PInv_Rotated_key]];
             }
-            //NSLog(@" ...read all vendors");
+            NSLog(@" ...read all vendors");
             [self.delegate didReadVendorsFromParse];
         }
     }];

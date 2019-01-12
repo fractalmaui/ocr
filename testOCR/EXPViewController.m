@@ -160,7 +160,6 @@
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Sort EXP Table By...",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    UIAlertAction *actions[32];
     int i=0;
     
     NSArray *sortOptions = @[
@@ -473,23 +472,11 @@
         //        cell.label4.text = e.vendor;
         return cell;
     }
-//    NSString *comment      = [_workActivity getNthComment  : row];
     UITableViewCell *cell = (UITableViewCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
-    return cell;
-    UIColor *c;
-    if (dbMode == DB_MODE_EXP)
-        c  = [UIColor yellowColor];
-    else if (dbMode == DB_MODE_INVOICE)
-        c  = [UIColor cyanColor];
-    else if (dbMode == DB_MODE_TEMPLATE)
-        c  = [UIColor greenColor];
-
-    cell.backgroundColor  = c;
-    cell.textLabel.text = [dbResults objectAtIndex:row];
     return cell;
 } //end cellForRowAtIndexPath
 
@@ -521,7 +508,7 @@
     //NSLog(@" prepareForSegue: %@ sender %@",[segue identifier], sender);
     if([[segue identifier] isEqualToString:@"expDetailSegue"])
     {
-        EXPObject* locale = (EXPObject*)sender;
+        //EXPObject* locale = (EXPObject*)sender;
         EXPDetailVC *vc = (EXPDetailVC*)[segue destinationViewController];
 //        vc.myTitle     = [NSString stringWithFormat:@"EXP[%@]",locale.objectId];
        // vc.eobj        = locale;

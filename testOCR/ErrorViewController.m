@@ -360,7 +360,7 @@
 {
     berrs = [bbb getErrors];
     NSLog(@" ok batch read %@:%@",oid,berrs);
-    errorList = [berrs componentsSeparatedByString:@","]; //Break up errors...
+    errorList = (NSMutableArray*)[berrs componentsSeparatedByString:@","]; //Break up errors...
     [self loadAllExpObjects];
     [_table reloadData];
     [self updateUI];
@@ -374,9 +374,9 @@
 }
 
 //=============<batchObjectDelegate>=====================================================
-- (void)didUpdateParse
+- (void)didUpdateBatchToParse
 {
-    NSLog(@" ok batch didUpdateParse");
+    NSLog(@" ok batch didUpdateBatchToParse");
 
 }
 

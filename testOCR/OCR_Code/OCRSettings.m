@@ -12,6 +12,7 @@
 //  Created by Dave Scruton on 12/30/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  1/9 Add outputFolder
 
 #import "OCRSettings.h"
 
@@ -22,6 +23,7 @@ static OCRSettings *sharedInstance = nil;
 #define BUFFERSIZE 256
 NSString *const PS_PhotoJPEGQualityKey      = @"PhotoJPEGQuality";
 NSString *const PS_BatchFolderKey           = @"BatchFolder";
+NSString *const PS_OutputFolderKey          = @"OutputFolder";
 NSString *const PS_ErrorFolderKey           = @"ErrorFolder";
 NSString *const PS_RejectFolderKey          = @"RejectFolder";
 
@@ -52,6 +54,7 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
         _errorFolder           = errorFolderDefault            = @"errors";
         _rejectFolder          = rejectFolderDefault           = @"rejects";
         _PhotoJPEGQuality      = PhotoJPEGQualityDefault       = 0.8;
+        _outputFolder          = outputFolderDefault           = @"processedBatch";
         [self readLocalSettings]; //Read local copy first before going to parse..
         [self loadFromParse];
     }
@@ -83,7 +86,8 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
                 self->_batchFolder             = [objectx objectForKey:PS_BatchFolderKey];
                 self->_errorFolder             = [objectx objectForKey:PS_ErrorFolderKey];
                 self->_rejectFolder            = [objectx objectForKey:PS_RejectFolderKey];
-               
+                self->_outputFolder            = [objectx objectForKey:PS_OutputFolderKey];
+
                 [self keepFieldsLegal];
                 [self saveLocalSettings]; //Save a copy locally...
                 self->loaded = TRUE;
@@ -203,6 +207,8 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
                                               _errorFolder]];
     dumpit = [dumpit stringByAppendingString:[NSString stringWithFormat:@"   RejectFolder      : %@\n" ,
                                               _rejectFolder]];
+    dumpit = [dumpit stringByAppendingString:[NSString stringWithFormat:@"   OutputFolder      : %@\n" ,
+                                              _outputFolder]];
 
     return dumpit;
 }

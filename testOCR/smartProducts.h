@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define ANALYZER_ZERO_AMOUNT 1004
 #define ANALYZER_ZERO_PRICE 1005
 #define ANALYZER_ZERO_QUANTITY 1006
+#define ANALYZER_NONPRODUCT 1007
 
 
 @interface smartProducts : NSObject
@@ -48,10 +49,13 @@ NS_ASSUME_NONNULL_BEGIN
     NSArray *proteinNames;
     NSArray *produceNames;
     NSArray *suppliesNames;
+    NSArray *nonProducts;
     NSMutableArray *typos;
     NSMutableArray *fixed;
     NSMutableArray *splits;
     NSMutableArray *joined;
+    NSMutableArray *wilds;
+    NSMutableArray *notwilds;
 
     OCRCategories* occ; //Categories / processed / local lookup table
 }
@@ -73,6 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic , strong) NSString* invoiceDateString;
 @property (nonatomic , strong) NSString* latestLineNumber; //String?
 @property (nonatomic , assign) BOOL analyzeOK;
+@property (nonatomic , assign) int  minorError;
 @property (nonatomic , assign) BOOL nonProduct;
 
 
@@ -86,8 +91,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addPrice : (NSString*)price;
 -(void) addQuantity : (NSString*)qstr;
 -(int) analyzeFull;
--(BOOL) analyzeSimple;
--(void) dump;
+-(BOOL) analyzeFinal;
+-(int) analyze;
+//-(void) dump;
 -(NSString*) getErrDescription : (int) aerr;
 -(NSString*) getDollarsAndCentsString : (float) fin;
 
