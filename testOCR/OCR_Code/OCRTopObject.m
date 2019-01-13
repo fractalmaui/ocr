@@ -158,26 +158,37 @@ static OCRTopObject *sharedInstance = nil;
         [self->_delegate errorPerformingOCR:@"Missing Invoice Columns"];
         return;
     }
-    CGRect rrright = [ot getColumnByIndex:od.priceColumn];  //Was canned:3
+    //Get Y position of data in both price and amount columns...
+    CGRect rrright = [ot getColumnByIndex:od.priceColumn];
     rrright.origin.y = columnDataTop;
     //NOTE: rowYs and rowY2s are already in DOCUMENT coords!
     rowYs = [od getColumnYPositionsInRect:rrright : TRUE];
-    CGRect rrright2 = [ot getColumnByIndex:od.amountColumn] ; //Was canned:4
+    CGRect rrright2 = [ot getColumnByIndex:od.amountColumn] ;
     rrright2.origin.y = columnDataTop;
     rowY2s = [od getColumnYPositionsInRect:rrright2 : TRUE];
-    //Assemble our columns...
+    //Merge these two together, toss dupes (redudancy in case of missing or smudged column data)
+    NSMutableArray *allys = [NSMutableArray arrayWithArray:rowYs];
+    [allys addObjectsFromArray:rowY2s]; //concatenate arrays...
+    NSArray *sortedArray = [allys sortedArrayUsingSelector: @selector(compare:)];
+    NSMutableArray *finalYs = [[NSMutableArray alloc] init];
+    NSNumber *lastY = [NSNumber numberWithDouble:-9999.0];
+    for (NSNumber *nextY in sortedArray)
+    {
+        int dy = nextY.doubleValue - lastY.doubleValue;
+        if (dy > od.glyphHeight) [finalYs addObject:nextY];
+        lastY = nextY;
+    }
+    
+    // Get columns,use Y positions above to find each row...
     for (int i=0;i<numCols;i++)
     {
         CGRect rr = [ot getColumnByIndex:i];
         rr.origin.y = columnDataTop; //Adjust Y according to found header!
         NSMutableArray *stringArray;
-        if (rowY2s.count > rowYs.count) //Get the column using the largest y row array we have
-            stringArray = [od getColumnStrings : rr : rowY2s : i];
-        else
-            stringArray = [od getColumnStrings : rr : rowYs : i];
+        stringArray = [od getColumnStrings : rr : finalYs : i];
         NSMutableArray *cleanedUpArray = [od cleanUpPriceColumns : i : stringArray];
         [od addColumnStringData:cleanedUpArray];
-        NSLog(@" col[%d] cleanup %@",i,cleanedUpArray);
+        //NSLog(@" col[%d] cleanup %@",i,cleanedUpArray);
     }
     
     //Now, columns are ready: let's dig them out!
@@ -220,63 +231,6 @@ static OCRTopObject *sharedInstance = nil;
     
 } //end applyTemplate
 
-//=============(OCRTopObject)=====================================================
-// Fix things like missing prices, price typos, etc...
--(void) cleanupInvoice
-{
-    //NSLog(@"cleanupInvoice");
-    smartCount  = 0;
-    for (int i=0;i<od.longestColumn;i++)
-    {
-        NSMutableArray *ac = [od getRowFromColumnStringData : i];
-        if (ac.count < 5)
-        {
-            NSLog(@" bad row pulled in EXP save!");
-            return;
-        }
-        //NSLog(@" rec[%d] %@",i,ac);
-        [smartp clear];
-        [smartp addVendor:_vendor]; //Is this the right string?
-        NSString *productName = ac[od.descriptionColumn];
-        NSString *item        = ac[od.itemColumn];
-        [smartp addProductName :productName];
-        [smartp addDate:_invoiceDate];
-        [smartp addLineNumber:i+1];
-        [smartp addPrice: ac[od.priceColumn]]; //column 3: price
-        [smartp addAmount: ac[od.amountColumn]]; //column 4: total amt
-        [smartp addQuantity : ac[od.quantityColumn]];
-        if ([productName containsString:@"UCUMBERS"])
-            NSLog(@" bing UCUMBERS");
-
-        int aerr = [smartp analyzeFull]; //fills out fields -> smartp.latest...
-        if (smartp.analyzeOK) smartCount++;
-        BOOL needNewPrices = TRUE; //Store in doc's postOCR area?
-        if (aerr != 0)
-        {
-            NSLog(@" analyze error %@",[smartp getErrDescription:aerr]);
-            if (aerr == ANALYZER_ZERO_PRICE || aerr == ANALYZER_ZERO_AMOUNT || aerr == ANALYZER_ZERO_QUANTITY)
-            {
-            }
-            else if (aerr == ANALYZER_BAD_PRICE_COLUMNS)
-            {
-                needNewPrices = FALSE; //We are setting new prices here...
-                //These err strings flag errors at EXP save time
-                [od setPostOCRQPA:i :smartp.latestQuantity : @"$ERR" : @"$ERR"];
-            }
-        }
-        if (smartp.minorError != 0) //May be a pricing error still? Mark it!
-        {
-           [od setPostOCRMinorError : i : smartp.minorError];
-        }
-        if (needNewPrices)
-        {
-            [od setPostOCRQPA:i :smartp.latestQuantity :smartp.latestPrice :smartp.latestAmount];
-        }
-//        NSLog(@" ci[%d] %@ %@ %@x%@ = %@",i,item,
-//              smartp.latestProductName,smartp.latestQuantity,
-//              smartp.latestPricePerUOM,smartp.latestAmount );
-    } //end i loop
-} //end cleanupInvoice
 
 
 //=============(OCRTopObject)=====================================================
@@ -417,7 +371,6 @@ static OCRTopObject *sharedInstance = nil;
             [od setupPage:page];
             [self applyTemplate : ot];   //Does OCR analysis
             NSLog(@" Cleanup invoice...");
-            //[self cleanupInvoice];       //Fixes weird numbers, typos, etc...
             [self writeEXPToParse : page];      //Saves all EXP rows, then invoice as well
         }
     }
@@ -435,7 +388,6 @@ static OCRTopObject *sharedInstance = nil;
     CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
     [od setupDocumentWithRect : r : OCRJSONResult ];
     [self applyTemplate:ot];
-    [self cleanupInvoice];
     [self writeEXPToParse : 0];
 
 }
@@ -522,7 +474,7 @@ static OCRTopObject *sharedInstance = nil;
             return;
         }
         //item,description ... Note: these columns are determined at runtime!
-        NSString *item        = ac[od.itemColumn];
+        //NSString *item        = ac[od.itemColumn];
         NSString *productName = ac[od.descriptionColumn];  
         [smartp clear];
         [smartp addVendor:_vendor]; //Is this the right string?
@@ -535,28 +487,26 @@ static OCRTopObject *sharedInstance = nil;
         [smartp addAmount: ac[od.amountColumn]];
         [smartp addQuantity : ac[od.quantityColumn]];
 
-        if ([productName containsString:@"HIPS"])
-            NSLog(@" bing HIPS");
-        int aError = [smartp analyze]; //fills out fields -> smartp.latest...
-        NSLog(@" analyze OK %d [%@]->%@",smartp.analyzeOK,productName, smartp.latestProductName);
+        if ([productName containsString:@"ICED"])
+            NSLog(@" asdf bing ICED");
+        int aError = [smartp analyze]; //fills out fields -> smartp.analyzed...
+        NSLog(@" analyze OK %d [%@]->%@",smartp.analyzeOK,productName, smartp.analyzedProductName);
         if (aError == 0) //Only save valid stuff!
         {
             NSString *errStatus = @"OK";
-            int minorErr = smartp.minorError;
-            if (minorErr != 0) //Minor error? encode!
-            {
-                errStatus = [NSString stringWithFormat:@"MinorError:%d",minorErr];
-            }
-            //NSLog(@" add record to et: %d",totalLines + smartCount);
+            if (smartp.majorError != 0) //Major error trumps minor one...
+                errStatus = [NSString stringWithFormat:@"E:%@",[smartp getMajorErrorString]];
+            else if (smartp.minorError != 0) //Minor error? encode!
+                errStatus = [NSString stringWithFormat:@"W:%@",[smartp getMinorErrorString]];
             smartCount++;
             //Format line count to triple digits, max 999
             NSString *lineString = [NSString stringWithFormat:@"%3.3d",(totalLines + smartCount)];
             //Tons of args: adds allll this shit to the next EXP table entry for saving to parse...
-            [et addRecord:smartp.invoiceDate : smartp.latestCategory : smartp.latestShortDateString :
-             ac[od.itemColumn] : smartp.latestUOM : smartp.latestBulkOrIndividual :
-             _vendor : smartp.latestProductName : smartp.latestProcessed :
-             smartp.latestLocal : lineString : _invoiceNumberString :
-             smartp.latestQuantity : smartp.latestPrice : smartp.latestAmount :
+            [et addRecord:smartp.invoiceDate : smartp.analyzedCategory : smartp.analyzedShortDateString :
+             ac[od.itemColumn] : smartp.analyzedUOM : smartp.analyzedBulkOrIndividual :
+             _vendor : smartp.analyzedProductName : smartp.analyzedProcessed :
+             smartp.analyzedLocal : lineString : _invoiceNumberString :
+             smartp.analyzedQuantity : smartp.analyzedPrice : smartp.analyzedAmount :
 //             [od getPostOCRQuantity:i] : [od getPostOCRPrice:i] : [od getPostOCRAmount:i] :
                 _batchID : errStatus : _imageFileName : [NSNumber numberWithInt:page]  ];
         } //end analyzeOK
@@ -565,8 +515,8 @@ static OCRTopObject *sharedInstance = nil;
             if (!smartp.nonProduct) //Ignore non-products (charges, etc) else report error
             {
                 NSLog(@" ---->ERROR: bad product name %@",productName);
-                NSString *s = [NSString stringWithFormat:@"Bad Product Name (%@)",productName];
-                [self->_delegate errorSavingEXP:s:@"n/a"];
+                NSString *s = [NSString stringWithFormat:@"E:Bad Product Name (%@)",productName];
+                [self->_delegate errorSavingEXP:s:@"n/a":productName];
             }
         }
     } //end for loop
@@ -651,9 +601,9 @@ static OCRTopObject *sharedInstance = nil;
 
 //=============OCR VC=====================================================
 // Error in an EXP record; pass on to batch for storage
-- (void)errorInEXPRecord : (NSString *)err : (NSString *)oid
+- (void)errorInEXPRecord : (NSString *)err : (NSString *)oid : (NSString *)productName
 {
-    [self->_delegate errorSavingEXP:err:oid];  // -> BatchObject (bbb)
+    [self->_delegate errorSavingEXP : err : oid : productName];  // -> BatchObject (bbb)
 }
 
 

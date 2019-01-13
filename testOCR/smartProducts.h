@@ -21,13 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 
-#define ANALYZER_BAD_PRICE_COLUMNS 1001
-#define ANALYZER_MATH_ERROR 1002
-#define ANALYZER_NO_PRODUCT_FOUND 1003
-#define ANALYZER_ZERO_AMOUNT 1004
-#define ANALYZER_ZERO_PRICE 1005
-#define ANALYZER_ZERO_QUANTITY 1006
-#define ANALYZER_NONPRODUCT 1007
+#define ANALYZER_BAD_PRICE_COLUMNS  1001
+#define ANALYZER_MATH_ERROR         1002
+#define ANALYZER_NO_PRODUCT_FOUND   1003
+#define ANALYZER_ZERO_AMOUNT        1004
+#define ANALYZER_ZERO_PRICE         1005
+#define ANALYZER_ZERO_QUANTITY      1006
+#define ANALYZER_NONPRODUCT         1007
+#define ANALYZER_BAD_MATH           1008
 
 
 @interface smartProducts : NSObject
@@ -60,24 +61,25 @@ NS_ASSUME_NONNULL_BEGIN
     OCRCategories* occ; //Categories / processed / local lookup table
 }
 //These props get set by analyze for public access...
-@property (nonatomic , strong) NSString* latestDateString;
-@property (nonatomic , strong) NSString* latestShortDateString;
-@property (nonatomic , strong) NSString* latestCategory;
-@property (nonatomic , strong) NSString* latestUOM;
-@property (nonatomic , strong) NSString* latestBulkOrIndividual;
-@property (nonatomic , strong) NSString* latestQuantity;
-@property (nonatomic , strong) NSString* latestPricePerUOM;
-@property (nonatomic , strong) NSString* latestPrice;
-@property (nonatomic , strong) NSString* latestProductName;
-@property (nonatomic , strong) NSString* latestAmount;
-@property (nonatomic , strong) NSString* latestProcessed;
-@property (nonatomic , strong) NSString* latestLocal;
-@property (nonatomic , strong) NSString* latestVendor;
+@property (nonatomic , strong) NSString* analyzedDateString;
+@property (nonatomic , strong) NSString* analyzedShortDateString;
+@property (nonatomic , strong) NSString* analyzedCategory;
+@property (nonatomic , strong) NSString* analyzedUOM;
+@property (nonatomic , strong) NSString* analyzedBulkOrIndividual;
+@property (nonatomic , strong) NSString* analyzedQuantity;
+@property (nonatomic , strong) NSString* analyzedPricePerUOM;
+@property (nonatomic , strong) NSString* analyzedPrice;
+@property (nonatomic , strong) NSString* analyzedProductName;
+@property (nonatomic , strong) NSString* analyzedAmount;
+@property (nonatomic , strong) NSString* analyzedProcessed;
+@property (nonatomic , strong) NSString* analyzedLocal;
+@property (nonatomic , strong) NSString* analyzedVendor;
+@property (nonatomic , strong) NSString* analyzedLineNumber; //String?
 @property (nonatomic , strong) NSDate* invoiceDate;
 @property (nonatomic , strong) NSString* invoiceDateString;
-@property (nonatomic , strong) NSString* latestLineNumber; //String?
 @property (nonatomic , assign) BOOL analyzeOK;
 @property (nonatomic , assign) int  minorError;
+@property (nonatomic , assign) int  majorError;
 @property (nonatomic , assign) BOOL nonProduct;
 
 
@@ -90,13 +92,12 @@ NS_ASSUME_NONNULL_BEGIN
 -(void) addAmount : (NSString*)price;
 -(void) addPrice : (NSString*)price;
 -(void) addQuantity : (NSString*)qstr;
--(int) analyzeFull;
--(BOOL) analyzeFinal;
 -(int) analyze;
 //-(void) dump;
 -(NSString*) getErrDescription : (int) aerr;
 -(NSString*) getDollarsAndCentsString : (float) fin;
-
+-(NSString*) getMinorErrorString;
+-(NSString*) getMajorErrorString;
 
 @end
 

@@ -11,6 +11,7 @@
 //  Created by Dave Scruton on 1/4/19.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  1/12  Added E: or W: prefix to errors!
 
 #import "ErrorViewController.h"
 
@@ -312,12 +313,13 @@
 }
 
 //=============Error VC=====================================================
+// Errors are now E:ErrDesc:ObjID, so there are 3 sub-items! (were 2 before)
 -(NSString *) getIDFromErrorString : (NSString *)errString
 {
     NSArray *sItems = [errString componentsSeparatedByString:@":"];
     if (sItems.count > 1)
     {
-        NSString *s = sItems[1];
+        NSString *s = sItems[2]; //DHS 1/12
         if (![s containsString:@"/"] ) return s;
     }
     return @"";
@@ -343,7 +345,7 @@
     NSArray *sItems    = [allErrs componentsSeparatedByString:@":"];
     if (sItems.count > 1)
     {
-        fixingObjectID = sItems[1];
+        fixingObjectID = sItems[2]; //DHS 1/12 now 3 items in error
         NSLog(@" duh %@",fixingObjectID);
         [et getObjectByID:fixingObjectID];
     }
@@ -384,8 +386,8 @@
 
 
 //=============Error VC=====================================================
-// Opens up a subpanel which will vary based on the error
-//
+// Opens up a subpanel which will vary based on the error,
+//    also loads up the scanned image if possible...
 // Quantity / Price / Amount Error(s) use a 3-field numeric UI
 //
 -(void) setupPanelForError : (NSString*) key
@@ -407,12 +409,14 @@
     int dog = 0;
     if ((dog == 1) && [pc imageExistsByID : pdfName : errorPage+1])
     {
+        NSLog(@" ...cache HIT %@",pdfName);
         UIImage *ii = nil;
         ii = [pc getImageByID : pdfName : errorPage+1];
         [self finishSettingPDFImage : ii];
     }
     else //Cache miss? get PDF directly from dropbox...
     {
+        NSLog(@" ...cache MISS: downloading %@",pdfName);
         [dbt downloadImages:pdfName];
     }
     if (isNumeric) //Is this a numeric field?
@@ -491,6 +495,9 @@
             [allErrorsInEXPRecord addObject:key];
         }
     }
+    NSString *errStatus = e.errStatus.lowercaseString;
+    if ([errStatus containsString:@"zero"] || [errStatus containsString:@"bad"] ) //Numeric field errors?
+        [allErrorsInEXPRecord addObject:PInv_TotalPrice_key];
     //Did we get any errors?
     if (allErrorsInEXPRecord.count > 0)
     {

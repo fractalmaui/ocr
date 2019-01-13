@@ -16,15 +16,12 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>
-#import "PDFCache.h"
 @protocol DropboxToolsDelegate;
 
 @interface DropboxTools : NSObject
 {
     UIViewController *parent;
     DBUserClient *client;
-    PDFCache *pc;
-//    NSMutableArray *batchFileList;
 }
 
 @property (nonatomic, unsafe_unretained) id <DropboxToolsDelegate> delegate; // receiver of completion messages
@@ -49,6 +46,7 @@
 -(void) setParent : (UIViewController*) p;
 -(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder;
 -(void) renameFile : (NSString*) fromPath : (NSString*) toPath;
+-(void) saveTextFile : (NSString *)fpath : (NSString *)stringToSave;
 
 
 @end
@@ -59,7 +57,7 @@
 @optional
 - (void)didGetBatchList : (NSArray *)a;
 - (void)didCountEntries : (NSString *)vname : (int) count;
-- (void)errorGettingBatchList : (NSString *)s;
+- (void)errorGettingBatchList : (NSString *)type : (NSString *)s;
 - (void)didDownloadImages;
 - (void)errorDownloadingImages : (NSString *)s;
 @end

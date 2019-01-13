@@ -10,6 +10,7 @@ ereal = cereal
 ettuce = lettuce
 iceber = iceberg
 oup = soup
+joup = soup
 pples = apples
 proe)uce = produce
 quash  = squash

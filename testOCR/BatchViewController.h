@@ -28,6 +28,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UILabel *batchTableLabel;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
+@property (weak, nonatomic) IBOutlet UIButton *runButton;
 
 - (IBAction)cancelSelect:(id)sender;
 - (IBAction)runSelect:(id)sender;

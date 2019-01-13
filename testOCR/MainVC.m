@@ -89,7 +89,7 @@
 -(void)refreshIt
 {
     NSLog(@" pull to refresh...");
-    [_table reloadData];
+    [act readActivitiesFromParse:nil :nil];
 }
 
 
@@ -110,7 +110,7 @@
 {
     [super viewWillAppear:animated];
     [act readActivitiesFromParse:nil :nil];
-  //  [self testit];
+    //[self testit];
 }
 
 
@@ -118,7 +118,7 @@
 - (void)viewDidAppear:(BOOL)animated {
     //NSLog(@"mainvc viewDidAppear...");
     [super viewDidAppear:animated];
-    _versionLabel.text = [NSString stringWithFormat:@"version %@",versionNumber];
+    _versionLabel.text = [NSString stringWithFormat:@"V %@",versionNumber];
    // [self testit];
 
     //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
@@ -438,7 +438,6 @@
 } //end getBatchInfo
 
 //=============OCR MainVC=====================================================
-//asdf
 - (void)didReadBatchByIDs:(NSNotification *)notification
 {
     //Should be pfobjects?
@@ -520,16 +519,58 @@
     return jdict;
 }
 
+
+//(NSArray *) rowy = []
+//"294.5",   RASPBERRY
+//358,       AUSAGE>
+//"406.5",   FRENCH
+//439,       BASIL
+//471        BUTTER
+//) y2s (
+//       "284.5",
+//       326,
+//       358,
+//       439,
+//       471,
+//       519,
+//       599
 //=============OCR MainVC=====================================================
 -(void) testit
 {
-    NSLog(@" load vendors?");
-    Vendors* vv = [Vendors sharedInstance];
-    [vv readFromParse];
+    
+    NSMutableArray *ys = [[NSMutableArray alloc] init];
+    NSMutableArray *y2 = [[NSMutableArray alloc] init];
 
-//    DropboxTools *dbt = [DropboxTools sharedInstance];
-//    [dbt renameFile:@"/latestBatch/HFM/lilHFMDec2.pdf" :@"/latestBatch/HFM/lilHFMDec.pdf"];
-//    return;
+    [ys addObject:[NSNumber numberWithDouble:294.3]];
+    [ys addObject:[NSNumber numberWithDouble:358.0]];
+    [ys addObject:[NSNumber numberWithDouble:406.5]];
+    [ys addObject:[NSNumber numberWithDouble:439.0]];
+    [ys addObject:[NSNumber numberWithDouble:471.0]];
+
+    [y2 addObject:[NSNumber numberWithDouble:284.5]];
+    [y2 addObject:[NSNumber numberWithDouble:326.0]];
+    [y2 addObject:[NSNumber numberWithDouble:358.0]];
+    [y2 addObject:[NSNumber numberWithDouble:439.0]];
+    [y2 addObject:[NSNumber numberWithDouble:471.0]];
+    [y2 addObject:[NSNumber numberWithDouble:519.0]];
+    [y2 addObject:[NSNumber numberWithDouble:599.0]];
+
+    //Add array 2
+    NSMutableArray *allys = [NSMutableArray arrayWithArray:ys];
+    [allys addObjectsFromArray:y2]; //concatenate arrays...
+    NSArray *sortedArray = [allys sortedArrayUsingSelector: @selector(compare:)];
+    NSLog(@" sa %@",sortedArray);
+    NSMutableArray *finalYs = [[NSMutableArray alloc] init];
+    NSNumber *lastY = [NSNumber numberWithDouble:-9999.0];
+    int glyphHeight = 10;
+    for (NSNumber *nextY in sortedArray)
+    {
+        int dy = nextY.doubleValue - lastY.doubleValue;
+        if (dy > glyphHeight) [finalYs addObject:nextY];
+        lastY = nextY;
+    }
+    NSLog(@" annnd result is %@",finalYs);
+    //[allys sortedArrayUsingDescriptors:@selector(caseInsensitiveCompare:)];
     
     
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];

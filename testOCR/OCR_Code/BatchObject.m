@@ -13,7 +13,8 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 // Pull OIDs stuff asap
-//  1/9 Added file rename (stubbed out for now)
+//  1/9 Added file rename (stubbed out for now)\
+//  1/12 add OCRCache check to avoid download
 #import "BatchObject.h"
 
 @implementation BatchObject
@@ -35,10 +36,14 @@ static BatchObject *sharedInstance = nil;
 {
     if (self = [super init])
     {
-        vendorFileCounts = [[NSMutableArray alloc] init];
-        vendorFolders    = [[NSMutableDictionary alloc] init];
-        errorList        = [[NSMutableArray alloc] init];
-        fixedList        = [[NSMutableArray alloc] init];
+        vendorFileCounts  = [[NSMutableArray alloc] init];
+        vendorFolders     = [[NSMutableDictionary alloc] init];
+        errorList         = [[NSMutableArray alloc] init];
+        warningList       = [[NSMutableArray alloc] init];
+        errorReportList   = [[NSMutableArray alloc] init];
+        warningReportList = [[NSMutableArray alloc] init];
+        fixedList         = [[NSMutableArray alloc] init];
+        oc                = [OCRCache sharedInstance];
 
         dbt = [[DropboxTools alloc] init];
         dbt.delegate = self;
@@ -72,12 +77,26 @@ static BatchObject *sharedInstance = nil;
 
 
 //=============(BatchObject)=====================================================
--(void) addError : (NSString *) errDesc : (NSString *) objectID
+-(void) addError : (NSString *) errDesc : (NSString *) objectID : (NSString*) productName
 {
     //Format error and add it to array
+    NSLog(@" ..batch addError %@:%@",errDesc,productName);
     NSString *errStr = [NSString stringWithFormat:@"%@:%@",errDesc,objectID];
     [errorList addObject:errStr];
-}
+    NSString *errStr2 = [NSString stringWithFormat:@"%@:%@",errDesc,productName];
+    [errorReportList addObject:errStr2];
+} //end addError
+
+//=============(BatchObject)=====================================================
+-(void) addWarning : (NSString *) errDesc : (NSString *) objectID : (NSString*) productName
+{
+    //Format error and add it to array
+    NSLog(@" ..batch addWarning %@:%@",errDesc,productName);
+    NSString *errStr = [NSString stringWithFormat:@"%@:%@",errDesc,objectID];
+    [warningList addObject:errStr];
+    NSString *errStr2 = [NSString stringWithFormat:@"%@:%@",errDesc,productName];
+    [warningReportList addObject:errStr2];
+} //end addWarning
 
 
 //=============(BatchObject)=====================================================
@@ -138,24 +157,23 @@ static BatchObject *sharedInstance = nil;
     batchErrors   = @"";
     batchFiles    = @"";
     batchProgress = @"";
-    [errorList removeAllObjects]; //This is where errors accumulate...
+    [errorList removeAllObjects];        //Clear error / warning accumulators
+    [warningList removeAllObjects];
+    [errorReportList removeAllObjects];   //one set for parse storage, one for report
+    [warningReportList removeAllObjects];
     [self.delegate batchUpdate : @"Started Batch..."];
-    oto.batchID    = _batchID; //Make sure OCR toplevel has batchID...
-    vendorName     = vv.vNames[vindex];
-    vendorRotation = vv.vRotations[vindex];
+    oto.batchID      = _batchID; //Make sure OCR toplevel has batchID...
+    vendorName       = vv.vNames[vindex];
+    vendorFolderName = vv.vFolderNames[vindex];
+    vendorRotation   = vv.vRotations[vindex];
     [self updateParse];
     NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
     [act saveActivityToParse:@"Batch Started" : actData];
     if (index >= 0)
     {
-        //DHS XMAS BYPASS...  assume template loaded locally
-        //gotTemplate = TRUE;
-        //[ot loadTemplatesFromDisk:vendorName];
-
         gotTemplate = FALSE;
+        //After template comes through THEN dropbox is queued up to start downloading!
         [ot readFromParse:vendorName]; //Get our template
-        // This performs handoff to the actual running ...
-        [dbt getBatchList : batchFolder : vv.vFolderNames[vindex]];
     }
     else
     {
@@ -219,7 +237,25 @@ static BatchObject *sharedInstance = nil;
         batchFiles = [batchFiles stringByAppendingString:lastPDFProcessed];
         batchProgress = [NSString stringWithFormat:@"Download PDF..."];
         [self.delegate batchUpdate : batchProgress];
-        [dbt downloadImages:lastPDFProcessed];    //Asyncbonous, need to finish before handling results
+        if ([oc txtExistsByID:lastPDFProcessed])
+        {
+            NSLog(@" Cache HIT! %@",lastPDFProcessed);
+            if (!gotTemplate) //Handle obvious errors
+            {
+                NSLog(@" ERROR: tried to process images w/o template");
+                //In this case we need to wait until template comes thru??
+                return;
+            }
+
+            oto.vendor = vendorName;
+            oto.imageFileName = lastPDFProcessed;
+            [oto performOCROnData : lastPDFProcessed : nil : CGRectZero : ot];
+        }
+        else
+        {
+            [dbt downloadImages:lastPDFProcessed];    //Asyncbonous, need to finish before handling results
+        }
+        
     }
 
 } //end processNextFile
@@ -282,7 +318,7 @@ static BatchObject *sharedInstance = nil;
         }
 
     }
-    else //OLD PDF DATA, potentially skewed!
+    else //OLD PDF DATA, potentially skewed! asdf
     {
         NSData *data = dbt.batchImageData[0];  //Raw PDF data, need to process...
         NSString *ipath = dbt.batchFileList[0]; //[paths objectAtIndex:batchPage];
@@ -349,8 +385,8 @@ static BatchObject *sharedInstance = nil;
                 self->batchProgress = pfo[PInv_BatchProgress_key];
                 self->batchErrors   = pfo[PInv_BatchErrors_key];
                 self->batchFixed    = pfo[PInv_BatchFixed_key];
-                self->errorList = (NSMutableArray*)[self->batchErrors componentsSeparatedByString:@","];
-                self->fixedList = (NSMutableArray*)[self->batchFixed  componentsSeparatedByString:@","];
+                self->errorList     = (NSMutableArray*)[self->batchErrors componentsSeparatedByString:@","];
+                self->fixedList     = (NSMutableArray*)[self->batchFixed  componentsSeparatedByString:@","];
                 [self.delegate didReadBatchByID : bID];
             }
             else
@@ -406,6 +442,7 @@ static BatchObject *sharedInstance = nil;
             pfo[PInv_BatchProgress_key] = self->batchProgress;
             //Pack up errors / fixed...
             pfo[PInv_BatchErrors_key]   = [self->errorList componentsJoinedByString:@","];
+            pfo[PInv_BatchWarnings_key] = [self->warningList componentsJoinedByString:@","];
             pfo[PInv_BatchFixed_key]    = [self->fixedList componentsJoinedByString:@","];
             pfo[PInv_VersionNumber]     = self->_versionNumber;
             [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
@@ -434,19 +471,40 @@ static BatchObject *sharedInstance = nil;
     //if (batchCount > 1)
     s = [s stringByAppendingString:[NSString stringWithFormat:@"ID %@\n",_batchID]];
     s = [s stringByAppendingString:[NSString stringWithFormat:@"Files %@\n",batchFiles]];
-    s = [s stringByAppendingString:[NSString stringWithFormat:@"Errors %@\n",batchErrors]];
-    for (NSString *ns in errorList)
+//    s = [s stringByAppendingString:[NSString stringWithFormat:@"Errors %@\n",batchErrors]];
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"Errors (%d found)\n",
+                                    (int)errorReportList.count]];
+    for (NSString *ns in errorReportList)
     {
         s = [s stringByAppendingString:[NSString stringWithFormat:@"->%@\n",ns]];
     }
-    
+    s = [s stringByAppendingString:[NSString stringWithFormat:@"Warnings (%d found)\n",
+                                    (int)warningReportList.count]];
+    for (NSString *ns in warningReportList)
+    {
+        s = [s stringByAppendingString:[NSString stringWithFormat:@"->%@\n",ns]];
+    }
 
+    //Save locally...
     NSData *data =[s dataUsingEncoding:NSUTF8StringEncoding];
     [data writeToFile:path atomically:YES];
     NSLog(@" ...writeBatchReport %@",path);
     NSLog(@" ...   string %@",s);
 
-    
+    //Save to Dropbox...
+    //last filename looks like: /inputfolder/vendor/filename.pdf
+    NSMutableArray *chunks = (NSMutableArray*)[lastPDFProcessed componentsSeparatedByString:@"/"];
+    if (chunks.count >= 4)
+    {
+        AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        chunks[1] = bappDelegate.settings.outputFolder;
+        chunks[3] = @"report.txt";
+        NSString *outputPath = [chunks componentsJoinedByString:@"/"];
+        DropboxTools *dbt = [DropboxTools sharedInstance];
+        [dbt saveTextFile : outputPath : s];
+        NSLog(@" ...report saved to dropbox: %@",outputPath);
+    }
+    return;
 } //end writeBatchReport
 
 
@@ -462,7 +520,7 @@ static BatchObject *sharedInstance = nil;
 }
 
 //===========<DropboxToolDelegate>================================================
-- (void)errorGettingBatchList : (NSString *)s
+- (void)errorGettingBatchList : (NSString *) type: (NSString *)s 
 {
     [self addError : s : @"n/a"];
 }
@@ -496,6 +554,7 @@ static BatchObject *sharedInstance = nil;
     [self processPDFPages];
 }  //end didDownloadImages
 
+
 //===========<DropboxToolDelegate>================================================
 - (void)errorDownloadingImages : (NSString *)s
 {
@@ -509,6 +568,9 @@ static BatchObject *sharedInstance = nil;
 {
     NSLog(@" got template...");
     gotTemplate = TRUE;
+    // This performs handoff to the actual running ...
+    [dbt getBatchList : batchFolder : vendorFolderName];
+
 }
 
 //===========<OCRTemplateDelegate>================================================
@@ -560,12 +622,17 @@ static BatchObject *sharedInstance = nil;
 
 
 //===========<OCRTopObjectDelegate>================================================
-- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID
+- (void)errorSavingEXP  : (NSString *) errMsg : (NSString*) objectID : (NSString*) productName
 {
     //Record this error , gets saved with batch record
     NSString *secondArg = objectID;
     if (objectID== nil) secondArg = _batchID; //Got no DB oid? use batchID for lookup
-    [self addError : errMsg : objectID];
+    //Assume only 2 types for now...
+    NSLog(@" exp error %@ : %@",errMsg,objectID);
+    if ([[errMsg substringToIndex:2] containsString:@"E"])
+        [self addError : errMsg : objectID : productName];
+    else
+        [self addWarning : errMsg : objectID : productName];
 }
 
 

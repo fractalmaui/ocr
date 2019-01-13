@@ -12,7 +12,7 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 //  12/31 add typos
-
+//  1/10  add analyze, get rid of old analyze stuff...
 #import "smartProducts.h"
 
 @implementation smartProducts
@@ -235,20 +235,20 @@
 //=============(smartProducts)=====================================================
 -(void) clearOutputs
 {
-    _latestCategory = @"";
-    _latestUOM = @"";
-    _latestBulkOrIndividual = @"";
-    _latestQuantity = @"";
-    _latestPricePerUOM = @"";
-    _latestPrice = @"";
-    _latestProcessed = @"";
-    _latestLocal = @"";
-    _latestLineNumber  = @"";
-    _latestProductName = @"";
-    _latestVendor = @"";
-    _latestAmount = @"";
-    _latestShortDateString = @"";
-    _latestDateString = @"";
+    _analyzedCategory = @"";
+    _analyzedUOM = @"";
+    _analyzedBulkOrIndividual = @"";
+    _analyzedQuantity = @"";
+    _analyzedPricePerUOM = @"";
+    _analyzedPrice = @"";
+    _analyzedProcessed = @"";
+    _analyzedLocal = @"";
+    _analyzedLineNumber  = @"";
+    _analyzedProductName = @"";
+    _analyzedVendor = @"";
+    _analyzedAmount = @"";
+    _analyzedShortDateString = @"";
+    _analyzedDateString = @"";
 
 }
 
@@ -325,133 +325,40 @@
             break;
         case ANALYZER_ZERO_QUANTITY:     result = @"Zero Quantity";
             break;
+        case ANALYZER_BAD_MATH:          result = @"Bad Math";
+            break;
+        case ANALYZER_NONPRODUCT:        result = @"Non-Product";
+            break;
     }
-    
+
     return result;
+} //end getErrDescription
+
+//=============(smartProducts)=====================================================
+-(NSString*) getMinorErrorString
+{
+    return [self getErrDescription : _minorError];
 }
 
 //=============(smartProducts)=====================================================
--(BOOL) analyzeProductName
+-(NSString*) getMajorErrorString
 {
-    BOOL found = FALSE;
-    _latestCategory = @"EMPTY";
-    _nonProduct = FALSE;
+    return [self getErrDescription : _majorError];
+}
 
-    if ([fullProductName.lowercaseString containsString:@"elat"])
-    {
-        NSLog(@" weird elat string");
-    }
-    //Bail on any weird product names, or obviously NON-product items found in this column...
-    for (NSString *nps in nonProducts)
-    {
-        if ([fullProductName.lowercaseString containsString:nps])
-        {
-            NSLog(@" non product %@",fullProductName);
-            _nonProduct = TRUE;
-            return false;
-        }
-    }
-    //Fix typos...
-    NSString* opn = fullProductName;
-    fullProductName = [self fixSentenceTypo:fullProductName];
-    //NSLog(@" cleanup product name %@ -> %@",opn,fullProductName);
-    NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
-
-    //Try matching with built-in CSV file cat.txt first...
-    NSArray *a = [occ matchCategory:fullProductName];
-    if (a != nil && a.count > 0)  //Hit?  
-    {
-        if (a.count >= 4)
-        {
-            _latestCategory  = a[0]; //Get canned data out from array...
-            _latestProcessed = a[2];
-            _latestLocal     = a[3];
-            processed = ([_latestProcessed.lowercaseString isEqualToString:@"processed"]);
-            local     = ([_latestLocal.lowercaseString isEqualToString:@"yes"]);
-            _latestProductName = fullProductName; //Set output product name!
-            return TRUE;
-        }
-    }
-    //Miss? Try matching words in the product name with some generic lists of items...
-    //  Must do it word-by-word, so it's SLOW...
-    for (NSString *nextWord in pItems)
-    {
-        if (found) break;
-        NSString *lowerCase = [nextWord lowercaseString]; //Always match on lowercase
-        lowerCase = [lowerCase   stringByReplacingOccurrencesOfString:@"/" withString:@""]; //Get rid of illegal stuff!
-        if ([beverageNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = BEVERAGE_CATEGORY;
-            _latestUOM = @"case";
-            processed = TRUE;
-            bulk = TRUE;
-        }
-        else if ([dairyNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = DAIRY_CATEGORY;
-            _latestUOM = @"qt";  //THis varies widely! maybe second array should be:
-            processed = TRUE;    //   UOM/processed/bulk, matching product names one for one
-            bulk = TRUE;
-        }
-        else if ([dryGoodsNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = DRY_GOODS_CATEGORY;
-            _latestUOM = @"lb";  //THis varies widely! see dairy
-            processed = TRUE;
-            bulk = TRUE;
-        }
-        else if ([miscNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = MISC_CATEGORY;
-            _latestUOM = @"n/a";
-            processed = FALSE;
-            bulk = FALSE;
-        }
-        else if ([produceNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = PRODUCE_CATEGORY;
-            _latestUOM = @"lb";
-            processed = FALSE;
-            bulk = TRUE;
-        }
-        else if ([proteinNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = PROTEIN_CATEGORY;
-            _latestUOM = @"lb";
-            processed = FALSE; //Is ground beef processed?
-            bulk = TRUE; //Is this ok for all meat?
-        }
-        else if ([suppliesNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
-        {
-            found = TRUE;
-            _latestCategory = SUPPLIES_CATEGORY;
-            _latestUOM = @"n/a";
-            processed = FALSE;
-            bulk = FALSE;
-        }
-    }
-    _latestProductName = fullProductName;
-    return found;
-    
-} //end analyzeProductName
 
 //=============(smartProducts)=====================================================
 // Does ALL analyzing...non-zero return value means FAIL: Don't ADD!
 -(int) analyze
 {
     [self clearOutputs]; //Get rid of residue from last pass...
-    _analyzeOK = FALSE;
-    processed  = FALSE;
-    local      = FALSE;
-    bulk       = FALSE;
-    int aerror = 0;
-
+    _analyzeOK  = FALSE;
+    processed   = FALSE;
+    local       = FALSE;
+    bulk        = FALSE;
+    _nonProduct = FALSE;
+    int aerror  = 0;
+    _majorError = 0;
     //Bail on any weird product names, or obviously NON-product items found in this column...
     for (NSString *nps in nonProducts)
     {
@@ -462,34 +369,26 @@
             return ANALYZER_NONPRODUCT;
         }
     }
-    //Fix typos...
-//    NSString* opn = fullProductName;
     //DHS 12/31: Fix common misspellings, like "ananas" or "apaya"...
     fullProductName = [self fixSentenceTypo:fullProductName];
     //DHS 1/1 fix split words like "hawai ian"
     fullProductName = [self fixSentenceSplits:fullProductName];
-    
-    _latestCategory = @"EMPTY";
-
-    //NSLog(@" cleanup product name %@ -> %@",opn,fullProductName);
-    NSArray *pItems    = [fullProductName componentsSeparatedByString:@" "]; //Separate words
+    _analyzedCategory = @"EMPTY";
+    NSArray *pItems = [fullProductName componentsSeparatedByString:@" "]; //Separate words
     
     // Get product category / processed / local / bulk / etc....
     //Try matching with built-in CSV file cat.txt first...
     BOOL found = FALSE;
-    NSArray *a = [occ matchCategory:fullProductName];
-    if (a != nil && a.count > 0)  //Hit?
+    NSArray *a = [occ matchCategory:fullProductName]; //Returns array[4] on matche...
+    if (a != nil && a.count >=4)  //Hit?
     {
-        if (a.count >= 4)
-        {
-            _latestCategory  = a[0]; //Get canned data out from array...
-            _latestProcessed = a[2];
-            _latestLocal     = a[3];
-            processed = ([_latestProcessed.lowercaseString isEqualToString:@"processed"]);
-            local     = ([_latestLocal.lowercaseString isEqualToString:@"yes"]);
-            _latestProductName = fullProductName; //Set output product name!
-            found = TRUE;
-        }
+        _analyzedCategory  = a[0]; //Get canned data out from array...
+        _analyzedProcessed = a[2];
+        _analyzedLocal     = a[3];
+        processed = ([_analyzedProcessed.lowercaseString isEqualToString:@"processed"]);
+        local     = ([_analyzedLocal.lowercaseString isEqualToString:@"yes"]);
+        _analyzedProductName = fullProductName; //Set output product name!
+        found = TRUE;
     }
     //Miss? Try matching words in the product name with some generic lists of items...
     //  Must do it word-by-word, so it's SLOW...
@@ -501,70 +400,69 @@
         if ([beverageNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = BEVERAGE_CATEGORY;
-            _latestUOM = @"case";
+            _analyzedCategory = BEVERAGE_CATEGORY;
+            _analyzedUOM = @"case";
             processed = TRUE;
             bulk = TRUE;
         }
         else if ([dairyNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = DAIRY_CATEGORY;
-            _latestUOM = @"qt";  //THis varies widely! maybe second array should be:
+            _analyzedCategory = DAIRY_CATEGORY;
+            _analyzedUOM = @"qt";  //THis varies widely! maybe second array should be:
             processed = TRUE;    //   UOM/processed/bulk, matching product names one for one
             bulk = TRUE;
         }
         else if ([dryGoodsNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = DRY_GOODS_CATEGORY;
-            _latestUOM = @"lb";  //THis varies widely! see dairy
+            _analyzedCategory = DRY_GOODS_CATEGORY;
+            _analyzedUOM = @"lb";  //THis varies widely! see dairy
             processed = TRUE;
             bulk = TRUE;
         }
         else if ([miscNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = MISC_CATEGORY;
-            _latestUOM = @"n/a";
+            _analyzedCategory = MISC_CATEGORY;
+            _analyzedUOM = @"n/a";
             processed = FALSE;
             bulk = FALSE;
         }
         else if ([produceNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = PRODUCE_CATEGORY;
-            _latestUOM = @"lb";
+            _analyzedCategory = PRODUCE_CATEGORY;
+            _analyzedUOM = @"lb";
             processed = FALSE;
             bulk = TRUE;
         }
         else if ([proteinNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = PROTEIN_CATEGORY;
-            _latestUOM = @"lb";
+            _analyzedCategory = PROTEIN_CATEGORY;
+            _analyzedUOM = @"lb";
             processed = FALSE; //Is ground beef processed?
             bulk = TRUE; //Is this ok for all meat?
         }
         else if ([suppliesNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
         {
             found = TRUE;
-            _latestCategory = SUPPLIES_CATEGORY;
-            _latestUOM = @"n/a";
+            _analyzedCategory = SUPPLIES_CATEGORY;
+            _analyzedUOM = @"n/a";
             processed = FALSE;
             bulk = FALSE;
         }
     }
-    _latestProductName = fullProductName; //asdf
+    _analyzedProductName = fullProductName; // pass result to output
 
-    //REDUNDANT: see above! found = [self analyzeProductName];
     if (!found)
     {
         //NSLog(@" analyze ... no product found %@",fullProductName);
+        _majorError = ANALYZER_NO_PRODUCT_FOUND;
         return ANALYZER_NO_PRODUCT_FOUND; //Indicate failure
     }
-    
-    
+        
     if ( //Got a product of Hawaii in description? set local flag
         [fullProductName.lowercaseString containsString:@"hawaii"] ||
         [fullProductName.lowercaseString containsString:@"hawa11"]
@@ -587,17 +485,18 @@
     }
     float testAmount = (float)qint * pfloat;
     
-    NSLog(@" above [%@] priceFix q p a %d %f %f",fullProductName,qint,pfloat,afloat);
+    //NSLog(@" above [%@] priceFix q p a %d %f %f",fullProductName,qint,pfloat,afloat);
     if (pfloat == 0.0 && afloat == 0.0) //Bad! no price no dice!
     {
         NSLog(@" ... bad price columns!");
-        aerror = ANALYZER_BAD_PRICE_COLUMNS;
+        _majorError = ANALYZER_BAD_PRICE_COLUMNS;
     }
     else if (afloat != testAmount || qint == 0)
     {
         NSLog(@" ...price err: q * p not equal to a!");
         if (afloat == 0.0 && qint != 0)
         {
+            NSLog(@" ...ZERO Amount: FIX");
             amount = [self getDollarsAndCentsString:(float)qint * pfloat];
             aerror = ANALYZER_ZERO_AMOUNT;
         }
@@ -605,14 +504,12 @@
         {
             NSLog(@" ...ZERO QUANTITY: FIX");
             qint = (int)floor((afloat / pfloat) + 0.5);
-            quantity = [NSString stringWithFormat:@"%d", qint]; //pf better be != 0!
             aerror = ANALYZER_ZERO_QUANTITY;
         }
         else if (pfloat == 0.0)
         {
             NSLog(@" ...ZERO PRICE: FIX");
-            price = [self getDollarsAndCentsString:afloat / (float)qint];
-            //price  = [NSString stringWithFormat:@"%4.2f",afloat / (float)qint];
+            pfloat = afloat / (float)qint;
             aerror = ANALYZER_ZERO_PRICE;
         }
         else //All fields present but still bad math? Assume quantity is wrong?
@@ -621,239 +518,49 @@
             if (qint == 1) //Check mismatch price/amount, defer to amount
             {
                 pfloat = afloat;
-                price = [self getDollarsAndCentsString  : pfloat];
-                amount = [self getDollarsAndCentsString : afloat];
             }
             else //Bogus quantity maybe?
             {
                 qint = (int)floor((afloat / pfloat) + 0.5);
             }
+            _majorError = ANALYZER_BAD_MATH;
         }
     }
+    quantity = [NSString stringWithFormat:@"%d", qint]; //pf better be != 0!
+    price    = [self getDollarsAndCentsString  : pfloat];
+    amount   = [self getDollarsAndCentsString  : afloat];
     //pass to outputs...
-    _latestQuantity = quantity;
-    _latestPrice    = price;
-    _latestAmount   = amount;
+    _analyzedQuantity = quantity;
+    _analyzedPrice    = price;
+    _analyzedAmount   = amount;
     NSLog(@" latest qpa %@ / %@ / %@",quantity,price,amount);
-    
-    //super unformatted price/amount? add cents
-//    if (![_latestPrice containsString:@"."])  _latestPrice  = [_latestPrice  stringByAppendingString:@".00"];
-//    if (![_latestAmount containsString:@"."]) _latestAmount = [_latestAmount stringByAppendingString:@".00"];
-    // No dollar sign? add one
-    //Do we really need a dollar sign?
-    //if (![_latestPrice containsString:@"$"]) _latestPrice =
-    //    [@"$" stringByAppendingString:_latestPrice];
-    
     //Handle flags...
-    if (local) _latestLocal = @"Yes";
-    else       _latestLocal = @"No";
+    if (local) _analyzedLocal = @"Yes";
+    else       _analyzedLocal = @"No";
     
-    if (bulk) _latestBulkOrIndividual = @"Bulk";
-    else      _latestBulkOrIndividual = @"Individual";
+    if (bulk) _analyzedBulkOrIndividual = @"Bulk";
+    else      _analyzedBulkOrIndividual = @"Individual";
     
-    if (processed) _latestProcessed = @"PROCESSED";
-    else           _latestProcessed = @"UNPROCESSED";
+    if (processed) _analyzedProcessed = @"PROCESSED";
+    else           _analyzedProcessed = @"UNPROCESSED";
     
-    if ([_latestUOM isEqualToString: @"n/a"])
+    if ([_analyzedUOM isEqualToString: @"n/a"])
     {
-        _latestBulkOrIndividual = @"n/a";
-        _latestLocal            = @"n/a";
-        _latestProcessed        = @"n/a";
+        _analyzedBulkOrIndividual = @"n/a";
+        _analyzedLocal            = @"n/a";
+        _analyzedProcessed        = @"n/a";
     }
     
-    _latestDateString = [self getDateAsString:_invoiceDate];
-    _latestShortDateString = [self getDateAsShortString:_invoiceDate];
-    _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
+    _analyzedDateString = [self getDateAsString:_invoiceDate];
+    _analyzedShortDateString = [self getDateAsShortString:_invoiceDate];
+    _analyzedLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
     //Just pass across from private -> public here
-    _latestVendor = vendor;
+    _analyzedVendor = vendor;
     
     _analyzeOK = TRUE;
     _minorError = aerror;
     return 0;
 } //end analyze
-
-//=============(smartProducts)=====================================================
-//Second pass...
--(BOOL) analyzeFinal
-{
-    [self clearOutputs]; //Get rid of residue from last pass...
-    _analyzeOK = FALSE;
-    processed = FALSE;
-    local     = FALSE;
-    bulk      = FALSE;
-    //DHS 12/31: Fix common misspellings, like "ananas" or "apaya"...
-    fullProductName = [self fixSentenceTypo:fullProductName];
-    //DHS 1/1 fix split words like "hawai ian"
-    fullProductName = [self fixSentenceSplits:fullProductName];
-
-    BOOL found = [self analyzeProductName];
-    if (!found)
-    {
-        _analyzeOK = FALSE;
-        return _analyzeOK;
-    }
-    
-    if ( //Got a product of Hawaii in description? set local flag
-        [fullProductName.lowercaseString containsString:@"local"]    ||
-        [fullProductName.lowercaseString containsString:@"hawaii"]   ||
-        ([fullProductName containsString:@"hawaii"]
-         &&
-         [fullProductName containsString:@"produce"])                ||
-        [fullProductName.lowercaseString containsString:@"hawa11"]
-        )
-        local = TRUE;
-    
-    //NOTE: quantity / price / amount NOT SET HERE!!
-    //  must use postOCR stuff from document instead (assumed to be saved)
-
-    //Handle flags...
-    if (local) _latestLocal = @"Yes";
-    else       _latestLocal = @"No";
-    
-    if (bulk) _latestBulkOrIndividual = @"Bulk";
-    else      _latestBulkOrIndividual = @"Individual";
-    
-    if (processed) _latestProcessed = @"PROCESSED";
-    else           _latestProcessed = @"UNPROCESSED";
-    
-    if ([_latestUOM isEqualToString: @"n/a"])
-    {
-        _latestBulkOrIndividual = @"n/a";
-        _latestLocal            = @"n/a";
-        _latestProcessed        = @"n/a";
-    }
-    
-    _latestDateString = [self getDateAsString:_invoiceDate];
-    _latestShortDateString = [self getDateAsShortString:_invoiceDate];
-    _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
-    //Just pass across from private -> public here
-    _latestVendor = vendor;
-    
-    _analyzeOK = TRUE;
-    return _analyzeOK;
-} //end analyzeFinal
-
-//=============(smartProducts)=====================================================
--(int) analyzeFull
-{
-    int aerror = 0;
-    _analyzeOK = FALSE;
-    processed  = FALSE;
-    local      = FALSE;
-    bulk       = FALSE;
-    NSString *foundResult = @"EMPTY";
-    BOOL found = [self analyzeProductName];
-    if (!found)
-    {
-        //NSLog(@" analyze ... no product found %@",fullProductName);
-        return ANALYZER_NO_PRODUCT_FOUND; //Indicate failure
-    }
-    
-    _latestCategory = foundResult;
-    
-    if ( //Got a product of Hawaii in description? set local flag
-        [fullProductName.lowercaseString containsString:@"hawaii"] ||
-        [fullProductName.lowercaseString containsString:@"hawa11"]
-        )
-        local = TRUE;
-
-    //Sanity Check: quantity * price = amount?
-    int   qint       = [quantity intValue];
-    float pfloat     = [price floatValue];
-    float afloat     = [amount floatValue];
-    if (afloat > 1000.0) //Huge Number? Assume decimal error
-    {
-        NSLog(@" ERROR: price over $1000!!: Assume misplaced decimal");
-        afloat = afloat / 100.0;
-        if (pfloat > 1000.0) pfloat = pfloat / 1000.0;
-    }
-    float testAmount = (float)qint * pfloat;
-    
-    NSLog(@" above [%@] priceFix q p a %d %f %f",fullProductName,qint,pfloat,afloat);
-    if (pfloat == 0.0 && afloat == 0.0) //Bad! no price no dice!
-    {
-        NSLog(@" ... bad price columns!"); //asdf
-        aerror = ANALYZER_BAD_PRICE_COLUMNS;
-    }
-    else if (afloat != testAmount)
-    {
-        NSLog(@" ...price err: q * p not equal to a!");
-        if (afloat == 0.0 && qint != 0)
-        {
-            amount = [self getDollarsAndCentsString:(float)qint * pfloat];
-            aerror = ANALYZER_ZERO_AMOUNT;
-        }
-        else if (afloat != 0.0 && qint == 0)
-        {
-            NSLog(@" ...ZERO QUANTITY: FIX");
-            qint = (int)floor((afloat / pfloat) + 0.5);
-            quantity = [NSString stringWithFormat:@"%d", qint]; //pf better be != 0!
-            aerror = ANALYZER_ZERO_QUANTITY;
-        }
-        else if (pfloat == 0.0)
-        {
-            NSLog(@" ...ZERO PRICE: FIX");
-            price = [self getDollarsAndCentsString:afloat / (float)qint];
-            //price  = [NSString stringWithFormat:@"%4.2f",afloat / (float)qint];
-            aerror = ANALYZER_ZERO_PRICE;
-        }
-        else //All fields present but still bad math? Assume quantity is wrong?
-        {
-            NSLog(@" ...bad math?");
-            if (qint == 1) //Check mismatch price/amount, defer to amount
-            {
-                pfloat = afloat;
-                price = [self getDollarsAndCentsString  : pfloat];
-                amount = [self getDollarsAndCentsString : afloat];
-            }
-            else //Bogus quantity maybe?
-            {
-                qint = (int)floor((afloat / pfloat) + 0.5);
-            }
-        }
-    }
-    //pass to outputs...
-    _latestQuantity = quantity;
-    _latestPrice    = price;
-    _latestAmount   = amount;
-    NSLog(@" latest qpa %@ / %@ / %@",quantity,price,amount);
-    
-    //super unformatted price/amount? add cents
-    if (![_latestPrice containsString:@"."])  _latestPrice  = [_latestPrice  stringByAppendingString:@".00"];
-    if (![_latestAmount containsString:@"."]) _latestAmount = [_latestAmount stringByAppendingString:@".00"];
-    // No dollar sign? add one
-    //Do we really need a dollar sign?
-    //if (![_latestPrice containsString:@"$"]) _latestPrice =
-    //    [@"$" stringByAppendingString:_latestPrice];
-    
-    //Handle flags...
-    if (local) _latestLocal = @"Yes";
-    else       _latestLocal = @"No";
-    
-    if (bulk) _latestBulkOrIndividual = @"Bulk";
-    else      _latestBulkOrIndividual = @"Individual";
-    
-    if (processed) _latestProcessed = @"PROCESSED";
-    else           _latestProcessed = @"UNPROCESSED";
-    
-    if ([_latestUOM isEqualToString: @"n/a"])
-    {
-        _latestBulkOrIndividual = @"n/a";
-        _latestLocal            = @"n/a";
-        _latestProcessed        = @"n/a";
-    }
-    
-    _latestDateString = [self getDateAsString:_invoiceDate];
-    _latestShortDateString = [self getDateAsShortString:_invoiceDate];
-    _latestLineNumber = [NSString stringWithFormat:@"%d",lineNumber];
-    //Just pass across from private -> public here
-    _latestVendor = vendor;
-    
-    _analyzeOK = TRUE;
-    _minorError = aerror;
-    return aerror;
-} //end analyze
-
 
 
 //=============(smartProducts)=====================================================
@@ -870,10 +577,10 @@
         {
             found = TRUE;
             foundResult = PROTEIN_CATEGORY;
-            _latestUOM = @"lb";
+            _analyzedUOM = @"lb";
         }
     }
-    _latestCategory = foundResult;
+    _analyzedCategory = foundResult;
     return foundResult;
 }
 

@@ -15,6 +15,7 @@
 //  Looks like BIG PDF's may have to be chopped into smaller chunks:
 //  https://stackoverflow.com/questions/25992238/how-to-split-pdf-into-separate-single-page-pdf-in-ios-programmatically
 //
+//  1/10 Add PDF cache hit to bypass downloading...
 
 #import "DropboxTools.h"
 
@@ -45,7 +46,7 @@ static DropboxTools *sharedInstance = nil;
         _batchImageRects = [[NSMutableArray alloc] init]; // Size info for each PDF
         _batchImageData  = [[NSMutableArray alloc] init]; // PDF raw data, goes into OCR
         client           = [DBClientsManager authorizedClient];
-        pc               = [PDFCache sharedInstance];
+        //pc               = [PDFCache sharedInstance];
     }
     return self;
 }
@@ -126,7 +127,7 @@ static DropboxTools *sharedInstance = nil;
                     [_batchImages     addObject:nextImage];
                     [_batchImagePaths addObject:imagePath];
                     [_batchImageRects addObject:rectObj];
-                    [pc addPDFImage:nextImage : imagePath : i];
+                    //[pc addPDFImage:nextImage : imagePath : i];
                 }
                 if (i == pageCount) [_delegate didDownloadImages];
             } //end pdfpage
@@ -148,7 +149,7 @@ static DropboxTools *sharedInstance = nil;
          if (result) {
              if (result.entries.count == 0) //Empty folder? No batch!
              {
-                 [self->_delegate errorGettingBatchList : @"Empty Batch Folder"];
+                 [self->_delegate errorGettingBatchList : @"Error" : @"Empty Batch Folder"];
                  return;
              }
              self->_entries = result.entries;
@@ -187,7 +188,7 @@ static DropboxTools *sharedInstance = nil;
                  }
              }
              [self errMsg:@"Dropbox read error" :message];
-             [self->_delegate errorGettingBatchList : message];
+             [self->_delegate errorGettingBatchList : @"Error" : message];
 
              //  [self setFinished];
          }
@@ -320,6 +321,22 @@ static DropboxTools *sharedInstance = nil;
     DBUserClient *client = [DBClientsManager authorizedClient];
     [[client filesRoutes] moveV2:fromPath toPath:toPath];
 }
+
+
+//=============(DropboxTools)=====================================================
+// Boilerplate code from dropbox...
+-(void) saveTextFile : (NSString *)fpath : (NSString *)stringToSave
+{
+    NSData *fileData = [stringToSave dataUsingEncoding:NSUTF8StringEncoding allowLossyConversion:NO];
+    DBUserClient *client = [DBClientsManager authorizedClient];
+    [[client.filesRoutes uploadData:fpath inputData:fileData]
+     setResponseBlock:^(DBFILESFileMetadata *result, DBFILESUploadError *routeError, DBRequestError *error) {
+         if (error != nil)
+         {
+             NSLog(@" error : %@",error);
+         }
+     }];
+} //end saveBatchReport
 
 
 @end

@@ -217,7 +217,9 @@ static OCRCache *sharedInstance = nil;
 -(BOOL) txtExistsByID : (NSString *) oidIn
 {
     NSString *oid = [self cleanupID:oidIn];
-    return ([OCRDict objectForKey:oid] != nil);
+    NSString *s = [OCRDict objectForKey:oid];
+    if (s == nil) return FALSE;
+    return TRUE;
 }
 
 

@@ -24,6 +24,7 @@
 #import "Vendors.h"
 #import "UIImageExtras.h"
 #import "OCRTopObject.h"
+#import "OCRCache.h"
 
 @protocol batchObjectDelegate;
 
@@ -48,6 +49,7 @@
 
     NSString *vendorName; //Whose batch we're running
     NSString *vendorRotation; //Are pages rotated typically?
+    NSString *vendorFolderName;  
     NSString *batchFiles; //CSV list of all files processed
     NSString *batchStatus;
     NSString *batchProgress;
@@ -59,13 +61,19 @@
     NSMutableDictionary *vendorFolders;
     NSArray *pdfEntries;  //Fetched list of PDF files from batch folder
     NSMutableArray *errorList;
+    NSMutableArray *warningList;
     NSMutableArray *fixedList;
+    NSMutableArray *errorReportList;
+    NSMutableArray *warningReportList;
     int batchCount;
     int batchTotal;
     int batchPage;
     int batchTotalPages;
     NSString *tableName;
     int returnCount;
+
+    OCRCache *oc;
+
 }
 @property (nonatomic , strong) NSString* batchID;
 @property (nonatomic , assign) BOOL authorized;

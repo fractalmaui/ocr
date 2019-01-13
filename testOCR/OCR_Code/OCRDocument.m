@@ -595,7 +595,7 @@
     if ([headerForThisColumn containsString:@"description"]) _descriptionColumn = column;
     if ([headerForThisColumn containsString:@"price"]) _priceColumn = column;
     if ([headerForThisColumn containsString:@"amount"]) _amountColumn = column;
-    NSLog(@" column header[%d] %@ ic %d qc %d",column,headerForThisColumn,_itemColumn,_quantityColumn);
+    //NSLog(@" column header[%d] %@ ic %d qc %d",column,headerForThisColumn,_itemColumn,_quantityColumn);
 
     return resultStrings;
 } //end getColumnStrings

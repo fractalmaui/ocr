@@ -447,18 +447,14 @@
         exoRecord[PInv_Page_key]                = exo.page;
         exoRecord[PInv_BatchID_key]             = eappDelegate.batchID;
         exoRecord[PInv_VersionNumber]           = _versionNumber;
-        //NSLog(@" exp savetoParse...");
-        
-        NSLog(@"savetloparse [%@] %@ x %@ = %@",exo.productName,exo.quantity,exo.pricePerUOM,exo.total);
+        //NSLog(@"EXP ->parse [%@] %@ x %@ = %@",exo.productName,exo.quantity,exo.pricePerUOM,exo.total);
         [exoRecord saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
             if (succeeded) {
-                //NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
                 NSString *objID = exoRecord.objectId;
-                //AppDelegate *gappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-                //[gappDelegate.bbb addOID:objID : self->tableName]; //Links current batcself->h to this record
                 [self->objectIDs addObject:objID];
                 self->returnCounts[page]++;
                 self->totalReturnCount++;
+                //NSLog(@" ...EXP[%d] [%@/%@]->parse",i,exo.vendor,exo.productName);
                 //NSLog(@" ...  EXP: ids %@",self->objectIDs);
                 //NSLog(@" for page[%d] sent %d return %d",page,self->sentCounts[page],self->returnCounts[page]);
                 //NSLog(@" for page[%d] totalsent %d totalreturn %d",page,self->totalSentCount,self->totalReturnCount);
@@ -469,11 +465,10 @@
                     if (self->totalReturnCount == self->totalSentCount) //All done w/ everything?
                         [self.delegate didFinishAllEXPRecords : self->objectIDs];
                 }
-                if ([exo.total isEqualToString:FIELD_ERROR_STRING])
-                    [self.delegate errorInEXPRecord : @"Bad Price/Amount" : objID];
-                NSString *fieldErr = self->errorsByLineNumber[exo.lineNumber.intValue];
-                if (fieldErr.length > 1)
-                     [self.delegate errorInEXPRecord : fieldErr : objID];
+                NSString *fieldErr = [exoRecord objectForKey:PInv_ErrStatus_key];
+                if (fieldErr.length > 4) //may be blank or OK
+                    [self.delegate errorInEXPRecord : fieldErr : objID :
+                     [exoRecord objectForKey: PInv_ProductName_key]];
             } else {
                 NSLog(@" ERROR: saving EXP: %@",error.localizedDescription);
             }

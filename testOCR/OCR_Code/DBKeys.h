@@ -43,6 +43,7 @@
 #define PInv_BatchProgress_key @"BatchProgress"
 #define PInv_BatchErrors_key @"BatchErrors"
 #define PInv_BatchFixed_key @"BatchFixed"
+#define PInv_BatchWarnings_key @"BatchWarnings"
 
 
 //Activity Table

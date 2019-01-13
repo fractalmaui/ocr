@@ -41,6 +41,7 @@
     _activityIndicator.hidden = FALSE;
     [_activityIndicator startAnimating];
     _batchTableLabel.text = @"...";
+    _runButton.hidden = TRUE;
     [bbb getBatchCounts];
 }
 
@@ -72,6 +73,8 @@
 -(void) dismiss
 {
     //[_sfx makeTicSoundWithPitch : 8 : 52];
+    self->_activityIndicator.hidden = TRUE; //In case we're doing something...
+    [self->_activityIndicator stopAnimating];
     [self dismissViewControllerAnimated : YES completion:nil];
     
 }
@@ -156,6 +159,7 @@
 
     dispatch_async(dispatch_get_main_queue(), ^{
         [self updateUI];
+        self->_runButton.hidden = FALSE; //OK we can run batches now
         self->_titleLabel.text = @"Batch Processor Ready";;
         self->_activityIndicator.hidden = TRUE;
         [self->_activityIndicator stopAnimating];

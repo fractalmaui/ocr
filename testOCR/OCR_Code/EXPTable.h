@@ -76,6 +76,6 @@
 - (void)didSaveEXPTable : (NSArray *)a;
 - (void)didFinishAllEXPRecords : (NSArray *)a;
 - (void)didFixPricesInObjectByID : (NSString *)oid;
-- (void)errorInEXPRecord : (NSString *)err : (NSString *)oid;
+- (void)errorInEXPRecord : (NSString *)err : (NSString *)oid : (NSString *)productName;
 @end
 

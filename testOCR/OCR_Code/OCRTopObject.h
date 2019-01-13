@@ -110,6 +110,6 @@
 - (void)batchUpdate : (NSString *) s;
 - (void)didPerformOCR : (NSString *) result;
 - (void)errorPerformingOCR : (NSString *) errMsg;
-- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID;
+- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID: (NSString*) productName;
 - (void)didSaveOCRDataToParse : (NSString *) s;
 @end

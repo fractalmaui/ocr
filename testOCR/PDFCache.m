@@ -208,7 +208,8 @@ static PDFCache *sharedInstance = nil;
 -(BOOL) imageExistsByID : (NSString *) oidIn : (int) page
 {
     NSString *oid = [self cleanupID : oidIn : page];
-    return ([PDFDict objectForKey:oid] != nil);
+    return ([cacheNames indexOfObject:oid] != NSNotFound); //DHS 1/10
+//    return ([PDFDict objectForKey:oid] != nil);
 }
 
 //=====(PDFCache)======================================================================
