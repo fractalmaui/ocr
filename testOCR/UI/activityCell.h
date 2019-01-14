@@ -15,5 +15,7 @@
 @property (weak, nonatomic) IBOutlet UILabel *dateLabel;
 @property (weak, nonatomic) IBOutlet UILabel *badgeLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *checkmark;
+@property (weak, nonatomic) IBOutlet UILabel *badgeWLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *wcheckmark;
 
 @end

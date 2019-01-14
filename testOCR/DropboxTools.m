@@ -227,6 +227,23 @@ static DropboxTools *sharedInstance = nil;
 
 
 //=============(DropboxTools)=====================================================
+- (void)downloadTextFile:(NSString *)imagePath
+{
+    DBUserClient *client = [DBClientsManager authorizedClient];
+    NSLog(@" dropbox dload txt [%@[",imagePath);
+    
+    [[client.filesRoutes downloadData:imagePath]
+     setResponseBlock:^(DBFILESFileMetadata *result, DBFILESDownloadError *routeError, DBRequestError *error, NSData *fileData) {
+         if (result) {
+             NSString *str = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
+             [self->_delegate didDownloadTextFile : str];
+         }
+     }];
+    
+} //end downloadTextFile
+
+
+//=============(DropboxTools)=====================================================
 - (void)downloadImages:(NSString *)imagePath
 {
     DBUserClient *client = [DBClientsManager authorizedClient];

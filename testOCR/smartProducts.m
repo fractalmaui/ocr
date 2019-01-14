@@ -558,6 +558,7 @@
     _analyzedVendor = vendor;
     
     _analyzeOK = TRUE;
+    if (_majorError != 0) aerror = 0; //Major errors trump minor ones!
     _minorError = aerror;
     return 0;
 } //end analyze

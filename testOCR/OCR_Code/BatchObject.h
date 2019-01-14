@@ -54,6 +54,7 @@
     NSString *batchStatus;
     NSString *batchProgress;
     NSString *batchErrors;
+    NSString *batchWarnings;
     NSString *batchFixed;
     NSString *cachesDirectory;
     NSString *lastPDFProcessed;
@@ -63,6 +64,7 @@
     NSMutableArray *errorList;
     NSMutableArray *warningList;
     NSMutableArray *fixedList;
+    NSMutableArray *warningFixedList;
     NSMutableArray *errorReportList;
     NSMutableArray *warningReportList;
     int batchCount;
@@ -85,9 +87,12 @@
 
 -(void) addError : (NSString *) errDesc : (NSString *) objectID;
 -(void) fixError : (int) index;
+-(void) fixWarning : (int) index;
 -(BOOL) isErrorFixed :(NSString *)errStr;
+-(BOOL) isWarningFixed :(NSString *)errStr;
 -(void) getBatchCounts;
--(NSString *) getErrors;
+-(NSMutableArray *) getErrors;
+-(NSMutableArray *) getWarnings;
 -(NSString *) getVendor;
 -(int)  getVendorFileCount : (NSString *)vfn;
 -(void) readFromParseByID : (NSString *) bID;

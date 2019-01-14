@@ -31,6 +31,8 @@
 		7209609821B81E6B00D49C63 /* arrLeft.png in Resources */ = {isa = PBXBuildFile; fileRef = 7209609421B81E6B00D49C63 /* arrLeft.png */; };
 		7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209609A21B81FB900D49C63 /* OCRTemplate.m */; };
 		7209609E21B81FDC00D49C63 /* OCRBox.m in Sources */ = {isa = PBXBuildFile; fileRef = 7209609D21B81FDC00D49C63 /* OCRBox.m */; };
+		720FB49D21EC4F5800C0F320 /* yellowWarningIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = 720FB49C21EC4F5800C0F320 /* yellowWarningIcon.png */; };
+		720FB4A021EC679F00C0F320 /* BatchReportController.m in Sources */ = {isa = PBXBuildFile; fileRef = 720FB49F21EC679F00C0F320 /* BatchReportController.m */; };
 		72183DED21C5FA86005627AB /* squareMask.png in Resources */ = {isa = PBXBuildFile; fileRef = 72183DEC21C5FA86005627AB /* squareMask.png */; };
 		721D9C2021CB122F00D1E78A /* OCRCategories.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C1F21CB122F00D1E78A /* OCRCategories.m */; };
 		721D9C2421CB13E500D1E78A /* CatObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 721D9C2321CB13E500D1E78A /* CatObject.m */; };
@@ -144,6 +146,9 @@
 		7209609C21B81FDC00D49C63 /* OCRBox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRBox.h; sourceTree = "<group>"; };
 		7209609D21B81FDC00D49C63 /* OCRBox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRBox.m; sourceTree = "<group>"; };
 		720C17B821CCC1150059CA2D /* AddTemplateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AddTemplateViewController.h; sourceTree = "<group>"; };
+		720FB49C21EC4F5800C0F320 /* yellowWarningIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = yellowWarningIcon.png; path = Resources/yellowWarningIcon.png; sourceTree = SOURCE_ROOT; };
+		720FB49E21EC679F00C0F320 /* BatchReportController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BatchReportController.h; sourceTree = "<group>"; };
+		720FB49F21EC679F00C0F320 /* BatchReportController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BatchReportController.m; sourceTree = "<group>"; };
 		72183DEC21C5FA86005627AB /* squareMask.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = squareMask.png; path = Resources/squareMask.png; sourceTree = SOURCE_ROOT; };
 		721D9C1E21CB11DA00D1E78A /* OCRCategories.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCRCategories.h; sourceTree = "<group>"; };
 		721D9C1F21CB122F00D1E78A /* OCRCategories.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCRCategories.m; sourceTree = "<group>"; };
@@ -295,6 +300,8 @@
 				7206008921B64052000B26DC /* AppDelegate.m */,
 				7283813421C4A60000A2954B /* MainVC.h */,
 				7283813521C4A60000A2954B /* MainVC.m */,
+				720FB49E21EC679F00C0F320 /* BatchReportController.h */,
+				720FB49F21EC679F00C0F320 /* BatchReportController.m */,
 				7209159121E0908B00F94258 /* ErrorViewController.h */,
 				7209159221E0908C00F94258 /* ErrorViewController.m */,
 				7209159421E0982A00F94258 /* errorCell.h */,
@@ -334,6 +341,7 @@
 		7209609021B81E4A00D49C63 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				720FB49C21EC4F5800C0F320 /* yellowWarningIcon.png */,
 				72F6DC2921E5C0D800EDF9A4 /* bluecheck.png */,
 				72988DCB21E5ACD000618442 /* redX.png */,
 				72F394FE21E91AD3009E59C4 /* lilGreenCheck.png */,
@@ -582,6 +590,7 @@
 				724B4BB321E74BDE0086B933 /* multiHOT.png in Resources */,
 				729E92C121DC1CC100048DAF /* barnIcon.png in Resources */,
 				72435B3B21C96E8E00620F4B /* loves.jpg in Resources */,
+				720FB49D21EC4F5800C0F320 /* yellowWarningIcon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -624,6 +633,7 @@
 				7209159621E0982A00F94258 /* errorCell.m in Sources */,
 				7209609B21B81FB900D49C63 /* OCRTemplate.m in Sources */,
 				7209608921B7FBB000D49C63 /* OCRWord.m in Sources */,
+				720FB4A021EC679F00C0F320 /* BatchReportController.m in Sources */,
 				72BA4D2E21CF644B00F432E9 /* OCRTopObject.m in Sources */,
 				729E92B121DBE25B00048DAF /* EXPCell.m in Sources */,
 				7206008D21B64052000B26DC /* EditTemplateVC.m in Sources */,

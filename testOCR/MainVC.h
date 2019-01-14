@@ -19,6 +19,7 @@
 #import "BatchObject.h"
 #import "AppDelegate.h"
 #import "AddTemplateViewController.h"
+#import "BatchReportController.h"
 #import "ErrorViewController.h"
 #import "EXPViewController.h"
 #import "NavButtons.h"
@@ -46,6 +47,8 @@ NS_ASSUME_NONNULL_BEGIN
     OCRCache *oc;
     BatchObject *bbb;
     NSMutableArray *batchPFObjects;
+    BOOL fixingErrors; 
+
 }
 @property (weak, nonatomic) IBOutlet UIImageView *imageView;
 @property (weak, nonatomic) IBOutlet UILabel *logoLabel;

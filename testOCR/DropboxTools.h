@@ -41,6 +41,8 @@
 -(void) countEntries : (NSString *)batchFolder : (NSString *)vendorFolder;
 
 - (void)downloadImages:(NSString *)imagePath;
+- (void)downloadTextFile:(NSString *)imagePath;
+
 -(void) errMsg : (NSString *)title : (NSString*)message;
 
 -(void) setParent : (UIViewController*) p;
@@ -59,5 +61,6 @@
 - (void)didCountEntries : (NSString *)vname : (int) count;
 - (void)errorGettingBatchList : (NSString *)type : (NSString *)s;
 - (void)didDownloadImages;
+- (void)didDownloadTextFile : (NSString *)result;
 - (void)errorDownloadingImages : (NSString *)s;
 @end

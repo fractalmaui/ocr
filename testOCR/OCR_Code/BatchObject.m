@@ -43,6 +43,7 @@ static BatchObject *sharedInstance = nil;
         errorReportList   = [[NSMutableArray alloc] init];
         warningReportList = [[NSMutableArray alloc] init];
         fixedList         = [[NSMutableArray alloc] init];
+        warningFixedList  = [[NSMutableArray alloc] init];
         oc                = [OCRCache sharedInstance];
 
         dbt = [[DropboxTools alloc] init];
@@ -103,8 +104,18 @@ static BatchObject *sharedInstance = nil;
 // Copy error from errorList -> fixedList, leaves errorList alone!
 -(void) fixError : (int) index
 {
+    if (index < 0 || index >= errorList.count) return;
     [fixedList addObject:[errorList objectAtIndex:index]];
 }
+
+//=============(BatchObject)=====================================================
+// Copy error from errorList -> fixedList, leaves errorList alone!
+-(void) fixWarning : (int) index
+{
+    if (index < 0 || index >= warningList.count) return;
+    [warningFixedList addObject:[warningList objectAtIndex:index]];
+}
+
 
 //=============(BatchObject)=====================================================
 // Loop over vendors, get counts...
@@ -132,6 +143,12 @@ static BatchObject *sharedInstance = nil;
 {
     return ([batchFixed containsString:errStr]);
 //    return ([fixedList containsObject:errStr]);
+}
+
+//=============(BatchObject)=====================================================
+-(BOOL) isWarningFixed :(NSString *)errStr
+{
+    return ([warningList indexOfObject :errStr] != NSNotFound);
 }
 
 
@@ -261,9 +278,15 @@ static BatchObject *sharedInstance = nil;
 } //end processNextFile
 
 //=============(BatchObject)=====================================================
--(NSString *) getErrors;
+-(NSMutableArray *) getErrors
 {
-    return batchErrors;
+    return errorList;
+}
+
+//=============(BatchObject)=====================================================
+-(NSMutableArray *) getWarnings
+{
+    return warningList;
 }
 
 //=============(BatchObject)=====================================================
@@ -379,14 +402,18 @@ static BatchObject *sharedInstance = nil;
             {
                 PFObject *pfo = objects[0];
                 //Load internal fields...
-                self->vendorName    = pfo[PInv_Vendor_key];
-                self->batchFiles    = pfo[PInv_BatchFiles_key];
-                self->batchStatus   = pfo[PInv_BatchStatus_key];
-                self->batchProgress = pfo[PInv_BatchProgress_key];
-                self->batchErrors   = pfo[PInv_BatchErrors_key];
-                self->batchFixed    = pfo[PInv_BatchFixed_key];
-                self->errorList     = (NSMutableArray*)[self->batchErrors componentsSeparatedByString:@","];
-                self->fixedList     = (NSMutableArray*)[self->batchFixed  componentsSeparatedByString:@","];
+                self->vendorName       = pfo[PInv_Vendor_key];
+                self->batchFiles       = pfo[PInv_BatchFiles_key];
+                self->batchStatus      = pfo[PInv_BatchStatus_key];
+                self->batchProgress    = pfo[PInv_BatchProgress_key];
+                self->batchErrors      = pfo[PInv_BatchErrors_key];
+                self->batchWarnings    = pfo[PInv_BatchWarnings_key];
+                self->batchFixed       = pfo[PInv_BatchFixed_key];
+                self->errorList        = (NSMutableArray*)[self->batchErrors componentsSeparatedByString:@","];
+                self->fixedList        = (NSMutableArray*)[self->batchFixed  componentsSeparatedByString:@","];
+                self->warningList      = (NSMutableArray*)[self->batchWarnings componentsSeparatedByString:@","];
+                self->warningFixedList = (NSMutableArray*)[pfo[PInv_BatchWFixed_key]
+                                                           componentsSeparatedByString:@","];
                 [self.delegate didReadBatchByID : bID];
             }
             else
@@ -444,6 +471,7 @@ static BatchObject *sharedInstance = nil;
             pfo[PInv_BatchErrors_key]   = [self->errorList componentsJoinedByString:@","];
             pfo[PInv_BatchWarnings_key] = [self->warningList componentsJoinedByString:@","];
             pfo[PInv_BatchFixed_key]    = [self->fixedList componentsJoinedByString:@","];
+            pfo[PInv_BatchWFixed_key]   = [self->warningFixedList componentsJoinedByString:@","];
             pfo[PInv_VersionNumber]     = self->_versionNumber;
             [pfo saveInBackgroundWithBlock:^(BOOL succeeded, NSError *error) {
                 if (succeeded)

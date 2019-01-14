@@ -24,6 +24,7 @@
 //  https://stackoverflow.com/questions/41546181/how-to-deskew-a-scanned-text-page-with-imagemagick
 //
 //  In Adjust mode, zoom in??
+//  1/13 Added more detail to activity outputs...
 #import "EditTemplateVC.h"
 
  
@@ -676,8 +677,9 @@
 //=============OCR VC=====================================================
 - (IBAction)promptForAdjust:(id)sender {
     
+    NSString *fn    = [ot getBoxFieldName:adjustSelect];
     NSString *title = [NSString stringWithFormat:@"Selected %@\n[%@]",
-                       [ot getBoxFieldName:adjustSelect],[ot getAllTags:adjustSelect]];
+                       fn,[ot getAllTags:adjustSelect]];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(title,nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
@@ -693,7 +695,7 @@
                                                                [self->ot saveTemplatesToDisk:self->supplierName];
                                                                self->spinner.hidden = FALSE;
                                                                [self->spinner startAnimating];
-                                                               [self->act saveActivityToParse:@"...template:deleteBox" : self->supplierName];
+                                                               [self->act saveActivityToParse:@"...template:deleteBox" : fn];
 
                                                                [self->ot saveToParse:self->supplierName];
                                                                [self refreshOCRBoxes];
@@ -711,7 +713,7 @@
                                                     [self->ot saveTemplatesToDisk:self->supplierName];
                                                     self->spinner.hidden = FALSE;
                                                     [self->spinner startAnimating];
-                                                    [self->act saveActivityToParse:@"...template:clearTags" : self->supplierName];
+                                                    [self->act saveActivityToParse:@"...template:clearTags" : fn];
                                                     [self->ot saveToParse:self->supplierName];
                                                 }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
@@ -769,7 +771,7 @@
     [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
-    [act saveActivityToParse:@"...template:addTag" : supplierName];
+    [act saveActivityToParse:@"...template:addTag" : tag];
     [ot saveToParse:supplierName];
 } //end addTag
 
@@ -859,7 +861,7 @@
     [ot saveTemplatesToDisk:supplierName];
     spinner.hidden = FALSE;
     [spinner startAnimating];
-    [act saveActivityToParse:@"...template:addBox" : supplierName];
+    [act saveActivityToParse:@"...template:addBox" : fieldName];
     [ot saveToParse:supplierName];
     [self clearScreenAfterEdit];
     [self stopMagView];

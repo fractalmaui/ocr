@@ -514,9 +514,12 @@ static OCRTopObject *sharedInstance = nil;
         {
             if (!smartp.nonProduct) //Ignore non-products (charges, etc) else report error
             {
-                NSLog(@" ---->ERROR: bad product name %@",productName);
-                NSString *s = [NSString stringWithFormat:@"E:Bad Product Name (%@)",productName];
-                [self->_delegate errorSavingEXP:s:@"n/a":productName];
+                if (productName.length > 5) // Ignore short nonsense fields!
+                {
+                    NSLog(@" ---->ERROR: bad product name %@",productName);
+                    NSString *s = [NSString stringWithFormat:@"E:Bad Product Name (%@)",productName];
+                    [self->_delegate errorSavingEXP:s:@"n/a":productName];
+                }
             }
         }
     } //end for loop

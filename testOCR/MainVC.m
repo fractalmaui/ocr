@@ -39,6 +39,8 @@
     refreshControl = [[UIRefreshControl alloc] init];
     batchPFObjects = nil;
     
+    fixingErrors = TRUE;
+
     //Test only, built-in OCR crap...
     [self loadBuiltinOCRToCache];
 
@@ -193,10 +195,20 @@
                                                                self->stype = @"I";
                                                                [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
                                                            }];
-    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Errors",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               [self performSegueWithIdentifier:@"errorSegue" sender:@"mainVC"];
-                                                           }];
+    UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"View/Fix Errors",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              self->fixingErrors = TRUE;
+                                                              [self performSegueWithIdentifier:@"errorSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *fourthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"View/Fix Warnings",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              self->fixingErrors = FALSE;
+                                                              [self performSegueWithIdentifier:@"errorSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *fifthAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Report",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self performSegueWithIdentifier:@"batchReportSegue" sender:@"mainVC"];
+                                                          }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
@@ -204,6 +216,8 @@
     [alert addAction:firstAction];
     [alert addAction:secondAction];
     [alert addAction:thirdAction];
+    [alert addAction:fourthAction];
+    [alert addAction:fifthAction];
     [alert addAction:cancelAction];
     
     [self presentViewController:alert animated:YES completion:nil];
@@ -309,11 +323,47 @@
     {
         ErrorViewController *vc = (ErrorViewController*)[segue destinationViewController];
         vc.batchData    = sdata;
+        vc.fixingErrors = fixingErrors;
     }
+    else if([[segue identifier] isEqualToString:@"batchReportSegue"])
+    {
+        BatchReportController *vc = (BatchReportController*)[segue destinationViewController];
+        NSArray  *sdItems = [sdata componentsSeparatedByString:@":"]; //Break up batch data
+        if (sdItems != nil && sdItems.count > 0) //Got something?
+        {
+            NSString *batchID = sdItems[0];
+            //NSLog(@" list[%d] bid %@",row,batchID);
+            for (PFObject *pfo in batchPFObjects)
+            {
+                if ([pfo[PInv_BatchID_key] isEqualToString:batchID]) //Batch Match? Look for errors
+                {
+                    vc.pfo = pfo;
+                    break;
+                }
+            }
+        }
+    }
+
 }
 
 
 #pragma mark - UITableViewDelegate
+
+//=============OCR MainVC=====================================================
+-(int)countCommas : (NSString *)s
+{
+    if (s == nil) return 0;
+    NSScanner *mainScanner = [NSScanner scannerWithString:s];
+    NSString *temp;
+    int nc=0;
+    while(![mainScanner isAtEnd])
+    {
+        [mainScanner scanUpToString:@"," intoString:&temp];
+        nc++;
+        [mainScanner scanString:@"," intoString:nil];
+    }
+    return nc;
+} //end countCommas
 
 //=============OCR MainVC=====================================================
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -345,17 +395,8 @@
             {
                 if ([pfo[PInv_BatchID_key] isEqualToString:batchID]) //Batch Match? Look for errors
                 {
-                    int bcount = 0;
-                    int fcount = 0;
-                    NSString *berrs  = pfo[PInv_BatchErrors_key];
-                    NSArray  *bItems = [berrs componentsSeparatedByString:@","];
-                    bcount = (int)bItems.count;
-                    if (berrs.length < 1) bcount = 0; //empty?
-                    // fixed count...
-                    NSString *ferrs  = pfo[PInv_BatchFixed_key];
-                    NSArray  *fItems = [ferrs componentsSeparatedByString:@","];
-                    fcount = (int)fItems.count;
-                    if (ferrs.length < 1) fcount = 0; //empty?
+                    int bcount = [self countCommas:pfo[PInv_BatchErrors_key]];
+                    int fcount = [self countCommas:pfo[PInv_BatchFixed_key]];;
                     int errCount = bcount - fcount;  //# errs = total errs - fixed errs
                     if (errCount > 0)
                     {
@@ -368,14 +409,30 @@
                     else{ //No errors, show checkmark
                         cell.checkmark.hidden              = FALSE;
                     }
-                    
+                    bcount = [self countCommas:pfo[PInv_BatchWarnings_key]];
+                    fcount = [self countCommas:pfo[PInv_BatchWFixed_key]];;
+                    int wCount = bcount - fcount;  //# errs = total errs - fixed errs
+                    if (wCount > 0)
+                    {
+                        cell.badgeWLabel.hidden             = FALSE;
+                        cell.badgeWLabel.text               = [NSString stringWithFormat:@"%d",wCount];
+                        cell.badgeWLabel.layer.cornerRadius = 10;
+                        cell.badgeWLabel.clipsToBounds      = YES;
+                        cell.wcheckmark.hidden              = TRUE;
+                    }
+                    else{ //No errors, show checkmark
+                        cell.wcheckmark.hidden              = FALSE;
+                    }
                 } //end batch match
             } //end for (PFOb....)
         }    //end aditems...
     }       //end type.lower
     else //Non-batch activity?
     {
-        cell.checkmark.hidden = TRUE; //No checkmark!
+        cell.checkmark.hidden   = TRUE; //No checkmarks!
+        cell.wcheckmark.hidden  = TRUE;
+        cell.badgeLabel.hidden  = TRUE;
+        cell.badgeWLabel.hidden = TRUE;
     }
     //...other activity types... invoice, exp, etc...
     if ([atype.lowercaseString containsString:@"invoice"]) ii = dbIcon;

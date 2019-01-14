@@ -51,12 +51,13 @@
     it = [[imageTools alloc] init];
     
     xIcon  = [UIImage imageNamed:@"redX"];
+    wIcon  = [UIImage imageNamed:@"yellowWarningIcon"];
     okIcon = [UIImage imageNamed:@"bluecheck"];
 
     et.delegate = self;
     [self initErrorKeys];
     kbUp = FALSE;
-//??    vv  = [Vendors sharedInstance];
+    _fixingErrors = TRUE;
     return self;
 }
 
@@ -213,7 +214,10 @@
     
     if (changed) //Need to update batch record?
     {
-        [bbb fixError : selectedRow];  //Moves error from batch "errorList" to "fixedList"
+        if (_fixingErrors)
+            [bbb fixError : selectedRow];  //Moves error from batch "errorList" to "fixedList"
+        else
+            [bbb fixWarning : selectedRow];  //Moves error from batch "errorList" to "fixedList"
         bbb.batchID = batchID;        //BatchID was passed in as part of batchData from parent
         [bbb updateParse];           //annnd save updated batch record
 
@@ -227,6 +231,9 @@
 //=============Error VC=====================================================
 -(void) UpdateUI
 {
+    NSString *t = @"View / Fix Errors";
+    if (!_fixingErrors) t = @"View / Fix Warnings";
+    _titleLabel.text = t;
 }
 
 
@@ -262,11 +269,19 @@
     {
         cell.errIcon.image = okIcon;
         cell.backgroundColor = [UIColor whiteColor];
-    }
+    } //asdf
     else
     {
-        cell.errIcon.image = xIcon;
-        cell.backgroundColor = [UIColor yellowColor];
+        if (_fixingErrors)
+        {
+            cell.errIcon.image   = xIcon;
+            cell.backgroundColor = [UIColor colorWithRed:1.0 green:1.0 blue:0.4 alpha:1];
+        }
+        else
+        {
+            cell.errIcon.image   = wIcon;
+            cell.backgroundColor = [UIColor colorWithRed:1.0 green:1.0 blue:0.4 alpha:1];
+        }
     }
     NSString *fullErr = [errorList objectAtIndex:row];
     cell.errorLabel.text = fullErr;
@@ -303,13 +318,14 @@
 
 //=============Error VC=====================================================
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    NSLog(@"ecount %d",(int)errorList.count);
     return (int)errorList.count;
 }
 
 //=============Error VC=====================================================
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return 60;
+    return 40;
 }
 
 //=============Error VC=====================================================
@@ -360,9 +376,11 @@
 //=============<batchObjectDelegate>=====================================================
 - (void)didReadBatchByID : (NSString *)oid
 {
-    berrs = [bbb getErrors];
-    NSLog(@" ok batch read %@:%@",oid,berrs);
-    errorList = (NSMutableArray*)[berrs componentsSeparatedByString:@","]; //Break up errors...
+    if (_fixingErrors) //Get copy of whichever array we need
+        errorList = [NSMutableArray arrayWithArray:[bbb getErrors]];
+    else
+        errorList = [NSMutableArray arrayWithArray:[bbb getWarnings]];
+    NSLog(@" ok batch read %@:%@",oid,errorList);
     [self loadAllExpObjects];
     [_table reloadData];
     [self updateUI];
@@ -407,7 +425,7 @@
     errorPage = pdfPage.intValue;
     //This assumes PDF is in cache... but what if it's NOT???
     int dog = 0;
-    if ((dog == 1) && [pc imageExistsByID : pdfName : errorPage+1])
+    if ([pc imageExistsByID : pdfName : errorPage+1])
     {
         NSLog(@" ...cache HIT %@",pdfName);
         UIImage *ii = nil;

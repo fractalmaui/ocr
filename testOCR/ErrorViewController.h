@@ -46,6 +46,7 @@
     NSString *vendorName;
     
     UIImage *xIcon;
+    UIImage *wIcon;
     UIImage *okIcon;
 
     int viewWid,viewHit,viewW2,viewH2;
@@ -79,6 +80,8 @@
 @property (weak, nonatomic) IBOutlet UILabel *productName;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 
+@property (nonatomic , assign) BOOL fixingErrors;
+
 - (IBAction)fieldCancelSelect:(id)sender;
 - (IBAction)fieldFixSelect:(id)sender;
 
@@ -89,9 +92,6 @@
 
 
 @property (nonatomic , strong) NSString* batchData;
-//@property (nonatomic , strong) EXPObject* eobj;
-//@property (nonatomic , strong) NSArray* allObjects;
-//@property (nonatomic , assign) int detailIndex;
 
 - (IBAction)backSelect:(id)sender;
 
