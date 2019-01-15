@@ -15,6 +15,7 @@
 //   https://github.com/a2/FoodJournal-iOS/tree/master/Pods/UIImage%2BPDF/UIImage%2BPDF
 //  1/6 add pull to refresh
 //  1/9 Make sure batch gets created AFTER parse DB is up!
+//  1/14 Add invoiceVC hookup, bold menu titles too!
 
 #import "MainVC.h"
 
@@ -30,9 +31,9 @@
     act = [[ActivityTable alloc] init];
     act.delegate = self;
     
-    emptyIcon = [UIImage imageNamed:@"emptyDoc.jpg"];
-    dbIcon = [UIImage imageNamed:@"lildbGrey.png"];
-    batchIcon = [UIImage imageNamed:@"multiNOT.png"];
+    emptyIcon = [UIImage imageNamed:@"emptyDoc"];
+    dbIcon = [UIImage imageNamed:@"lildbGrey"];
+    batchIcon = [UIImage imageNamed:@"multiNOT"];
     versionNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     oc = [OCRCache sharedInstance];
  
@@ -58,10 +59,19 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     int xi,yi,xs,ys;
-    xs = viewWid;
+    
+    //CLUGEY! makes sure landscape òrientation doesn't set up NAVbar wrong`
+    int tallestXY  = viewHit;
+    int shortestXY = viewWid;
+    if (shortestXY > tallestXY)
+    {
+        tallestXY  = viewWid;
+        shortestXY = viewHit;
+    }
+    xs = shortestXY;
     ys = 80;
     xi = 0;
-    yi = viewHit - ys;
+    yi = tallestXY - ys;
     nav = [[NavButtons alloc] initWithFrameAndCount: CGRectMake(xi, yi, xs, ys) : 4];
     nav.delegate = self;
     [self.view addSubview: nav];
@@ -125,19 +135,31 @@
 
     //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
-    //[self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+    //[self performSegueWithIdentifier:@"expSegue" sender:@"mainVC"];
+}
+
+//=============OCR MainVC=====================================================
+#if __IPHONE_OS_VERSION_MAX_ALLOWED < 90000
+- (NSUInteger)supportedInterfaceOrientations
+#else
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+#endif
+{
+    return UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown;
 }
 
 
 //=============OCR MainVC=====================================================
 -(void) menu
 {
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Main Functions"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:30] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
                                 NSLocalizedString(@"Main Functions",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Template",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self performSegueWithIdentifier:@"addTemplateSegue" sender:@"mainVC"];
@@ -168,7 +190,41 @@
     [alert addAction:cancelAction];
     [self presentViewController:alert animated:YES completion:nil];
 
+
 } //end menu
+
+//=============OCR MainVC=====================================================
+// For selecting databases...
+-(void) dbmenu
+{
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select Database Table"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"Select Database Table",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+
+    [alert setValue:tatString forKey:@"attributedTitle"];
+
+    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"EXP Table",nil)
+                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                              [self performSegueWithIdentifier:@"expSegue" sender:@"mainVC"];
+                                                          }];
+    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Invoice Table",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                               [self performSegueWithIdentifier:@"invoiceSegue" sender:@"mainVC"];
+                                                           }];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }];
+    [alert addAction:firstAction];
+    [alert addAction:secondAction];
+//    [alert addAction:thirdAction];
+//    [alert addAction:fourthAction];
+    [alert addAction:cancelAction];
+    [self presentViewController:alert animated:YES completion:nil];
+    
+} //end dbmenu
 
 //=============OCR MainVC=====================================================
 // if you click on a batch item, this gets invoked
@@ -179,21 +235,25 @@
 //    https://stackoverflow.com/questions/26460706/uialertcontroller-custom-font-size-color
 -(void) batchListChoiceMenu
 {
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Batch Retreival"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
                                 NSLocalizedString(@"Batch Retreival",nil)
                                                                    message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+
+    [alert setValue:tatString forKey:@"attributedTitle"];
     
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get EXP records",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               self->stype = @"E";
-                                                              [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+                                                              [self performSegueWithIdentifier:@"expSegue" sender:@"mainVC"];
                                                           }];
     UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Get Invoices",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                                self->stype = @"I";
-                                                               [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+                                                               [self performSegueWithIdentifier:@"expSegue" sender:@"mainVC"];
                                                            }];
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"View/Fix Errors",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -232,7 +292,7 @@
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
                                 NSLocalizedString(@"Clear Cache? (Cannot be undone!)",nil)
                                                                    message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+                                                            preferredStyle:UIAlertControllerStyleAlert];
     
     
     UIAlertAction *yesAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"YES",nil)
@@ -313,11 +373,12 @@
         vc.step = 0;
         vc.needPicker = TRUE;	
     }
-    else if([[segue identifier] isEqualToString:@"dbSegue"])
+    else if([[segue identifier] isEqualToString:@"expSegue"])
     {
         EXPViewController *vc = (EXPViewController*)[segue destinationViewController];
         vc.actData    = sdata; //Pass selected objectID's from activity, if any...
         vc.searchType = stype;
+        vc.detailMode = FALSE;
     }
     else if([[segue identifier] isEqualToString:@"errorSegue"])
     {
@@ -520,8 +581,7 @@
     }
     else if (which == 1) //THis is now a multi-function popup...
     {
-        sdata = @""; //No special objects to look up...
-        [self performSegueWithIdentifier:@"dbSegue" sender:@"mainVC"];
+        [self dbmenu];
     }
     else if (which == 2) //Templates / settings?
     {
@@ -594,40 +654,6 @@
 //=============OCR MainVC=====================================================
 -(void) testit
 {
-    
-    NSMutableArray *ys = [[NSMutableArray alloc] init];
-    NSMutableArray *y2 = [[NSMutableArray alloc] init];
-
-    [ys addObject:[NSNumber numberWithDouble:294.3]];
-    [ys addObject:[NSNumber numberWithDouble:358.0]];
-    [ys addObject:[NSNumber numberWithDouble:406.5]];
-    [ys addObject:[NSNumber numberWithDouble:439.0]];
-    [ys addObject:[NSNumber numberWithDouble:471.0]];
-
-    [y2 addObject:[NSNumber numberWithDouble:284.5]];
-    [y2 addObject:[NSNumber numberWithDouble:326.0]];
-    [y2 addObject:[NSNumber numberWithDouble:358.0]];
-    [y2 addObject:[NSNumber numberWithDouble:439.0]];
-    [y2 addObject:[NSNumber numberWithDouble:471.0]];
-    [y2 addObject:[NSNumber numberWithDouble:519.0]];
-    [y2 addObject:[NSNumber numberWithDouble:599.0]];
-
-    //Add array 2
-    NSMutableArray *allys = [NSMutableArray arrayWithArray:ys];
-    [allys addObjectsFromArray:y2]; //concatenate arrays...
-    NSArray *sortedArray = [allys sortedArrayUsingSelector: @selector(compare:)];
-    NSLog(@" sa %@",sortedArray);
-    NSMutableArray *finalYs = [[NSMutableArray alloc] init];
-    NSNumber *lastY = [NSNumber numberWithDouble:-9999.0];
-    int glyphHeight = 10;
-    for (NSNumber *nextY in sortedArray)
-    {
-        int dy = nextY.doubleValue - lastY.doubleValue;
-        if (dy > glyphHeight) [finalYs addObject:nextY];
-        lastY = nextY;
-    }
-    NSLog(@" annnd result is %@",finalYs);
-    //[allys sortedArrayUsingDescriptors:@selector(caseInsensitiveCompare:)];
     
     
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
@@ -710,3 +736,6 @@
 
 
 @end
+
+
+

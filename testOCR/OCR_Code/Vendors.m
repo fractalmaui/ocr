@@ -36,6 +36,7 @@ static Vendors *sharedInstance = nil;
         _vNames       = [[NSMutableArray alloc] init]; // Vendor names
         _vFolderNames = [[NSMutableArray alloc] init]; //  and matching folder names
         _vRotations   = [[NSMutableArray alloc] init]; //  invoices rotated?
+        _loaded       = FALSE;
         [self readFromParse];
     }
     return self;
@@ -61,6 +62,7 @@ static Vendors *sharedInstance = nil;
 //=============(Vendors)=====================================================
 -(void) readFromParse
 {
+    if (_loaded) return; //No need to do 2x
     PFQuery *query = [PFQuery queryWithClassName:@"Vendors"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
@@ -85,7 +87,8 @@ static Vendors *sharedInstance = nil;
                 [self->_vFolderNames addObject:sf];
                 [self->_vRotations addObject:[pfo objectForKey:PInv_Rotated_key]];
             }
-            NSLog(@" ...read all vendors");
+            NSLog(@" ...loaded all vendors");
+            self->_loaded = TRUE;
             [self.delegate didReadVendorsFromParse];
         }
     }];

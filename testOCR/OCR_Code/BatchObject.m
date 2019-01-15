@@ -40,6 +40,7 @@ static BatchObject *sharedInstance = nil;
         vendorFolders     = [[NSMutableDictionary alloc] init];
         errorList         = [[NSMutableArray alloc] init];
         warningList       = [[NSMutableArray alloc] init];
+        warningFixedList  = [[NSMutableArray alloc] init];
         errorReportList   = [[NSMutableArray alloc] init];
         warningReportList = [[NSMutableArray alloc] init];
         fixedList         = [[NSMutableArray alloc] init];
@@ -176,6 +177,8 @@ static BatchObject *sharedInstance = nil;
     batchProgress = @"";
     [errorList removeAllObjects];        //Clear error / warning accumulators
     [warningList removeAllObjects];
+    [fixedList removeAllObjects];       // clear "fixed" accumulators too!
+    [warningFixedList removeAllObjects];
     [errorReportList removeAllObjects];   //one set for parse storage, one for report
     [warningReportList removeAllObjects];
     [self.delegate batchUpdate : @"Started Batch..."];

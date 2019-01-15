@@ -305,8 +305,10 @@
 
 
 //=============OCR VC=====================================================
+//BROKEN! DOESN'T WORK! can't set IDs for some reason?
 -(void) getObjectsByIDs : (NSArray *)oids
 {
+    NSLog(@" gobi %@",oids);
     if (oids == nil || oids.count < 1) return;
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
     [query whereKey:@"objectId" containedIn:oids];
@@ -320,7 +322,7 @@
                 [d setObject:e forKey:pfo.objectId];
                 [self->_expos addObject: e];
             }
-            //NSLog(@" ...loaded EXP OK %@",self->recordStrings);
+            NSLog(@" ...loaded EXP OK (%d items) %@",(int)self->_expos.count,self->recordStrings);
             [self.delegate didGetObjectsByIds : d];
         }
     }];
@@ -348,20 +350,22 @@
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
     //Wildcards means get everything...
     if (![vendor isEqualToString:@"*"]) [query whereKey:PInv_Vendor_key equalTo:vendor];
-    if (![batch isEqualToString:@"*"])  [query whereKey:@"BatchID" equalTo:batch];
+    if (![batch isEqualToString:@"*"])  [query whereKey:@"Batch" equalTo:batch];
     if (![_sortBy isEqualToString:@""]) NSLog(@"...sort EXP by %@",_sortBy);
-    NSString *sortkey = @"";
-    if ([_sortBy isEqualToString:@"Invoice Number"])    sortkey = PInv_InvoiceNumber_key;
-    else if ([_sortBy isEqualToString:@"Item"])         sortkey = PInv_Item_key;
-    else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
-    else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
-    else if ([_sortBy isEqualToString:@"Product Name"]) sortkey = PInv_ProductName_key;
-    else if ([_sortBy isEqualToString:@"Local"])        sortkey = PInv_Local_key;
-    else if ([_sortBy isEqualToString:@"Processed"])    sortkey = PInv_Processed_key;
-    else if ([_sortBy isEqualToString:@"Quantity"])     sortkey = PInv_Quantity_key;
-    else if ([_sortBy isEqualToString:@"Price"])        sortkey = PInv_PricePerUOM_key;
-    else if ([_sortBy isEqualToString:@"Total"])        sortkey = PInv_TotalPrice_key;
-    else sortkey = @"createdAt"; ///DEFAULT: sort everything by date
+    NSString *sortkey = @"createdAt";
+    if (_sortBy != nil)
+    {
+        if ([_sortBy isEqualToString:@"Invoice Number"])    sortkey = PInv_InvoiceNumber_key;
+        else if ([_sortBy isEqualToString:@"Item"])         sortkey = PInv_Item_key;
+        else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
+        else if ([_sortBy isEqualToString:@"Vendor"])       sortkey = PInv_Vendor_key;
+        else if ([_sortBy isEqualToString:@"Product Name"]) sortkey = PInv_ProductName_key;
+        else if ([_sortBy isEqualToString:@"Local"])        sortkey = PInv_Local_key;
+        else if ([_sortBy isEqualToString:@"Processed"])    sortkey = PInv_Processed_key;
+        else if ([_sortBy isEqualToString:@"Quantity"])     sortkey = PInv_Quantity_key;
+        else if ([_sortBy isEqualToString:@"Price"])        sortkey = PInv_PricePerUOM_key;
+        else if ([_sortBy isEqualToString:@"Total"])        sortkey = PInv_TotalPrice_key;
+    }
     if (_sortAscending)
         [query orderByAscending:sortkey];  //Sort UP
     else

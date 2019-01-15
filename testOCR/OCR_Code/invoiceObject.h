@@ -19,7 +19,13 @@
 @interface invoiceObject : NSObject
 {
 }
+@property (nonatomic , strong) NSDate* date;
 @property (nonatomic , strong) NSString* objectID;
+@property (nonatomic , strong) NSString* expObjectID;
+@property (nonatomic , strong) NSString* invoiceNumber;
+@property (nonatomic , strong) NSString* customer;
+@property (nonatomic , strong) NSString* batchID;
+@property (nonatomic , strong) NSString* vendor;
 
 
 @end

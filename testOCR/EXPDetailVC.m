@@ -1,4 +1,10 @@
 //
+//   _______  ______  ____       _        _ ___     ______
+//  | ____\ \/ /  _ \|  _ \  ___| |_ __ _(_) \ \   / / ___|
+//  |  _|  \  /| |_) | | | |/ _ \ __/ _` | | |\ \ / / |
+//  | |___ /  \|  __/| |_| |  __/ || (_| | | | \ V /| |___
+//  |_____/_/\_\_|   |____/ \___|\__\__,_|_|_|  \_/  \____|
+//
 //  EXPDetailVC.m
 //  testOCR
 //
@@ -19,7 +25,6 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     _eobj = [_allObjects objectAtIndex:_detailIndex];
-    
     
     UISwipeGestureRecognizer *leftGesture = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeDetectedLeft:)];
     leftGesture.direction = UISwipeGestureRecognizerDirectionLeft;
@@ -73,7 +78,8 @@
     [self setTextFieldWithError : _totalLabel        : _eobj.total : TRUE];
     [self setTextFieldWithError : _batchLabel        : _eobj.batch : TRUE];
     [self setTextFieldWithError : _pdfFileLabel      : _eobj.PDFFile : TRUE];
-    [_progressView setProgress:(float)_detailIndex/100.0];
+    int aoc = (int)_allObjects.count;
+    if (aoc > 0) [_progressView setProgress:(float)_detailIndex/(float)aoc];
 } //end updateUI
 
 //=============EXPDetail VC=====================================================

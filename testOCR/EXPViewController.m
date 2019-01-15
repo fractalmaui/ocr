@@ -1,9 +1,9 @@
 //
-//   ____  ______     ______
-//  |  _ \| __ ) \   / / ___|
-//  | | | |  _ \\ \ / / |
-//  | |_| | |_) |\ V /| |___
-//  |____/|____/  \_/  \____|
+//   _______  ________     ______
+//  | ____\ \/ /  _ \ \   / / ___|
+//  |  _|  \  /| |_) \ \ / / |
+//  | |___ /  \|  __/ \ V /| |___
+//  |_____/_/\_\_|     \_/  \____|
 //
 //  EXPViewController
 //  testOCR
@@ -36,10 +36,11 @@
     et.selectBy     = @"*";
     et.selectValue  = @"*";
     tableName       = @"";
-    dbResults = [[NSMutableArray alloc] init];
-    dbMode = DB_MODE_NONE;
-    vendorLookup = @"*";
-    
+    dbResults       = [[NSMutableArray alloc] init];
+    dbMode          = DB_MODE_NONE;
+    vendorLookup    = @"*";
+    _detailMode     = FALSE;
+
     barnIcon    = [UIImage imageNamed:@"barnIcon"];
     bigbuxIcon  = [UIImage imageNamed:@"bigbuxIcon"];
     centIcon    = [UIImage imageNamed:@"centIcon"];
@@ -66,16 +67,6 @@
     [self activityIndicatorOnOff : FALSE];
     // Do any additional setup after loading the view.
     _titleLabel.text = @"Touch Menu to perform query...";
-    if (_actData.length > 1) //Incoming data?
-    {
-        NSArray *sitems =  [_actData componentsSeparatedByString:@":"];
-        vendorLookup = @"*";
-        if (sitems[0] != nil) batchIDLookup = sitems[0];
-        if (sitems[1] != nil) vendorLookup  = sitems[1];
-    }
-    sortBy = @"";
-    if ([_searchType isEqualToString:@"E"]) [self loadEXP];
-    if ([_searchType isEqualToString:@"I"]) [self loadInvoices];
     _sortButton.hidden   = TRUE;
     _selectButton.hidden = TRUE;
 } //end viewDidLoad
@@ -86,7 +77,24 @@
     [super viewWillAppear:animated];
     batchIDLookup = @"*";
     vendorLookup  = @"*";
-    [self loadEXP];//asdf
+    //Only for detail mode...
+    if (!_detailMode) //Normal mode?
+    {
+        if (_actData.length > 1) //Incoming data?
+        {
+            NSArray *sitems =  [_actData componentsSeparatedByString:@":"];
+            vendorLookup = @"*";
+            if (sitems[0] != nil) batchIDLookup = sitems[0];
+            if (sitems[1] != nil) vendorLookup  = sitems[1];
+        }
+        sortBy = @"";
+    }
+    else
+    {
+        vendorLookup  = _searchType;
+        batchIDLookup = _actData;
+    }
+    [self loadEXP];
 }
 
 
@@ -117,10 +125,12 @@
 {
     batchIDLookup = @"*";
 
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select Database Operation"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Database Operation",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -157,9 +167,12 @@
 - (IBAction)sortSelect: (id)sender
 {
     batchIDLookup = @"*";
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Sort EXP Table By..."];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Sort EXP Table By...",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert setValue:tatString forKey:@"attributedTitle"];
     int i=0;
     
     NSArray *sortOptions = @[
@@ -194,10 +207,12 @@
     et.selectBy     = @"*";
     et.selectValue  = @"*";
 
-    
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select By...",nil)
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select By..."];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Select By..."
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
+    
     [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Vendor:HPF",nil)
                                                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                    self->et.selectBy = PInv_Vendor_key;
@@ -276,10 +291,14 @@
     int nvends = 2; //getVendorNameForPrompt above must match!
     
     UIAlertAction *actions[8]; //May need more...
+
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select Vendor"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Vendor",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
+
     for (int i = 0;i<nvends;i++)
     {
         NSString *vname = [self getVendorNameForPrompt:i];
@@ -300,36 +319,6 @@
 } //end promptForEXPVendor
 
 
-//=============EXP VC=====================================================
--(void) promptForInvoiceVendor
-{
-    
-    int nvends = 2; //getVendorNameForPrompt above must match!
-    
-    UIAlertAction *actions[8]; //May need more...
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Vendor",nil)
-                                                                   message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    for (int i = 0;i<nvends;i++)
-    {
-        NSString *vname = [self getVendorNameForPrompt:i];
-        actions[i] = [UIAlertAction actionWithTitle:NSLocalizedString(vname,nil)
-                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                  [self loadInvoiceByVendor : vname];
-                                              }];
-    }
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                           }];
-    
-    for (int i = 0;i<nvends;i++)  [alert addAction:actions[i]];
-    [alert addAction:cancelAction];
-    
-    [self presentViewController:alert animated:YES completion:nil];
-    
-} //end promptForInvoiceVendor
-
 
 
 //=============OCR VC=====================================================
@@ -349,9 +338,15 @@
     tableName = @"EXP";
     dbMode = DB_MODE_EXP;
     et.sortBy = sortBy;
-    
 
-    [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
+    if (!_detailMode) //Normal EXP table examination?
+    {
+        [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
+    }
+    else //Just look at one invoice? (comes w/ list of objectIDs)
+    {
+        [et readFromParseAsStrings : FALSE : vendorLookup : batchIDLookup];
+    }
     [self updateUI];
 }
 
@@ -407,13 +402,16 @@
     NSString *xtra = @"";
     if ([_searchType isEqualToString:@"E"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
     if ([_searchType isEqualToString:@"I"]) xtra = [NSString stringWithFormat:@" Batch:%@",batchIDLookup];
+    NSString *s;
     if ([sortBy isEqualToString:@""]) //No particular sort...
-        _titleLabel.text = [NSString stringWithFormat:@"[%@%@] (latest 100)",tableName,xtra];
+        s = [NSString stringWithFormat:@"[%@%@] (latest 100)",tableName,xtra];
     else{
-        NSString *s = [NSString stringWithFormat:@"Sort by %@",sortBy];
-        _titleLabel.text = s;
+        if (!_detailMode) s = [NSString stringWithFormat:@"Sort by %@",sortBy];
+        else  s = [NSString stringWithFormat:@"Invoice %@",_actData];
     }
-}
+    if (dbResults.count == 0) s = @"No Records Found...";
+    _titleLabel.text = s;
+} //end setLoadedTitle
 
 //=============EXP VC=====================================================
 -(void) updateUI
@@ -427,11 +425,6 @@
 }
 
 #pragma mark - UITableViewDelegate
-
-//- (nonnull UITableViewCell *)tableView:(nonnull UITableView *)tableView cellForRowAtIndexPath:(nonnull NSIndexPath *)indexPath {
-//    <#code#>
-//}
-
 
 
 //=============EXP VC=====================================================
@@ -505,17 +498,14 @@
 //=============EXP VC=====================================================
 -(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    //NSLog(@" prepareForSegue: %@ sender %@",[segue identifier], sender);
     if([[segue identifier] isEqualToString:@"expDetailSegue"])
     {
-        //EXPObject* locale = (EXPObject*)sender;
+        //Just hand all our PFObjects to the detailVC...
         EXPDetailVC *vc = (EXPDetailVC*)[segue destinationViewController];
-//        vc.myTitle     = [NSString stringWithFormat:@"EXP[%@]",locale.objectId];
-       // vc.eobj        = locale;
         vc.allObjects  = [[NSArray alloc]initWithArray:et.expos];
         vc.detailIndex = selectedRow;
     }
-}
+} //end prepareForSegue
 
 
 #pragma mark - EXPTableDelegate

@@ -587,7 +587,7 @@
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
                                 NSLocalizedString(@"Clear All Fields: Are you sure?",nil)
                                                                    message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+                                                            preferredStyle:UIAlertControllerStyleAlert];
     
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK",nil)
@@ -618,10 +618,12 @@
         
         return;
     }
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Add New Field"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Add New Field",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Add Invoice Supplier",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -680,10 +682,12 @@
     NSString *fn    = [ot getBoxFieldName:adjustSelect];
     NSString *title = [NSString stringWithFormat:@"Selected %@\n[%@]",
                        fn,[ot getAllTags:adjustSelect]];
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(title,nil)
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:title];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
     
     UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Adjust Position and Size",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
@@ -744,7 +748,7 @@
                             @"HCenter",@"VCenter",@"HAlign",@"VAlign",nil];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select A Tag",nil)
                                                                    message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+                                                            preferredStyle:UIAlertControllerStyleAlert];
     int index=0;
     for (NSString *aname in actionNames)
     {
@@ -775,68 +779,12 @@
     [ot saveToParse:supplierName];
 } //end addTag
 
-//=============OCR VC=====================================================
-- (IBAction)promptForInvoiceNumberFormat:(id)sender {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Invoice Number Format",nil)
-                                                                   message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    
-    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Value Below Title",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              self->fieldFormat = VALUE_BELOW_TITLE_FIELD_FORMAT;
-                                                              [self finishAndAddBox];
-                                                          }];
-    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Default",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               self->fieldFormat = DEFAULT_FIELD_FORMAT;
-                                                               [self finishAndAddBox];
-                                                           }];
-    //DHS 3/13: Add owner's ability to delete puzzle
-    [alert addAction:firstAction];
-    [alert addAction:secondAction];
-    
-    [self presentViewController:alert animated:YES completion:nil];
-    
-} //end promptForInvoiceNumberFormat
-
-//=============OCR VC=====================================================
-- (IBAction)promptForInvoiceDateFormat:(id)sender {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Invoice Date Format",nil)
-                                                                   message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    
-    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"DD/MM/YY(YY)",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              self->fieldFormat = DATE_DDMMYYYY_FIELD_FORMAT;
-                                                              [self finishAndAddBox];
-                                                          }];
-    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"MM/DD/YY(YY)",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               self->fieldFormat = DEFAULT_FIELD_FORMAT;
-                                                               [self finishAndAddBox];
-                                                           }];
-    //DHS 3/13: Add owner's ability to delete puzzle
-    [alert addAction:firstAction];
-    [alert addAction:secondAction];
-    
-    [self presentViewController:alert animated:YES completion:nil];
-    
-} //end promptForInvoiceNumberFormat
 
 
 //=============OCR VC=====================================================
 - (IBAction)doneSelect:(id)sender {
     if (editing || adjusting)
     {
-        //Hmm let's leave all fields automatic for now, no formatting prompts...
-        //if ([fieldName isEqualToString:INVOICE_NUMBER_FIELD])
-        //    [self promptForInvoiceNumberFormat:self];
-        //else
-        //if ([fieldName isEqualToString:INVOICE_DATE_FIELD])
-        //    [self promptForInvoiceDateFormat:self];
-        //else
         {
             fieldFormat = DEFAULT_FIELD_FORMAT;
             [self finishAndAddBox];

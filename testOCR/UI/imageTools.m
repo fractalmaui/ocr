@@ -468,10 +468,6 @@
 -(UIImage *)pdfToImage: (CGPDFPageRef) pdfPage
 
 {
-    // CGFloat width = 60.0;
-    
-    //Assume we already have the page...
-    
     CGRect pageRect = CGPDFPageGetBoxRect(pdfPage, kCGPDFMediaBox);
     CGFloat pdfScale = 1.0;   //width/pageRect.size.width;
     

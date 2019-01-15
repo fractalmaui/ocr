@@ -1,9 +1,9 @@
 //
-//   ____  ______     ______
-//  |  _ \| __ ) \   / / ___|
-//  | | | |  _ \\ \ / / |
-//  | |_| | |_) |\ V /| |___
-//  |____/|____/  \_/  \____|
+//   _______  ________     ______
+//  | ____\ \/ /  _ \ \   / / ___|
+//  |  _|  \  /| |_) \ \ / / |
+//  | |___ /  \|  __/ \ V /| |___
+//  |_____/_/\_\_|     \_/  \____|
 //
 //  EXPViewController
 //  testOCR
@@ -69,6 +69,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
 @property (weak, nonatomic) IBOutlet UIButton *sortButton;
 @property (weak, nonatomic) IBOutlet UIButton *sortDirButton;
+
+@property (nonatomic , assign) BOOL detailMode;
 
 - (IBAction)doneSelect:(id)sender;
 - (IBAction)menuSelect:(id)sender;

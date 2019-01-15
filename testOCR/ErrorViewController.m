@@ -489,7 +489,7 @@
 //Returning dictionary of EXP objects keyed by id's
 - (void)didGetObjectsByIds : (NSMutableDictionary *)d
 {
-    NSLog(@" OK exp objects %@",d);
+    NSLog(@" OK exp objectsBYid %@",d);
     expRecordsByID = d;
     [_table reloadData];
 }

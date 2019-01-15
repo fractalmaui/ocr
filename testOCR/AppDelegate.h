@@ -6,7 +6,8 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 //  12/21 add dropbox SDK
-
+// To Install crashlytics:
+//   https://fabric.io/kits/ios/crashlytics/install
 //WARNING: DO NOT put batchObject.h in here! Causes horrible compiler problems!
 #import <UIKit/UIKit.h>
 #import <ObjectiveDropboxOfficial/ObjectiveDropboxOfficial.h>

@@ -16,7 +16,7 @@
 //  https://stackoverflow.com/questions/25992238/how-to-split-pdf-into-separate-single-page-pdf-in-ios-programmatically
 //
 //  1/10 Add PDF cache hit to bypass downloading...
-
+//  1/14 Add uploadPNGImage
 #import "DropboxTools.h"
 
 @implementation DropboxTools
@@ -135,6 +135,33 @@ static DropboxTools *sharedInstance = nil;
     }  //end if pdf
 } //end addImagesFromPDFData
 
+
+//=============(DropboxTools)=====================================================
+-(NSString*) getErrorMessage : (DBRequestError*)error
+{
+    NSString *message = @"";
+    if ([error isInternalServerError]) {
+        DBRequestInternalServerError *internalServerError = [error asInternalServerError];
+        message = [NSString stringWithFormat:@"%@", internalServerError];
+    } else if ([error isBadInputError]) {
+        DBRequestBadInputError *badInputError = [error asBadInputError];
+        message = [NSString stringWithFormat:@"%@", badInputError];
+    } else if ([error isAuthError]) {
+        DBRequestAuthError *authError = [error asAuthError];
+        message = [NSString stringWithFormat:@"%@", authError];
+    } else if ([error isRateLimitError]) {
+        DBRequestRateLimitError *rateLimitError = [error asRateLimitError];
+        message = [NSString stringWithFormat:@"%@", rateLimitError];
+    } else if ([error isHttpError]) {
+        DBRequestHttpError *genericHttpError = [error asHttpError];
+        message = [NSString stringWithFormat:@"%@", genericHttpError];
+    } else if ([error isClientError]) {
+        DBRequestClientError *genericLocalError = [error asClientError];
+        message = [NSString stringWithFormat:@"%@", genericLocalError];
+    }
+    return message;
+} //end getErrorMessage
+
 //=============(DropboxTools)=====================================================
 // Looks in default location for this app, we have ONLY one folder for now...
 -(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder
@@ -167,25 +194,7 @@ static DropboxTools *sharedInstance = nil;
              } else {
                  // Generic request error
                  title = @"Generic request error";
-                 if ([error isInternalServerError]) {
-                     DBRequestInternalServerError *internalServerError = [error asInternalServerError];
-                     message = [NSString stringWithFormat:@"%@", internalServerError];
-                 } else if ([error isBadInputError]) {
-                     DBRequestBadInputError *badInputError = [error asBadInputError];
-                     message = [NSString stringWithFormat:@"%@", badInputError];
-                 } else if ([error isAuthError]) {
-                     DBRequestAuthError *authError = [error asAuthError];
-                     message = [NSString stringWithFormat:@"%@", authError];
-                 } else if ([error isRateLimitError]) {
-                     DBRequestRateLimitError *rateLimitError = [error asRateLimitError];
-                     message = [NSString stringWithFormat:@"%@", rateLimitError];
-                 } else if ([error isHttpError]) {
-                     DBRequestHttpError *genericHttpError = [error asHttpError];
-                     message = [NSString stringWithFormat:@"%@", genericHttpError];
-                 } else if ([error isClientError]) {
-                     DBRequestClientError *genericLocalError = [error asClientError];
-                     message = [NSString stringWithFormat:@"%@", genericLocalError];
-                 }
+                 message = [self getErrorMessage:error];
              }
              [self errMsg:@"Dropbox read error" :message];
              [self->_delegate errorGettingBatchList : @"Error" : message];
@@ -354,6 +363,28 @@ static DropboxTools *sharedInstance = nil;
          }
      }];
 } //end saveBatchReport
+
+//=============(DropboxTools)=====================================================
+- (void)uploadPNGImage:(NSString *)imagePath : (UIImage *)pngImage
+{
+    NSData *imageData = UIImagePNGRepresentation(pngImage);
+    DBUserClient *client = [DBClientsManager authorizedClient];
+    [[client.filesRoutes uploadData:imagePath inputData:imageData]
+     setResponseBlock:^(DBFILESFileMetadata *result, DBFILESUploadError *routeError, DBRequestError *error) {
+         if (error != nil)
+         {
+             NSString *message = [self getErrorMessage:error];
+             NSLog(@" dropbox upload error : %@",error);
+             [self->_delegate errorUploadingImage:message];
+         }
+         else
+         {
+             NSLog(@" uploaded PNG->dropbox %@",imagePath);
+             [self->_delegate didUploadImageFile:imagePath];
+         }
+     }];
+
+} //end uploadPNGImage
 
 
 @end

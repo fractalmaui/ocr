@@ -103,7 +103,6 @@
     [query whereKey:PInv_InvoiceNumber_key equalTo:invoiceNumberstring];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
-            [self->iobjs removeAllObjects];
             for( PFObject *pfo in objects) //Should only be one?
             {
                 self->_idate         = pfo[PInv_Date_key];
@@ -132,14 +131,25 @@
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
             [self->recordStrings removeAllObjects];
+            [self->iobjs removeAllObjects];
             for( PFObject *pfo in objects) //Should only be one?
             {
+                invoiceObject *iobj = [[invoiceObject alloc] init];
+                iobj.objectID       = iobj.objectID;
+                iobj.date           = [pfo objectForKey:PInv_Date_key];
+                iobj.expObjectID    = [pfo objectForKey:PInv_EXPObjectID_key];
+                iobj.invoiceNumber  = [pfo objectForKey:PInv_InvoiceNumber_key];
+                iobj.customer       = [pfo objectForKey:PInv_CustomerKey];
+                iobj.batchID        = [pfo objectForKey:PInv_BatchID_key];
+                iobj.vendor         = vendor;
+                [self->iobjs addObject:iobj];
+
                 NSDate *date = pfo[PInv_Date_key];
                 NSString *ds = [self getDateAsString:date];
                 NSString*s = [NSString stringWithFormat:@"[%@](%@):%@",ds,pfo[PInv_InvoiceNumber_key],pfo[PInv_CustomerKey]];
                 [self->recordStrings addObject:s];
             }
-            [self->_delegate didReadInvoiceTableAsStrings:self->recordStrings];
+            [self->_delegate didReadInvoiceTableAsStrings:self->iobjs];
         }
     }];
     

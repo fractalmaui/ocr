@@ -42,13 +42,12 @@
 
 - (void)downloadImages:(NSString *)imagePath;
 - (void)downloadTextFile:(NSString *)imagePath;
-
 -(void) errMsg : (NSString *)title : (NSString*)message;
-
 -(void) setParent : (UIViewController*) p;
 -(void) getBatchList : (NSString *) batchFolder : (NSString *) vendorFolder;
 -(void) renameFile : (NSString*) fromPath : (NSString*) toPath;
 -(void) saveTextFile : (NSString *)fpath : (NSString *)stringToSave;
+- (void)uploadPNGImage:(NSString *)imagePath : (UIImage *)pngImage;
 
 
 @end
@@ -63,4 +62,6 @@
 - (void)didDownloadImages;
 - (void)didDownloadTextFile : (NSString *)result;
 - (void)errorDownloadingImages : (NSString *)s;
+- (void)didUploadImageFile : (NSString *)fname;
+- (void)errorUploadingImage : (NSString *)s;
 @end

@@ -104,12 +104,18 @@
 //=============Batch VC=====================================================
 - (IBAction)runSelect:(id)sender {
     if (!authorized) return ; //can't get at dropbox w/o login! 
+
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Run Batches..."];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:
-                                NSLocalizedString(@"Run one or more Batches...",nil)
+                                NSLocalizedString(@"Run Batches...",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert setValue:tatString forKey:@"attributedTitle"];
+
     UIAlertAction *actions[MAX_POSSIBLE_VENDORS]; //Up to 16 vendors...
 
+    
     int i = 0;
     int vindex = 0;
     for (NSString *s in vv.vNames)
