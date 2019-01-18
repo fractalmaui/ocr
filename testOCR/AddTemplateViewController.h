@@ -16,11 +16,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "CheckTemplateVC.h"
+#import "DropboxTools.h"
 #import "ImageTools.h"
+#import "PDFCache.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AddTemplateViewController : UIViewController <UIImagePickerControllerDelegate,UINavigationControllerDelegate>
+@interface AddTemplateViewController : UIViewController <UIImagePickerControllerDelegate,
+                        UINavigationControllerDelegate,DropboxToolsDelegate>
 {
     int viewWid,viewHit,viewW2,viewH2;
     int photoPixWid,photoPixHit;
@@ -31,7 +34,11 @@ NS_ASSUME_NONNULL_BEGIN
     double rotAngleRadians;
     BOOL showRotatedImage;
     imageTools *it;
+    DropboxTools *dbt;
+    PDFCache *pc;
+    NSMutableArray *fileEntries;
     
+    NSString *templateFolder;
     
     CIImage *coreImage;
     float brightness;
@@ -39,6 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
     float saturation;
     BOOL removeColor;
     BOOL enhancing;
+    NSString* imagePath;
 }
 // UI stuff
 @property (weak, nonatomic) IBOutlet UIImageView *gridOverlay;

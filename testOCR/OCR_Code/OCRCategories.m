@@ -12,6 +12,7 @@
 //  Created by Dave Scruton on 12/19/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  1/14 new column added to cat.txt: UOM
 
 #import <Foundation/Foundation.h>
 #import "OCRCategories.h"
@@ -75,7 +76,8 @@ static OCRCategories *sharedInstance = nil;
             {
                 CatObject *c = [[CatObject alloc] initWithCategory:
                                 lineItems[0] : lineItems[1] :
-                                lineItems[2] : lineItems[3] ];
+                                lineItems[2] : lineItems[3] :
+                                lineItems[3] ];
                 [catCSV addObject : c]; //Add 2nd... records (1st is metadata)
                 NSString *ps = lineItems[1];
                 [_catProducts addObject:ps.lowercaseString]; //separate list of products for matching
@@ -103,6 +105,7 @@ static OCRCategories *sharedInstance = nil;
             [result addObject:co.item];
             [result addObject:co.processed];
             [result addObject:co.local];
+            [result addObject:co.uom]; //DHS 1/14 new column in cat.txt
         }
         i++;
     }

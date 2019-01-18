@@ -13,6 +13,7 @@
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
 //  1/9 Add outputFolder
+//  1/14 Add templateFolder
 
 #import "OCRSettings.h"
 
@@ -26,6 +27,7 @@ NSString *const PS_BatchFolderKey           = @"BatchFolder";
 NSString *const PS_OutputFolderKey          = @"OutputFolder";
 NSString *const PS_ErrorFolderKey           = @"ErrorFolder";
 NSString *const PS_RejectFolderKey          = @"RejectFolder";
+NSString *const PS_TemplateFolderKey        = @"TemplateFolder";
 
 
 //=====<OCRSettings>======================================================================
@@ -55,6 +57,7 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
         _rejectFolder          = rejectFolderDefault           = @"rejects";
         _PhotoJPEGQuality      = PhotoJPEGQualityDefault       = 0.8;
         _outputFolder          = outputFolderDefault           = @"processedBatch";
+        _templateFolder        = templateFolderDefault         = @"templates";
         [self readLocalSettings]; //Read local copy first before going to parse..
         [self loadFromParse];
     }
@@ -87,6 +90,7 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
                 self->_errorFolder             = [objectx objectForKey:PS_ErrorFolderKey];
                 self->_rejectFolder            = [objectx objectForKey:PS_RejectFolderKey];
                 self->_outputFolder            = [objectx objectForKey:PS_OutputFolderKey];
+                self->_templateFolder          = [objectx objectForKey:PS_TemplateFolderKey];
 
                 [self keepFieldsLegal];
                 [self saveLocalSettings]; //Save a copy locally...
@@ -209,6 +213,8 @@ NSString *const PS_RejectFolderKey          = @"RejectFolder";
                                               _rejectFolder]];
     dumpit = [dumpit stringByAppendingString:[NSString stringWithFormat:@"   OutputFolder      : %@\n" ,
                                               _outputFolder]];
+    dumpit = [dumpit stringByAppendingString:[NSString stringWithFormat:@"   TemplateFolder    : %@\n" ,
+                                              _templateFolder]];
 
     return dumpit;
 }

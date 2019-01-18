@@ -166,7 +166,6 @@
 // New arg: headerY, just below found position of actual header in doc coords
 -(void) addHeaderColumnToSortedArray : (int) index : (int) y
 {
-    //NSLog(@" addhc %d ",index);
     headerY = y;
     OCRBox *ob = ocrBoxes[index];
     int xleft =  ob.frame.origin.x;
@@ -188,7 +187,19 @@
     //NSLog(@" where %d rect %@",whereToAdd,NSStringFromCGRect(ob.frame));
     headerColumns[whereToAdd] = ob.frame; //OK add it
     headerColumnCount++;
+    NSLog(@" addhc %d , count %d",index,headerColumnCount);
+
 } //end addHeaderColumnToSortedArray
+
+
+//=============(OCRTopObject)=====================================================
+// which item in he
+-(CGRect) getColumnRect :(int) index
+{
+    if (index < 0 || index > 31) return CGRectZero;
+    return headerColumns[index];
+}
+
 
 
 //=============(OCRTemplate)=====================================================
@@ -475,6 +486,7 @@
 // Use vendor name to find record, loads associated template...
 -(void) readFromParse : (NSString *)vendorName
 {
+    if (vendorName == nil) return;
     PFQuery *query = [PFQuery queryWithClassName:@"templates"];
     [query whereKey:@"vendor" equalTo:vendorName];
     [query orderByDescending:@"createdAt"]; //Get latest saved template (there may be many edits)...

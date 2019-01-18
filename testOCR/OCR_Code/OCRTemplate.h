@@ -73,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(CGRect) getTROriginalRect;
 -(int) getColumnCount;
 -(CGRect) getColumnByIndex : (int) index;
+-(CGRect) getColumnRect :(int) index;
 -(int)  getTagCount : (int) index;
 -(void) addHeaderColumnToSortedArray : (int) index : (int) y;
 -(void) dump;

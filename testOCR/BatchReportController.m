@@ -72,7 +72,8 @@
             //Replace the top level folder with the "processed" folder name
             AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
             chunks[1] = bappDelegate.settings.outputFolder;
-            chunks[3] = @"report.txt";
+            //Assemble report fname from batchID...
+            chunks[3] = [NSString stringWithFormat:@"%@_report.txt",_pfo[PInv_BatchID_key]];
             //This should point to batch report now
             NSString *iPath = [chunks componentsJoinedByString:@"/"];
             [dbt downloadTextFile:iPath];

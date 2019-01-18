@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
     BOOL bulk;
     int lineNumber;
     NSArray *beverageNames;
+    NSArray *breadNames;
     NSArray *dairyNames;
     NSArray *dryGoodsNames;
     NSArray *miscNames;    

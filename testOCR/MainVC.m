@@ -122,7 +122,7 @@
 {
     [super viewWillAppear:animated];
     [act readActivitiesFromParse:nil :nil];
-    //[self testit];
+    [self testit];
 }
 
 
@@ -133,7 +133,7 @@
     _versionLabel.text = [NSString stringWithFormat:@"V %@",versionNumber];
    // [self testit];
 
-    //[self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
+   // [self performSegueWithIdentifier:@"templateSegue" sender:@"mainVC"];
 
     //[self performSegueWithIdentifier:@"expSegue" sender:@"mainVC"];
 }
@@ -636,25 +636,15 @@
     return jdict;
 }
 
-
-//(NSArray *) rowy = []
-//"294.5",   RASPBERRY
-//358,       AUSAGE>
-//"406.5",   FRENCH
-//439,       BASIL
-//471        BUTTER
-//) y2s (
-//       "284.5",
-//       326,
-//       358,
-//       439,
-//       471,
-//       519,
-//       599
 //=============OCR MainVC=====================================================
 -(void) testit
 {
     
+    AppDelegate *mappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    DropboxTools *dbt = [[DropboxTools alloc] init];
+    [dbt getFolderList : mappDelegate.settings.templateFolder];
+
+    return;
     
     NSDictionary *d    = [self readTxtToJSON:@"hfmpages"];
     OCRDocument *od = [[OCRDocument alloc] init];

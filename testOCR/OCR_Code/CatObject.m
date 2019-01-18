@@ -14,7 +14,7 @@
 
 @implementation CatObject
 
-- (id) initWithCategory : (NSString*) c : (NSString*) i : (NSString*) p : (NSString*) l
+- (id) initWithCategory : (NSString*) c : (NSString*) i : (NSString*) p : (NSString*) l : (NSString*) u
 {
     if (self = [super init])
     {
@@ -24,6 +24,7 @@
         _item      = [i.lowercaseString stringByReplacingOccurrencesOfString:@":" withString:@","];
         _processed = p.lowercaseString;
         _local     = l.lowercaseString;
+        _uom       = u.lowercaseString;
         if ([_processed isEqualToString:@"processed"])
         {
             _isProcessed = TRUE;

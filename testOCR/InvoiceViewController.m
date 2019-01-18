@@ -58,11 +58,12 @@
     if (vptr >= vv.vNames.count)
     {
         [_table reloadData];
-        //asdf
-        if ([_vendor isEqualToString:@"*"]) //Get all vendors
+        if (!_vendor || [_vendor isEqualToString:@"*"]) //Get all vendors
             _titleLabel.text  = @"Invoices for all Vendors";
         else
+        {
             _titleLabel.text = [NSString stringWithFormat:@"Invoices:%@",_vendor] ;
+        }
         return;
     }
     NSString*vname = vv.vNames[vptr];

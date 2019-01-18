@@ -5,6 +5,7 @@
 //  Created by Dave Scruton on 12/26/18.
 //  Copyright © 2018 Beyond Green Partners. All rights reserved.
 //
+//  1/15 hook up filename property
 
 #import "CheckTemplateVC.h"
 
@@ -31,10 +32,9 @@
     // Do any additional setup after loading the view.
     _imageView.image = _photo;
     _scrollView.delegate=self;
-    oto.imageFileName = @"test.jpg";
-    NSLog(@" NOTE: Filename needs to be added here at OCR call for cacheing!!");
+    oto.imageFileName = _fileName; //1/15
     [oto performOCROnImage : oto.imageFileName : _photo : nil];
-}
+} //end viewDidLoad
 
 //=============CheckTemplate VC=====================================================
 -(void) loadView
@@ -100,6 +100,20 @@
     return self.imageView;
 }
 
+//=============CheckTemplate VC=====================================================
+-(void) errMsg : (NSString *)title : (NSString*)message
+{
+    UIAlertController *alertController =
+    [UIAlertController alertControllerWithTitle:title
+                                        message:message
+                                 preferredStyle:(UIAlertControllerStyle)UIAlertControllerStyleAlert];
+    [alertController addAction:[UIAlertAction actionWithTitle:@"OK"
+                                                        style:(UIAlertActionStyle)UIAlertActionStyleCancel
+                                                      handler:nil]];
+    [self presentViewController:alertController animated:YES completion:nil];
+    
+} //end errMsg
+
 
 
 //=============CheckTemplate VC=====================================================
@@ -121,7 +135,7 @@
 //=============(BatchObject)=====================================================
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
-    NSLog(@" OCR err %@",errMsg);
+    [self errMsg:@"Error Performing OCR" :errMsg];
 }
 
 @end

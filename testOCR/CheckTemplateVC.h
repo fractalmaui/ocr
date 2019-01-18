@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)backSelect:(id)sender;
 - (IBAction)nextSelect:(id)sender;
 
+@property (nonatomic , strong) NSString* fileName;
 @property (nonatomic , strong) UIImage* photo;
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 

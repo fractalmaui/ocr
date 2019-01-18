@@ -201,6 +201,19 @@ static BatchObject *sharedInstance = nil;
     }
 } //end runOneOrMoreBatches
 
+
+//=============(BatchObject)=====================================================
+-(void) completeBatch
+{
+    batchStatus = BATCH_STATUS_COMPLETED;
+    [self updateParse];
+    NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
+    [act saveActivityToParse:@"Batch Completed" : actData];
+    [self.delegate didCompleteBatch];
+    [self writeBatchReport];
+}
+
+
 //=============(BatchObject)=====================================================
 -(void) setParent : (UIViewController*) p
 {
@@ -529,7 +542,8 @@ static BatchObject *sharedInstance = nil;
     {
         AppDelegate *bappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
         chunks[1] = bappDelegate.settings.outputFolder;
-        chunks[3] = @"report.txt";
+        chunks[3] = [NSString stringWithFormat:@"%@_report.txt",_batchID];
+//        chunks[3] = @"report.txt";
         NSString *outputPath = [chunks componentsJoinedByString:@"/"];
         DropboxTools *dbt = [DropboxTools sharedInstance];
         [dbt saveTextFile : outputPath : s];
@@ -553,7 +567,7 @@ static BatchObject *sharedInstance = nil;
 //===========<DropboxToolDelegate>================================================
 - (void)errorGettingBatchList : (NSString *) type: (NSString *)s 
 {
-    [self addError : s : @"n/a"];
+    [self addError : s : @"n/a": @"n/a"];
 }
 
 //===========<DropboxToolDelegate>================================================
@@ -589,7 +603,7 @@ static BatchObject *sharedInstance = nil;
 //===========<DropboxToolDelegate>================================================
 - (void)errorDownloadingImages : (NSString *)s
 {
-    [self addError : s : @"n/a"];
+    [self addError : s : @"n/a": @"n/a"];
 }
 
 #pragma mark - OCRTemplateDelegate
@@ -609,7 +623,10 @@ static BatchObject *sharedInstance = nil;
 {
     NSString *s = [NSString stringWithFormat:@"%@ Template Error [%@]",vendorName,errmsg];
     gotTemplate = FALSE;
-    [self addError : s : @"n/a"];
+    [self addError : s : @"n/a": @"n/a"];
+    [self completeBatch];
+    //MUST END BATCH!
+    //asdf
 }
 
 
@@ -636,19 +653,22 @@ static BatchObject *sharedInstance = nil;
 //===========<OCRTopObjectDelegate>================================================
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
-    [self addError : errMsg : @"n/a"];
+    [self addError : errMsg : @"n/a": @"n/a"];
 }
+
+//===========<OCRTopObjectDelegate>================================================
+- (void)fatalErrorPerformingOCR : (NSString *) errMsg
+{
+    [self addError : errMsg : @"n/a": @"n/a"];
+    [self completeBatch];
+}
+
 
 //===========<OCRTopObjectDelegate>================================================
 - (void)didSaveOCRDataToParse : (NSString *) s
 {
     NSLog(@" OK: full OCR -> DB done, invoice %@",s);
-    batchStatus = BATCH_STATUS_COMPLETED;
-    [self updateParse];
-    NSString *actData = [NSString stringWithFormat:@"%@:%@",_batchID,vendorName];
-    [act saveActivityToParse:@"Batch Completed" : actData];
-    [self.delegate didCompleteBatch];
-    [self writeBatchReport];
+    [self completeBatch];
 }
 
 

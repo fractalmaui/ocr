@@ -23,8 +23,6 @@
 @interface EXPTable : NSObject
 {
     NSMutableArray *objectIDs;
-    NSMutableArray *recordStrings;
-    NSMutableArray *productNames;
     NSString *tableName;
     NSString *EXPDumpCSVList;
     int totalSentCount;
@@ -59,8 +57,6 @@
 -(void) readFromParse : (NSString *) invoiceNumberstring;
 -(void) readFromParseByObjIDs : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)soids;
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch;
--(NSString *)getRecord : (int) index;
--(NSMutableArray *)getAllRecords;
 -(NSString *) dumpToCSV;
 
 

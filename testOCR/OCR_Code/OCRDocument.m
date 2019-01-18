@@ -219,6 +219,7 @@
 {
     NSString *outstr;
     outstr = [nstr   stringByReplacingOccurrencesOfString:@"O" withString:@"0"];
+    outstr = [outstr stringByReplacingOccurrencesOfString:@"C" withString:@"0"];  //C ... really?
     outstr = [outstr stringByReplacingOccurrencesOfString:@"o" withString:@"0"];
     outstr = [outstr stringByReplacingOccurrencesOfString:@"S" withString:@"5"];
     outstr = [outstr stringByReplacingOccurrencesOfString:@"B" withString:@"8"];
@@ -250,7 +251,6 @@
         //Dissemble to dollars and cents, then reassemble to guarantee 2 digits of cents
         float fdollarsAndCents = [sout floatValue];
         int d = (int) fdollarsAndCents;
-        //asdf
         int c = floor((100.0 * fdollarsAndCents) + 0.5) - 100*d;
         sout = [NSString stringWithFormat:@"%d.%2.2d",d,c];
 
@@ -265,7 +265,6 @@
 -(NSMutableArray *) cleanUpPriceColumns : (int) index : (NSMutableArray*) a
 {
     //THIS NEEDS IMPROVEMENT, and abstraction!
-    //asdf
     if (index != _priceColumn &&
         index != _amountColumn &&
         index != _quantityColumn) return a; //Using our 5 canned columns
@@ -315,7 +314,15 @@
 -(void) clearAllColumnStringData
 {
     [columnStringData removeAllObjects];
+    //By default template columns should be laid out in this manner.
+    //The code tries to figure out which is which by matching header strings,
+    //  but it doesn't always work! This needs to be improved!
     _longestColumn = 0;
+    _itemColumn = 0;
+    _quantityColumn = 1;
+    _descriptionColumn = 2;
+    _priceColumn = 3;
+    _amountColumn = 4;
 }
 
 //=============(OCRDocument)=====================================================
@@ -384,7 +391,11 @@
     {
         int x = (int)ow.left.intValue; //Get top left corner?
         int y = (int)ow.top.intValue;
-        
+// STOOPID DEBUG
+//        if ([ow.wordtext isEqualToString:@"1,77"])
+//        {
+//            NSLog(@" bing 177"); //asdf
+//        }
         if (x >= xi && x <= x2 && y >= yi && y <= y2) //Hit!
         {
             NSNumber *n = [NSNumber numberWithInt:index];
@@ -476,6 +487,8 @@
 
 //=============(OCRDocument)=====================================================
 // Finds header in doc, given r as possible place to start. returns top left ypos
+//  1/16 Add some smarts using column boundaries (assumed already set) to
+//  get some clean header strings...
 -(int) findHeader : (CGRect)r : (int) expandYBy
 {
     CGRect bigr = CGRectMake(r.origin.x, r.origin.y-expandYBy,
@@ -492,7 +505,8 @@
             {
                 found = TRUE;
                 yTest = ow.top.intValue;  //Document space!
-                NSLog(@" descr found index %d",index);
+                int xt =  yTest = ow.left.intValue;
+                NSLog(@" description found:index %d xy (%d,%d)",index,yTest,xt);
                 break;
             }
           index++;
@@ -509,11 +523,12 @@
 //    by = (double)topmostLeftRect.origin.y + by*vScale;
   //  NSLog(@" by %f ytest %f",by,yTest);
     NSMutableArray *b = [[NSMutableArray alloc] init];
-    for (NSNumber *n in a) //Get every word on the same line as the keyword
+    for (NSNumber *n in a) //Get every word on the same lines as the keyword
     {
         OCRWord *ow = allWords[n.longValue];
-        if (abs(ow.top.intValue - yTest) < _glyphHeight ) [b addObject: n];
+        if (abs(ow.top.intValue - yTest) < 2*_glyphHeight ) [b addObject: n];
     }
+    [self dumpArrayFull:b];
     NSString * hdrSentence =  [self assembleWordFromArray : b : FALSE : 2];
     //NSLog(@" found header %@",hdrSentence);
     //Check for other keywords...
@@ -590,12 +605,12 @@
     NSString *headerForThisColumn = [self getHeaderStringFromRect:rr];
     headerForThisColumn = headerForThisColumn.lowercaseString;
     //let's see what it contains:
-    if ([headerForThisColumn containsString:@"item"]) _itemColumn = column;
-    if ([headerForThisColumn containsString:@"quantity"]) _quantityColumn = column;
+    if ([headerForThisColumn containsString:@"item"])        _itemColumn = column;
+    if ([headerForThisColumn containsString:@"quantity"])    _quantityColumn = column;
     if ([headerForThisColumn containsString:@"description"]) _descriptionColumn = column;
-    if ([headerForThisColumn containsString:@"price"]) _priceColumn = column;
-    if ([headerForThisColumn containsString:@"amount"]) _amountColumn = column;
-    //NSLog(@" column header[%d] %@ ic %d qc %d",column,headerForThisColumn,_itemColumn,_quantityColumn);
+    if ([headerForThisColumn containsString:@"price"])       _priceColumn = column;
+    if ([headerForThisColumn containsString:@"amount"])      _amountColumn = column;
+    NSLog(@" column header[%d] %@ ic %d qc %d",column,headerForThisColumn,_itemColumn,_quantityColumn);
 
     return resultStrings;
 } //end getColumnStrings
@@ -610,7 +625,7 @@
     {
         NSNumber *nx = [d objectForKey:@"X"]; // find one with an X near our rect
         if (nx.intValue >= dr.origin.x  && nx.intValue <= dr.origin.x + rr.size.width)
-            return [d objectForKey:@"Field"]; //asdf
+            return [d objectForKey:@"Field"];
     }
     return cname;
 }
@@ -621,8 +636,8 @@
 {
     //Get all content within this rect, assume one item per line!
     NSMutableArray *a = [self findAllWordsInRect:rr];
-    //[self dumpArray:a];
-    //NSLog(@" gcYPs %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
+    NSLog(@" getColumnYPositionsInRect %d,%d : %d,%d",(int)rr.origin.x,(int)rr.origin.y,(int)rr.size.width,(int)rr.size.height);
+    [self dumpArrayFull:a];
     NSMutableArray *colPairs = [[NSMutableArray alloc] init];
     int oldy = -99999;
     //Get each item in our column box...
@@ -758,13 +773,14 @@
 -(CGRect) getRightmostTopRect
 {
     [self fixBogusWHIfNeeded];
-    int cuty = _height/4;
+    int cuty = _height/4;  //Doesn't look like this matches the templates TRR scan limit!
     int maxx = -99999;
     int foundit = -1;
     int index = 0;
     for (OCRWord *ow  in allWords)
     {
-        int x1 = (int)ow.left.intValue;
+        //DHS 1/16 added the width this wasn't matching template's maxx???
+        int x1 = (int)(ow.left.intValue + ow.width.intValue);
         int y1 = (int)ow.top.intValue;
         if (y1 < cuty)
         {
@@ -818,14 +834,17 @@
     {
         int x1 = (int)ow.left.intValue;
         int y1 = (int)ow.top.intValue;
-        // Look for farthest left near the top
-        //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 < minx && y1 < miny) {
-            minx = x1;
-            miny = y1;
-            foundit = index;
+        if (y1 < _height/4)
+        {
+            // Look for farthest left near the top
+            //OUCH! We don't have image height for incoming PDF data!?!?!
+            if (x1 < minx && y1 < miny) {
+                minx = x1;
+                miny = y1;
+                foundit = index;
+            }
         }
-        index++;
+       index++;
     }
     return  [self getWordRectByIndex:foundit];
 } //end getTLRect
@@ -843,15 +862,18 @@
     {
         int x1 = (int)ow.left.intValue + (int)ow.width.intValue;
         int y1 = (int)ow.top.intValue;
-        //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
-        //Look for farthest right near the top!
-        //OUCH! We don't have image height for incoming PDF data!?!?!
-        if (x1 > maxx && y1 < 99999)
+        if (y1 < _height/4)
         {
-            //NSLog(@" bing: Top Right");
-            maxx = x1;
-            miny = y1;
-            foundit = index;
+            //NSLog(@" word [%@] xy %d %d",ow.wordtext,x1,y1);
+            //Look for farthest right near the top!
+            //OUCH! We don't have image height for incoming PDF data!?!?!
+            if (x1 > maxx && y1 < 99999)
+            {
+                //NSLog(@" bing: Top Right");
+                maxx = x1;
+                miny = y1;
+                foundit = index;
+            }
         }
         index++;
     }
@@ -940,21 +962,22 @@
 -(NSDate *)getGarbledDate : (NSString *) dstr
 {
     if (dstr.length < 8) return nil; //Too short!
+    NSString*dclean = [self cleanUpNumberString : dstr]; //Get rid of weird typos...
     //Try to fix garbled date, where slashes are replaced by ones for instance...
-    NSString *tmonth = [dstr substringToIndex:2];
+    NSString *tmonth = [dclean substringToIndex:2];
     int imon,iday,iyear;
     iyear = currentYear;
     iday  = 1;
     imon = tmonth.intValue;
     if (imon >= 1 && imon <= 12) //Got a month?
     {
-        int slen = (int)dstr.length;
-        NSString *tday = [dstr substringWithRange:NSMakeRange(3, 2)];
+        int slen = (int)dclean.length;
+        NSString *tday = [dclean substringWithRange:NSMakeRange(3, 2)];
         iday = tday.intValue;
         NSString *tyear = @"";
         if (slen > 8)
         {
-            tyear = [dstr substringWithRange:NSMakeRange(6, slen-6-1)];
+            tyear = [dclean substringWithRange:NSMakeRange(6, slen-6)];
             iyear = tyear.intValue;
             //Try to make sense of year:
             if (iyear < 100) iyear += 2000;
@@ -1076,10 +1099,39 @@
     return nil;
 } //end parseDateFromString
 
+
 //=============(OCRDocument)=====================================================
 // Sets up internal header column names based on passed array of words forming header
--(void)  parseHeaderColumns  : (NSMutableArray*)aof
+//   called by OCRTopObject
+-(void) parseHeaderColumns : (NSMutableArray*)colRectz : (CGRect) hr
 {
+    if (colRectz == nil || colRectz.count == 0)
+    {
+        NSLog(@" ERROR: parseHeaderColumns missing column boxes");
+        return;
+    }
+    NSLog(@" parseHeaderColumns: dump of bigrect:");
+    [self dumpArrayFull:[self findAllWordsInRect:hr]];
+    //Let's get some header rects first, using colRectz...
+    NSMutableArray *cr = [[NSMutableArray alloc] init];
+    int i = 0;
+    for (NSValue *rectObj in colRectz)
+    {
+        CGRect rcFrame = [rectObj CGRectValue];
+        //Intersect w/ header frame
+        rcFrame.origin.y = hr.origin.y;
+        rcFrame.size.height = hr.size.height;
+        //Try expanding header field a bit...
+        rcFrame.origin.y -=_glyphHeight;
+        rcFrame.size.height +=2*_glyphHeight;
+        NSLog(@" annnd headerRect for column %d is %@",i,NSStringFromCGRect(rcFrame));
+        NSMutableArray *a = [self findAllWordsInRect:rcFrame];
+        [self dumpArrayFull:a];
+        i++;
+    }
+    
+    
+    NSMutableArray *aof = [[NSMutableArray alloc] init]; //STUB for below
     [self fixBogusWHIfNeeded];
     BOOL firstField = TRUE;
     int acrossX,lastX;
@@ -1282,7 +1334,6 @@
     _width  = (trDocumentRect.origin.x + trDocumentRect.size.width) - tlDocumentRect.origin.x;
     _height = (brDocumentRect.origin.y + brDocumentRect.size.height) - tlDocumentRect.origin.y;
     //NSLog(@"w/h computed %d %d",_width,_height);
-    //asdf
     double hsizeTemplate   = (double)(trTemplateRect.origin.x + trTemplateRect.size.width) -
                          (double)(tlTemplateRect.origin.x);
     double hsizeDocument = (double)(topmostRightRect.origin.x + topmostRightRect.size.width) -
@@ -1307,7 +1358,7 @@
 
 //=============(OCRDocument)=====================================================
 -(int) doc2templateX : (int) x
-{//asdf
+{
     if (unitScale) return x;
     //DHS 12/31
     double bx = (double)x - (double)topmostLeftRect.origin.x;

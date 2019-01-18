@@ -129,7 +129,7 @@
                                                       self->vendorName = s;
                                                       self->_activityIndicator.hidden = FALSE;
                                                       [self->_activityIndicator startAnimating];
-                                                      [self->bbb runOneOrMoreBatches : i];
+                                                      [self->bbb runOneOrMoreBatches : vindex];
                                                   }];
             i++;
             if (i >= MAX_POSSIBLE_VENDORS) break;

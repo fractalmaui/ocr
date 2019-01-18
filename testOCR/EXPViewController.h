@@ -40,7 +40,6 @@ NS_ASSUME_NONNULL_BEGIN
     EXPTable *et;
     OCRTemplate *ot;
     
-    NSMutableArray *dbResults;
     NSString *tableName;
     int dbMode;
     NSString *batchIDLookup;

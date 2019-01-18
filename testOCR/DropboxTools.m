@@ -46,7 +46,7 @@ static DropboxTools *sharedInstance = nil;
         _batchImageRects = [[NSMutableArray alloc] init]; // Size info for each PDF
         _batchImageData  = [[NSMutableArray alloc] init]; // PDF raw data, goes into OCR
         client           = [DBClientsManager authorizedClient];
-        //pc               = [PDFCache sharedInstance];
+        pc               = [PDFCache sharedInstance];
     }
     return self;
 }
@@ -127,7 +127,8 @@ static DropboxTools *sharedInstance = nil;
                     [_batchImages     addObject:nextImage];
                     [_batchImagePaths addObject:imagePath];
                     [_batchImageRects addObject:rectObj];
-                    //[pc addPDFImage:nextImage : imagePath : i];
+                    //Somehow, this sent a garbage value for i!?!?
+                    [pc addPDFImage:nextImage : imagePath : i];
                 }
                 if (i == pageCount) [_delegate didDownloadImages];
             } //end pdfpage
@@ -161,6 +162,23 @@ static DropboxTools *sharedInstance = nil;
     }
     return message;
 } //end getErrorMessage
+
+//=============(DropboxTools)=====================================================
+// Generic folder read; passes back array of NSStrings to delegate...
+-(void) getFolderList : (NSString *) folderPath 
+{
+    NSString *searchPath = [NSString stringWithFormat:@"/%@",folderPath]; //Prepend / to get subfolder
+    [[client.filesRoutes listFolder:searchPath]
+     setResponseBlock:^(DBFILESListFolderResult *result, DBFILESListFolderError *routeError, DBRequestError *error) {
+         if (result) {
+             if (result.entries.count > 0)
+             {
+                [self->_delegate didGetFolderList : result.entries];
+             }
+         }
+     }];
+
+} //end getFolderList
 
 //=============(DropboxTools)=====================================================
 // Looks in default location for this app, we have ONLY one folder for now...
@@ -282,6 +300,7 @@ static DropboxTools *sharedInstance = nil;
                      [self->_batchImages     addObject:nextImage];
                      [self->_batchImagePaths addObject:imagePath];
                      [self->_batchImageData  addObject:fileData];
+                     [self->pc addPDFImage:nextImage : imagePath : nextImage];
                  }
              }
              [self->_delegate didDownloadImages];

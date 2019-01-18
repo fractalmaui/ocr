@@ -37,6 +37,7 @@
 
     od = [[OCRDocument alloc] init];
     ot = [[OCRTemplate alloc] init];
+    ot.delegate = self;  //1/16 WHY WASN'T THIS HERE!?
     
     oto = [OCRTopObject sharedInstance];
     oto.delegate = self;
@@ -48,7 +49,7 @@
     arrowRHStepSize = 10;
     editing = adjusting = FALSE;
     
-    docnum = 1;
+    docnum = 4;
     OCR_mode = 1;  //1 = use stubbed OCR, 2 = fetch new OCR from server
 
     invoiceDate = [[NSDate alloc] init];
@@ -298,42 +299,16 @@
 //=============OCR VC=====================================================
 -(void) loadStubbedOCRDataLite
 {
-    if (docnum == 1)
-    {
-        stubbedDocName = @"hfm";
-        supplierName   = @"HFM";
-        selectFname    = @"hfm.jpg";
-        selectFnameForTemplate = @"hfm90.jpg"; //This should be rotated for user
-        docFlipped90 = TRUE;
-    }
-    if (docnum == 2)
-    {
-        stubbedDocName = @"beef";
-        supplierName   = @"Hawaii Beef Producers";
-        selectFname    = @"hawaiiBeefInvoice.jpg";
-        selectFnameForTemplate = @"hawaiiBeefInvoice.jpg";  //This should be rotated for user
-        docFlipped90 = FALSE;
-    }
-    if (docnum == 3)
-    {
-        stubbedDocName = @"mg";
-        supplierName   = @"Meadow Gold";
-        selectFname    = @"mg";
-        selectFnameForTemplate = @"mg.png";  //This should be rotated for user
-        docFlipped90 = FALSE;
-    }
+    [self getStubbedStrings];
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
 
 } //end loadStubbedOCRDataLite
 
-
-
 //=============OCR VC=====================================================
--(void) loadStubbedOCRData
+//DHS 1/17
+-(void) getStubbedStrings
 {
-    NSLog(@" Load stubbed OCR data...");
-
     if (docnum == 1)
     {
         stubbedDocName = @"hfm";
@@ -352,12 +327,28 @@
     }
     if (docnum == 3)
     {
-        stubbedDocName = @"mg";
-        supplierName   = @"Meadow Gold";
-        selectFname    = @"mg";
-        selectFnameForTemplate = @"mg.png";  //This should be rotated for user
+        stubbedDocName = @"gordon";
+        supplierName   = @"Gordon";
+        selectFname    = @"gordon";
+        selectFnameForTemplate = @"gordon.png";  //This should be rotated for user
         docFlipped90 = FALSE;
     }
+    if (docnum == 4)
+    {
+        stubbedDocName = @"greco";
+        supplierName   = @"Greco";
+        selectFname    = @"greco";
+        selectFnameForTemplate = @"grecoShrunk3.png";  //This should be rotated for user
+        docFlipped90 = FALSE;
+    }
+
+}
+
+//=============OCR VC=====================================================
+-(void) loadStubbedOCRData
+{
+    NSLog(@" Load stubbed OCR data...");
+    [self getStubbedStrings];
     [_inputImage setImage:[UIImage imageNamed:selectFnameForTemplate]];
     [self scaleImageViewToFitDocument];
 
@@ -391,8 +382,8 @@
 
 //=============OCR VC=====================================================
 - (IBAction)testSelect:(id)sender {
-    [self testEmail:sender];
-    return;
+    //[self testEmail:sender];
+    //return;
     
     //NSDate *date = [od isItADate:@"duhhhhhhhh"];
     //NSDate *date2 = [od isItADate:@"12/24/18"];
@@ -406,6 +397,10 @@
     //OCR_mode = 1;
     if (OCR_mode == 1)
     {
+        //CLUGE: myst have a batch ID for EXP records now!
+        AppDelegate *eappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+        eappDelegate.batchID = @"STUBBED";
+        oto.batchID = @"STUBBED";
         [self loadStubbedOCRData]; //asdf
         oto.imageFileName = selectFname; //selectFnameForTemplate;
         oto.vendor        = supplierName; //TEST
@@ -415,9 +410,10 @@
         CGRect r = CGRectMake(0, 0, imageToOCR.size.width, imageToOCR.size.height);
         //We only need the frame now!
         [oto setupDocumentFrameAndParseJSON : r];
+        oto.totalLines = 0; //Stubbed call... this is for keeping track of multiple page
         [oto applyTemplate:ot];
-        [oto cleanupInvoice];
-        [oto writeEXPToParse : 1]; //Note 2nd arg is page!
+       // [oto cleanupInvoice];
+        [oto writeEXPToParse : 0]; //Note 2nd arg is page!
         NSString *OCR_Results_Dump = [oto dumpResults];
         [self alertMessage:@"Invoice Dump" :OCR_Results_Dump];
 
@@ -1002,7 +998,7 @@
 - (IBAction)nextDocSelect:(id)sender
 {
     docnum++;
-    if (docnum > 3) docnum = 1;
+    if (docnum > 4) docnum = 1;
     [self clearOverlay];
     if (OCR_mode == 1) //Get stubbed data...
     {
@@ -1239,15 +1235,30 @@
 
 #pragma mark - OCRTopObjectDelegate
 
-//=============OCR VC=====================================================
+//=============<OCRTopObjectDelegate>=====================================================
 - (void)didSaveOCRDataToParse : (NSString *) s
 {
     NSLog(@" OK: full OCR -> DB done, invoice %@",s);
 }
 
+
+//=============<OCRTopObjectDelegate>=====================================================
 - (void)errorPerformingOCR : (NSString *) errMsg
 {
-    NSLog(@" ocr err %@",errMsg);
+     NSLog(@" errorPerformingOCR %@",errMsg);
 }
+
+//=============<OCRTopObjectDelegate>=====================================================
+- (void)fatalErrorPerformingOCR : (NSString *) errMsg
+{
+    NSLog(@" fatalErrorPerformingOCR %@",errMsg);
+}
+
+//=============<OCRTopObjectDelegate>=====================================================
+- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID : (NSString*) productName
+{
+    NSLog(@" errorSavingEXP %@:%@:%@",errMsg,objectID,productName);
+}
+
 
 @end

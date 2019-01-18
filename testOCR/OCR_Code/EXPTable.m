@@ -24,9 +24,7 @@
     if (self = [super init])
     {
         _expos        = [[NSMutableArray alloc] init]; //Invoice Objects
-        objectIDs     = [[NSMutableArray alloc] init]; //Invoice Objects
-        recordStrings = [[NSMutableArray alloc] init]; //Invoice Objects
-        productNames  = [[NSMutableArray alloc] init]; //Invoice Objects
+        objectIDs     = [[NSMutableArray alloc] init]; //saved object ids, for matching invoice
         _sortBy = @"*";
         _selectBy = @"*";
         tableName = @"EXPFullTable";
@@ -154,20 +152,6 @@
 
 
 //=============(EXPTable)=====================================================
--(NSMutableArray *)getAllRecords
-{
-    return recordStrings;
-}
-
-//=============(EXPTable)=====================================================
--(NSString *)getRecord : (int) index
-{
-    if (index < 0 || index >= recordStrings.count) return @"";
-    return [recordStrings objectAtIndex:index];
-}
-
-
-//=============(EXPTable)=====================================================
 -(void) handleCSVInit : (BOOL) dumptoCSV
 {
     if (dumptoCSV) EXPDumpCSVList = @"CATEGORY,Month,Item,Quantity,Unit Of Measure,BULK/ INDIVIDUAL PACK,Vendor Name, Total Price ,PRICE/ UOM,PROCESSED ,Local (L),Invoice Date,Line #,Invoice #,\n";
@@ -177,12 +161,8 @@
 //=============(EXPTable)=====================================================
 -(void) handleCSVAdd : (BOOL) dumptoCSV : (NSString *)s
 {
-    if (dumptoCSV)
-    {
-        self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
-        //if (i < count-1) //Not at end? add LF
-        self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
-    }
+    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: s];
+    self->EXPDumpCSVList = [self->EXPDumpCSVList stringByAppendingString: @",\n"];
 } //end handleCSVAdd
 
 
@@ -254,10 +234,7 @@
             [a addObject:oid];
             NSLog(@" .. fetch objid [%@]",oid);
             PFObject *pfo = [query getObjectWithId:oid];  //Fetch by object ID,
-            NSString *s = [self getCSVFromObject:pfo];    // handle as usual...
-            [self->recordStrings addObject:s];
-            [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
-            [self handleCSVAdd : dumptoCSV : s];
+            [self handleCSVAdd : dumptoCSV : [self getCSVFromObject:pfo]];
         }
     }
     [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
@@ -322,7 +299,6 @@
                 [d setObject:e forKey:pfo.objectId];
                 [self->_expos addObject: e];
             }
-            NSLog(@" ...loaded EXP OK (%d items) %@",(int)self->_expos.count,self->recordStrings);
             [self.delegate didGetObjectsByIds : d];
         }
     }];
@@ -346,7 +322,7 @@
 //=============OCR VC=====================================================
 -(void) readFromParseAsStrings : (BOOL) dumptoCSV : (NSString *)vendor : (NSString *)batch
 {
-    [self handleCSVInit:dumptoCSV];
+    [self handleCSVInit:TRUE];
     PFQuery *query = [PFQuery queryWithClassName:@"EXPFullTable"];
     //Wildcards means get everything...
     if (![vendor isEqualToString:@"*"]) [query whereKey:PInv_Vendor_key equalTo:vendor];
@@ -374,29 +350,22 @@
     if (![_selectBy isEqualToString:@"*"]) [query whereKey:_selectBy equalTo:_selectValue];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) { //Query came back...
-            [self->recordStrings removeAllObjects];
-            [self->productNames  removeAllObjects];
             [self->_expos        removeAllObjects];
             for( PFObject *pfo in objects)
             {
-                NSString *s = [self getCSVFromObject:pfo];
-                [self->recordStrings addObject:s];
-                [self->productNames addObject:[pfo objectForKey:PInv_ProductName_key]];
-                [self handleCSVAdd : dumptoCSV : s];
+                [self handleCSVAdd : dumptoCSV : [self getCSVFromObject:pfo]];
                 EXPObject *e = [self getEXPObjectFromPFObject:pfo];
                 [self->_expos addObject: e];
             }
-            //NSLog(@" ...loaded EXP OK %@",self->recordStrings);
             [self.delegate didReadEXPTableAsStrings : self->EXPDumpCSVList];
         }
     }];
 } //end readFromParseAsStrings
 
 //=============(EXPTable)=====================================================
+// 1/14 assumes CSV table loaded during last parse read...
 -(NSString *) dumpToCSV
 {
-    [self handleCSVInit:TRUE];
-    for (NSString *s in recordStrings) [self handleCSVAdd:TRUE :s];
     return EXPDumpCSVList;
 }
 

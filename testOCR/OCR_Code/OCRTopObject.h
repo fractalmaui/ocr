@@ -49,7 +49,6 @@
     smartProducts *smartp;
     int smartCount;
     int pagesReturned,pageCount;
-    int totalLines;
     //OCR'ed results...
     NSString *fieldName;
     NSString *fieldNameShort;
@@ -68,6 +67,8 @@
     //CGRect tlRect,trRect;  //Absolute document boundary rects for text
     //CGRect blRect,brRect;
     OCRCache *oc;
+    
+    CGRect headerRect; 
 
     
 }
@@ -85,6 +86,7 @@
 @property (nonatomic , assign) float invoiceTotal;
 @property (nonatomic , assign) long invoiceNumber;
 @property (nonatomic , strong) NSArray* columnHeaders;
+@property (nonatomic , assign) int totalLines;
 
 @property (nonatomic, unsafe_unretained) id <OCRTopObjectDelegate> delegate; // receiver of completion messages
 
@@ -110,6 +112,7 @@
 - (void)batchUpdate : (NSString *) s;
 - (void)didPerformOCR : (NSString *) result;
 - (void)errorPerformingOCR : (NSString *) errMsg;
-- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID: (NSString*) productName;
+- (void)fatalErrorPerformingOCR : (NSString *) errMsg;
+- (void)errorSavingEXP : (NSString *) errMsg : (NSString*) objectID : (NSString*) productName;
 - (void)didSaveOCRDataToParse : (NSString *) s;
 @end

@@ -15,6 +15,7 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 #import <MessageUI/MessageUI.h>
+#import "AppDelegate.h"
 #import "ActivityTable.h"
 #import "DBKeys.h"
 #import "OCRWord.h"

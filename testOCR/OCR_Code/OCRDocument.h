@@ -114,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(NSMutableArray *) getColumnYPositionsInRect : (CGRect )rr : (BOOL) numeric;
 -(void) parseJSONfromDict : (NSDictionary *)d;
 -(NSDate *) isItADate : (NSString *)tstr;
--(void) parseHeaderColumns : (NSMutableArray*)aof;
+-(void) parseHeaderColumns : (NSMutableArray*)rectz : (CGRect) hr ;
 -(void) setPostOCRQPA : (int) row : (NSString*) q : (NSString*) p : (NSString*) a;
 -(void) setPostOCRMinorError : (int) row : (int) merror;
 -(void) setupDocumentAndParseJDON : (NSString*) ifname : (NSDictionary *)d : (BOOL) flipped90;

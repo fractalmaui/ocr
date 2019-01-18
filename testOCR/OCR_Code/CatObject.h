@@ -23,10 +23,11 @@
 @property (nonatomic , strong) NSString* item;
 @property (nonatomic , strong) NSString* processed;
 @property (nonatomic , strong) NSString* local;
+@property (nonatomic , strong) NSString* uom;
 @property (nonatomic , assign) BOOL isProcessed;
 @property (nonatomic , assign) BOOL isLocal;
 
-- (id) initWithCategory : (NSString*) c : (NSString*) i : (NSString*) p : (NSString*) l;
+- (id) initWithCategory : (NSString*) c : (NSString*) i : (NSString*) p : (NSString*) l: (NSString*) u;
 
 
 @end

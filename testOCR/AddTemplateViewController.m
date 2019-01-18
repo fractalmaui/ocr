@@ -35,7 +35,11 @@ NSString * steps[] = {
     if ( !(self = [super initWithCoder:aDecoder]) ) return nil;
     
  //   _versionNumber    = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
-     it = [[imageTools alloc] init];
+    it  = [[imageTools alloc] init];
+    dbt = [[DropboxTools alloc] init];
+    dbt.delegate = self;
+    
+    pc  = [PDFCache sharedInstance];
     
     brightness  =  0.0;
     contrast    = saturation = 1.0;
@@ -66,19 +70,25 @@ NSString * steps[] = {
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
+    //Get template folder contents...
+    AppDelegate *tappDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    templateFolder = tappDelegate.settings.templateFolder;
+    [dbt getFolderList : templateFolder];
+    
+
     //First, are we coming back from something??
     if (_step != 0)
     {
         _step = 1; //Set back to deskew...
     }
-    else if (_step == 0 && _needPicker)
-    {
-        [self displayPhotoPicker];
-        _needPicker = FALSE;
-    }
+//    else if (_step == 0 && _needPicker)
+//    {
+//        [self displayPhotoPicker];
+//        _needPicker = FALSE;
+//    }
 
     [self updateUI];
-}
+} //end viewDidAppear
 
 //=============AddTemplate VC=====================================================
 -(void) loadView
@@ -90,6 +100,53 @@ NSString * steps[] = {
     viewW2  = viewWid/2;
     viewH2  = viewHit/2;
 }
+
+
+//=============AddTemplate VC=====================================================
+-(void) choiceMenu
+{
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select Template Image"];
+    [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Template Image",nil)
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    [alert setValue:tatString forKey:@"attributedTitle"];
+    
+    
+    for (DBFILESMetadata *entry in fileEntries)
+    {
+        NSString *fname = entry.name;
+        [alert addAction : [UIAlertAction actionWithTitle:fname
+                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                  NSLog(@" chose %@",fname);
+                                                  imagePath = [NSString stringWithFormat:
+                                                                         @"/%@/%@",self->templateFolder,fname];
+                                                  if ([self->pc imageExistsByID : imagePath : 1])
+                                                  {
+                                                      NSLog(@" ...cache HIT %@",imagePath);
+                                                      self->_photo = [self->pc getImageByID : imagePath : 1];
+                                                      self->gotPhoto = TRUE;
+                                                      self->_step    = 1; //Set UI state...
+                                                      dispatch_async(dispatch_get_main_queue(), ^{
+                                                          [self resetRotation];
+                                                          [self updateUI];
+                                                      });
+                                                  } //end imageExists...
+                                                  else{
+                                                      self->_activityIndicator.hidden = FALSE;
+                                                      [self->_activityIndicator startAnimating];
+                                                      [self->dbt downloadImages : imagePath];
+                                                  }
+                                                  
+                                              }]];
+    }
+    [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
+                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                           }]];
+    [self presentViewController:alert animated:YES completion:nil];
+
+} //end coiceMenu
+
 
 
 //=============AddTemplate VC=====================================================
@@ -231,6 +288,7 @@ NSString * steps[] = {
     {
         CheckTemplateVC *vc = (CheckTemplateVC*)[segue destinationViewController];
         vc.photo = _templateImage.image;
+        vc.fileName = imagePath;
     }
 }
 
@@ -440,4 +498,47 @@ NSString * steps[] = {
 
 
 }
+
+
+#pragma mark - DropboxToolsDelegate
+
+//===========<DropboxToolDelegate>================================================
+- (void)didGetFolderList : (NSArray *)entries
+{
+    NSLog(@" files %@",entries);
+    fileEntries = [NSMutableArray arrayWithArray:entries];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self choiceMenu];
+    });
+
+}
+
+//===========<DropboxToolDelegate>================================================
+- (void)didDownloadImages
+{
+    NSLog(@" ...got image");
+    _photo   = dbt.batchImages[0];
+    gotPhoto = TRUE;
+    _step    = 1; //Set UI state...
+
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_activityIndicator.hidden = TRUE;
+        [self->_activityIndicator stopAnimating];
+        [self resetRotation];
+        [self updateUI];
+    });
+}
+
+//===========<DropboxToolDelegate>================================================
+- (void)errorDownloadingImages : (NSString *)s
+{
+    NSLog(@" ..error dloading template %@",s);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->_activityIndicator.hidden = TRUE;
+        [self->_activityIndicator stopAnimating];
+    });
+
+}
+
 @end

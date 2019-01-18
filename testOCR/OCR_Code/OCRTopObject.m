@@ -83,6 +83,7 @@ static OCRTopObject *sharedInstance = nil;
     {
         //OK, let's go and get the field name to figure out what to do w data...
         NSString* fieldName = [ot getBoxFieldName:i];
+        NSLog(@" duh: the next fieldname is [%@]",fieldName);
         CGRect rr = [ot getBoxRect:i]; //In document coords!
         NSMutableArray *a = [od findAllWordsInRect:rr];
         if (a.count > 0) //Found a match!
@@ -124,11 +125,13 @@ static OCRTopObject *sharedInstance = nil;
                 headerY -= 10;  //littie jiggle up...
                 rr.origin.y = [od doc2templateY:headerY];  //Adjust our header rect to new header position!
                 a = [od findAllWordsInRect:rr]; //Do another search now...
+                headerRect = rr; //Save our header rect for later...
                 NSLog(@"1: on headery...%d",(int)rr.origin.y);
+                NSLog(@" HEADER DUMP BEFORE parseHeaderColumns:");
+                [od dumpArrayFull:a];
                 //[od dumpArray:a];
-                [od parseHeaderColumns : a];
                 _columnHeaders = [od getHeaderNames];
-                NSLog(@" headers %@",_columnHeaders);
+                NSLog(@" _columnHeaders %@",_columnHeaders);
             }
             else if ([fieldName isEqualToString:INVOICE_TOTAL_FIELD]) //Looking for a number?
             {
@@ -147,6 +150,20 @@ static OCRTopObject *sharedInstance = nil;
             [ot addHeaderColumnToSortedArray : i : headerY + od.glyphHeight];
         }
     }
+    
+    //Only now do we have enough info to figure out the header titles...
+    NSMutableArray* colz = [[NSMutableArray alloc] init];
+    for (int i=0;i<[ot getColumnCount];i++)
+    {
+        CGRect rc = [ot getColumnRect : i];
+        NSValue *rectObj = [NSValue valueWithCGRect:rc];
+        [colz addObject:rectObj];
+        NSLog(@" column[%d] %@",i,NSStringFromCGRect(rc));
+    }
+    [od parseHeaderColumns : colz : headerRect];
+
+    
+    
     //We can only do columns after they are all loaded
     [od clearAllColumnStringData];
     NSMutableArray* rowYs; //overkill on rows too!
@@ -188,7 +205,7 @@ static OCRTopObject *sharedInstance = nil;
         stringArray = [od getColumnStrings : rr : finalYs : i];
         NSMutableArray *cleanedUpArray = [od cleanUpPriceColumns : i : stringArray];
         [od addColumnStringData:cleanedUpArray];
-        //NSLog(@" col[%d] cleanup %@",i,cleanedUpArray);
+        NSLog(@" col[%d] cleanup %@",i,cleanedUpArray);
     }
     
     //Now, columns are ready: let's dig them out!
@@ -238,6 +255,7 @@ static OCRTopObject *sharedInstance = nil;
 //{
 //    return parsedText;
 //}
+
 
 //=============(OCRTopObject)=====================================================
 -(NSString *) getRawResult
@@ -336,7 +354,7 @@ static OCRTopObject *sharedInstance = nil;
             NSString* errMsg = ea[0];
             if (isErr.boolValue)
             {
-                [self->_delegate errorPerformingOCR:errMsg];
+                [self->_delegate fatalErrorPerformingOCR:errMsg];
             }
             else
             {
@@ -362,7 +380,7 @@ static OCRTopObject *sharedInstance = nil;
         //  an array: one set per page...
         [od setupDocumentWithRect : r : OCRJSONResult ];
         pageCount = od.numPages; //OK! now we know how many pages we have
-        totalLines = 0; //Overall line count...
+        _totalLines = 0; //Overall line count...
         for (int page =0;page<pageCount;page++)
         {
             NSLog(@" Final OCR Page %d",page);
@@ -500,7 +518,7 @@ static OCRTopObject *sharedInstance = nil;
                 errStatus = [NSString stringWithFormat:@"W:%@",[smartp getMinorErrorString]];
             smartCount++;
             //Format line count to triple digits, max 999
-            NSString *lineString = [NSString stringWithFormat:@"%3.3d",(totalLines + smartCount)];
+            NSString *lineString = [NSString stringWithFormat:@"%3.3d",(_totalLines + smartCount)];
             //Tons of args: adds allll this shit to the next EXP table entry for saving to parse...
             [et addRecord:smartp.invoiceDate : smartp.analyzedCategory : smartp.analyzedShortDateString :
              ac[od.itemColumn] : smartp.analyzedUOM : smartp.analyzedBulkOrIndividual :
@@ -525,7 +543,7 @@ static OCRTopObject *sharedInstance = nil;
     } //end for loop
     BOOL lastPageToDo = (page == pageCount-1);
     [et saveToParse : page : lastPageToDo];
-    totalLines += smartCount;
+    _totalLines += smartCount;
 
     
 } //end writeEXPToParse

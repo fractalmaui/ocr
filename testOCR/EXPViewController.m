@@ -36,7 +36,6 @@
     et.selectBy     = @"*";
     et.selectValue  = @"*";
     tableName       = @"";
-    dbResults       = [[NSMutableArray alloc] init];
     dbMode          = DB_MODE_NONE;
     vendorLookup    = @"*";
     _detailMode     = FALSE;
@@ -125,21 +124,26 @@
 {
     batchIDLookup = @"*";
 
-    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Select Database Operation"];
+    NSMutableAttributedString *tatString = [[NSMutableAttributedString alloc]initWithString:@"Menu..."];
     [tatString addAttribute:NSFontAttributeName value:[UIFont boldSystemFontOfSize:25] range:NSMakeRange(0, tatString.length)];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Select Database Operation",nil)
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
     [alert setValue:tatString forKey:@"attributedTitle"];
     
-    UIAlertAction *firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table",nil)
-                                                          style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                              [self loadEXP];
-                                                          }];
-    UIAlertAction *secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table By Vendor...",nil)
-                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
-                                                               [self promptForEXPVendor];
-                                                           }];
+    UIAlertAction *firstAction;
+    UIAlertAction *secondAction;
+    if (!_detailMode)
+    {
+       firstAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table",nil)
+                                                              style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                  [self loadEXP];
+                                                              }];
+        secondAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Load EXP Table By Vendor...",nil)
+                                                               style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                   [self promptForEXPVendor];
+                                                               }];
+    }
     UIAlertAction *thirdAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Export CSV...",nil)
                                                           style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                               [self setupEmailAndSendit];
@@ -147,15 +151,13 @@
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel",nil)
                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                            }];
-    //DHS 3/13: Add owner's ability to delete puzzle
-    [alert addAction:firstAction];
-    [alert addAction:secondAction];
+    //Detail: we don't do all vendors!
+    if (!_detailMode)
+    {
+        [alert addAction:firstAction];
+        [alert addAction:secondAction];
+    }
     [alert addAction:thirdAction];
-    //[alert addAction:fourthAction];
-    //    [alert addAction:fifthAction];
-    //    [alert addAction:sixthAction];
-    //    [alert addAction:seventhAction];
-    //    [alert addAction:eighthAction];
     
     [alert addAction:cancelAction];
     
@@ -177,8 +179,10 @@
     
     NSArray *sortOptions = @[
         @"Invoice Number",@"Item",@"Vendor",
-        @"Product Name",@"Local",@"Processed",@"quantity",
-        @"Price",@"Total"
+        @"Product Name",@"Local",@"Processed"
+        //NOTE: these don't sort well: they are numeric but stored as ASCII
+        //       so they get sorted as strings!
+        //        ,@"quantity",@"Price",@"Total"
     ];
     for (NSString *s in sortOptions)
     {
@@ -212,7 +216,8 @@
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Select By..."
                                                                    message:nil
                                                             preferredStyle:UIAlertControllerStyleActionSheet];
-    
+    [alert setValue:tatString forKey:@"attributedTitle"];
+
     [alert addAction: [UIAlertAction actionWithTitle:NSLocalizedString(@"Vendor:HPF",nil)
                                                style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
                                                    self->et.selectBy = PInv_Vendor_key;
@@ -329,6 +334,7 @@
     
 }
 
+
 //=============EXP VC=====================================================
 -(void) loadEXP
 {
@@ -338,6 +344,7 @@
     tableName = @"EXP";
     dbMode = DB_MODE_EXP;
     et.sortBy = sortBy;
+    
 
     if (!_detailMode) //Normal EXP table examination?
     {
@@ -409,7 +416,7 @@
         if (!_detailMode) s = [NSString stringWithFormat:@"Sort by %@",sortBy];
         else  s = [NSString stringWithFormat:@"Invoice %@",_actData];
     }
-    if (dbResults.count == 0) s = @"No Records Found...";
+    if (et.expos.count == 0) s = @"No Records Found...";
     _titleLabel.text = s;
 } //end setLoadedTitle
 
@@ -476,7 +483,7 @@
 
 //=============EXP VC=====================================================
 - (NSInteger)tableView:(nonnull UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return (int)dbResults.count;
+    return (int)et.expos.count;
 }
 
 //=============EXP VC=====================================================
@@ -513,7 +520,6 @@
 //=============EXP VC=====================================================
 - (void)didReadEXPTableAsStrings : (NSString *)s
 {
-    dbResults = [et getAllRecords];
     dispatch_async(dispatch_get_main_queue(), ^{
         [self->_table reloadData];
         [self activityIndicatorOnOff : FALSE];
@@ -528,7 +534,6 @@
 //=============EXP VC=====================================================
 - (void)didReadInvoiceTableAsStrings : (NSMutableArray*)a
 {
-    dbResults = a;
     [_table reloadData];
     [self activityIndicatorOnOff : FALSE];
     [self setLoadedTitle : @"Invoices"];
@@ -540,7 +545,6 @@
 //=============EXP VC=====================================================
 - (void)didReadTemplateTableAsStrings : (NSMutableArray*) a
 {
-    dbResults = a;
     [_table reloadData];
 
 }

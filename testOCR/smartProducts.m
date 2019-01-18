@@ -46,10 +46,11 @@
                     @"subtotal",
                     @"charge",
                     @"surcharge",
+                    @"refrigerated",
                     @"discount"
                     ];
         
-    beverageNames = @[   //CANNED
+    beverageNames = @[
                       @"apple juice",
                       @"bottled water",
                       @"cocoa",
@@ -71,13 +72,25 @@
                       @"yogurt",
                       @"zico natural"
                       ];
-    dairyNames = @[   //CANNED
+    breadNames = @[
+                   @"bagel",
+                   @"bread",
+                   @"dough",
+                   @"english",
+                   @"muffin",
+                   @"waffle"
+                  ];
+    dairyNames = @[
                    @"buttermilk",
                    @"cheese",
                    @"cream",
                    @"creamer",
                    @"ice cream",
                    @"milk",
+                   @"mozz",
+                   @"mozzerella",
+                   @"parm",
+                   @"parmesian",
                    @"PP CS",   //WTF???
                    @"sherbert",
                    @"yogurt"
@@ -131,8 +144,10 @@
                       @"olives",
                       @"onion powder",
                       @"oranges, mandarin",
+                      @"paprika",
                       @"pasta",
                       @"paste",
+                      @"penne",
                       @"pepper",
                       @"peaches", //NEVER FRESH?
                       @"pears, bartlett",
@@ -143,6 +158,7 @@
                       @"pursed broccoli",
                       @"rice",
                       @"salt",
+                      @"sauce",
                       @"seasoning",
                       @"shoyu",
                       @"soup",
@@ -163,12 +179,16 @@
                      ];
     proteinNames = @[ //CANNED
                      @"beef",
+                     @"brst",
                      @"chicken",
                      @"eggs",
                      @"fish",
                      @"fishcake",
+                     @"ham",
                      @"pork",
+                     @"sknls",
                      @"spam",
+                     @"sausage",
                      @"steak",
                      @"tuna"    //here or dry goods?
                      ];
@@ -176,7 +196,9 @@
                      @"apples",
                      @"bananas",
                      @"basil",
+                     @"berries",
                      @"bok choy",
+                     @"blueberries",
                      @"broccoli",
                      @"cantaloupes",
                      @"cabbage",
@@ -190,6 +212,7 @@
                      @"honeydew",
                      @"lemons",
                      @"lettuce",
+                     @"mango",
                      @"melons",
                      @"mushrooms",
                      @"onions",
@@ -385,6 +408,7 @@
         _analyzedCategory  = a[0]; //Get canned data out from array...
         _analyzedProcessed = a[2];
         _analyzedLocal     = a[3];
+        _analyzedUOM       = a[4];
         processed = ([_analyzedProcessed.lowercaseString isEqualToString:@"processed"]);
         local     = ([_analyzedLocal.lowercaseString isEqualToString:@"yes"]);
         _analyzedProductName = fullProductName; //Set output product name!
@@ -401,6 +425,14 @@
         {
             found = TRUE;
             _analyzedCategory = BEVERAGE_CATEGORY;
+            _analyzedUOM = @"case";
+            processed = TRUE;
+            bulk = TRUE;
+        }
+        else if ([breadNames indexOfObject:lowerCase] != NSNotFound) // Protein category Found?
+        {
+            found = TRUE;
+            _analyzedCategory = BREAD_CATEGORY;
             _analyzedUOM = @"case";
             processed = TRUE;
             bulk = TRUE;
@@ -473,10 +505,20 @@
     int   qint       = [quantity intValue];
     float pfloat     = [price floatValue];
     float afloat     = [amount floatValue];
+    if (afloat > 10000.0) //Huge Amount? Assume decimal error
+    {
+        NSLog(@" ERROR: amount over $10000!!");
+        afloat = afloat / 1000.0;
+    }
     if (afloat > 1000.0) //Huge Amount? Assume decimal error
     {
         NSLog(@" ERROR: amount over $1000!!");
         afloat = afloat / 100.0;
+    }
+    if (pfloat > 10000.0) //Huge Price? Assume decimal error
+    {
+        NSLog(@" ERROR: price over $10000!!");
+        pfloat = pfloat / 1000.0;
     }
     if (pfloat > 1000.0) //Huge Price? Assume decimal error
     {
@@ -486,9 +528,10 @@
     float testAmount = (float)qint * pfloat;
     
     //NSLog(@" above [%@] priceFix q p a %d %f %f",fullProductName,qint,pfloat,afloat);
-    if (pfloat == 0.0 && afloat == 0.0) //Bad! no price no dice!
+    //Missing 2 / 3 values is a failure...
+    if ((pfloat == 0.0 && afloat == 0.0) || (qint == 0 && afloat == 0.0)  || (qint == 0 && pfloat == 0.0) )
     {
-        NSLog(@" ... bad price columns!");
+        NSLog(@" ... 2 out of 3 price columns are zero!");
         _majorError = ANALYZER_BAD_PRICE_COLUMNS;
     }
     else if (afloat != testAmount || qint == 0)
@@ -517,7 +560,13 @@
             NSLog(@" ...bad math?");
             if (qint == 1) //Check mismatch price/amount, defer to amount
             {
-                pfloat = afloat;
+                //1/18 This is a cluge! Greco Invoices are more likely to have a good price and a bad amount!
+                if ([vendor.lowercaseString isEqualToString:@"greco"])
+                {
+                    afloat = pfloat;
+                }
+                else //Most other vendors: defer to the amount column
+                    pfloat = afloat;
             }
             else //Bogus quantity maybe?
             {
@@ -679,12 +728,25 @@
 } //end fixSentenceSplits
 
 //=============(smartProducts)=====================================================
+-(NSString*) removePunctuationFromString : (NSString *)s
+{
+    NSArray *punctuationz = @[@",",@".",@":",@";",@"-",@"_",@"~",@"`",
+                              @"!",@"@",@"#",@"$",@"%",@"^",@"&",@"*",@"(",@")",@"+",@"="];
+    NSString *sNoPunct = s;
+    for (NSString *punc in punctuationz)
+    {
+        sNoPunct = [sNoPunct stringByReplacingOccurrencesOfString:punc withString:@" "];
+    }
+    return sNoPunct;
+} //end removePunctuationFromString
+
+//=============(smartProducts)=====================================================
 // Disassembles / reassembles a sentence, fixes any product name typos therein
 -(NSString *) fixSentenceTypo : (NSString *)sentence
 {
-    //1/10: Dashes muck up word-by-word parsing, replace w/ whitespace
-    NSString *sentenceNoDashes = [sentence stringByReplacingOccurrencesOfString:@"-" withString:@" "];
-    NSArray *sItems = [[sentenceNoDashes lowercaseString] componentsSeparatedByString:@" "]; //Separate words
+    //1/18: Get rid of punctuation: ALL punctuation!
+    NSString *sNoPunct = [self removePunctuationFromString:sentence];
+    NSArray *sItems = [[sNoPunct lowercaseString] componentsSeparatedByString:@" "]; //Separate words
     BOOL bing = FALSE;
     int wcount = (int)sItems.count;
     NSMutableArray *outputWords = [[NSMutableArray alloc] init];
